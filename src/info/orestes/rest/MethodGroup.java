@@ -1,0 +1,17 @@
+package info.orestes.rest;
+
+import java.util.LinkedList;
+
+@SuppressWarnings("serial")
+public class MethodGroup extends LinkedList<Method> {
+	
+	private final String description;
+	
+	public MethodGroup(String description) {
+		this.description = description;
+	}
+	
+	public String getName() {
+		return description;
+	}
+}

@@ -1,0 +1,31 @@
+#Group A
+
+##Method A.1
+
+Calls Method A.1
+
+GET /   Testing1(String):Object
+
+##Method A.2
+
+Calls Method A.1
+
+@ns : String Der Namespace der Klasse
+@from : Integer Ergebnisse ab
+@limit : Integer Anzahl Ergebnisse
+@name : Integer Der Name der Person
+
+>200 All seems to be ok
+>302 No changes at all
+>404 Are you stupid guy? I have never heard about that
+>400 Bad boy
+
+GET  /db/:ns/db_all;from=0;limit=10?name=Franz+Kafka  Testing1(String):Object
+
+
+##Objekt abrufen
+Ruft ein Objekt ab.
+@ns : String Der Namespace der Klasse
+@q : String Die Klasse des Objektes
+
+GET  /db/:ns?q=1 Testing2(Object):Object
