@@ -8,7 +8,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import info.orestes.rest.PathElement.Type;
-import info.orestes.rest.ServiceDocumentParserTest.ServiceDocumentTestTypes;
 
 import java.io.IOException;
 import java.util.ArrayList;

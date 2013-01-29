@@ -1,5 +1,6 @@
 package info.orestes.rest.conversion;
 
+import info.orestes.rest.Method;
 import info.orestes.rest.RestHandler;
 import info.orestes.rest.RestRequest;
 import info.orestes.rest.RestResponse;
@@ -8,6 +9,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.servlet.AsyncEvent;
@@ -16,7 +18,7 @@ import javax.servlet.ServletException;
 
 import org.eclipse.jetty.server.Request;
 
-public class ConversionHandler extends RestHandler {
+public class ConversionHandler extends RestHandler implements AsyncListener {
 	
 	private final ConverterService converterService;
 	
@@ -32,8 +34,21 @@ public class ConversionHandler extends RestHandler {
 	public void handle(String target, Request req, RestRequest request, final RestResponse response)
 			throws ServletException, IOException {
 		
+		Method method = request.getRoute().getMethod();
+		
 		boolean handle = true;
-		Class<?> requestType = request.getRoute().getMethod().getRequestType();
+		for (Entry<String, Object> entry : request.getArguments().entrySet()) {
+			Class<?> argType = method.getArguments().get(entry.getKey()).getValueType();
+			try {
+				entry.setValue(getConverterService().toObject(request, (String) entry.getValue(), argType));
+			} catch (Exception e) {
+				response.sendError(RestResponse.SC_BAD_REQUEST, "The argument " + entry.getKey()
+						+ " can not be parsed. " + e.getMessage());
+				handle = false;
+			}
+		}
+		
+		Class<?> requestType = method.getRequestType();
 		if (requestType != null) {
 			MediaType mediaType = new MediaType(request.getContentType());
 			
@@ -46,7 +61,7 @@ public class ConversionHandler extends RestHandler {
 			}
 		}
 		
-		final Class<?> responseType = request.getRoute().getMethod().getResponseType();
+		Class<?> responseType = method.getResponseType();
 		if (responseType != null) {
 			List<MediaType> mediaTypes = parseMediaTypes(request.getHeader("Accept"));
 			
@@ -59,28 +74,16 @@ public class ConversionHandler extends RestHandler {
 		if (handle) {
 			super.handle(target, req, request, response);
 			if (!request.isAsyncStarted()) {
-				postHandle(responseType, response);
-			} else {
-				request.getAsyncContext().addListener(new AsyncListener() {
-					@Override
-					public void onTimeout(AsyncEvent event) throws IOException {}
-					
-					@Override
-					public void onStartAsync(AsyncEvent event) throws IOException {}
-					
-					@Override
-					public void onError(AsyncEvent event) throws IOException {}
-					
-					@Override
-					public void onComplete(AsyncEvent event) throws IOException {
-						postHandle(responseType, response);
-					}
-				});
+				postHandle(request, response);
+			} else if (!request.getAsyncContext().hasOriginalRequestAndResponse()) {
+				request.getAsyncContext().addListener(this);
 			}
 		}
 	}
 	
-	protected void postHandle(Class<?> responseType, RestResponse response) throws IOException {
+	protected void postHandle(RestRequest request, RestResponse response) throws IOException {
+		Class<?> responseType = request.getRoute().getMethod().getResponseType();
+		
 		if (responseType != null) {
 			try {
 				String contentType = response.getContentType();
@@ -125,5 +128,19 @@ public class ConversionHandler extends RestHandler {
 		}
 		
 		return null;
+	}
+	
+	@Override
+	public void onTimeout(AsyncEvent event) throws IOException {}
+	
+	@Override
+	public void onStartAsync(AsyncEvent event) throws IOException {}
+	
+	@Override
+	public void onError(AsyncEvent event) throws IOException {}
+	
+	@Override
+	public void onComplete(AsyncEvent event) throws IOException {
+		postHandle((RestRequest) event.getSuppliedRequest(), (RestResponse) event.getSuppliedResponse());
 	}
 }

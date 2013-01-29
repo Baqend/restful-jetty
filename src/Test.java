@@ -10,7 +10,7 @@ public class Test extends RestServlet {
 	
 	@Override
 	protected void doGet(RestRequest request, RestResponse response) throws ServletException, IOException {
-		response.setEntity("test");
+		response.setEntity("test" + request.getArgument("test").getClass());
 	}
 	
 }

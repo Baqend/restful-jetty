@@ -8,6 +8,14 @@ Calls Method A.1
 
 GET /?test=1   Test():String
 
+##Method A.1
+
+Calls Method A.1
+
+@test : Integer Anzahl Ergebnisse
+
+GET /async/?test=1   MyAsyncServlet():String
+
 ##Method A.2
 
 Calls Method A.1

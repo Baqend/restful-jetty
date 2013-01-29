@@ -3,7 +3,6 @@ import info.orestes.rest.MethodGroup;
 import info.orestes.rest.RestRouter;
 import info.orestes.rest.RestServletHandler;
 import info.orestes.rest.ServiceDocumentParser;
-import info.orestes.rest.ServiceDocumentParserTest;
 import info.orestes.rest.conversion.ConversionHandler;
 import info.orestes.rest.conversion.ConverterService;
 
@@ -20,8 +19,9 @@ public class SimpleServer {
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
-		ServiceDocumentParser parser = new ServiceDocumentParser(
-				new ServiceDocumentParserTest.ServiceDocumentTestTypes());
+		ConverterService converterService = new ConverterService();
+		
+		ServiceDocumentParser parser = new ServiceDocumentParser(converterService.createServiceDocumentTypes());
 		
 		List<MethodGroup> lists = parser.parse("/service.rest");
 		
@@ -40,7 +40,7 @@ public class SimpleServer {
 			router.addAll(list);
 		}
 		
-		ConversionHandler conversionHandler = new ConversionHandler(new ConverterService());
+		ConversionHandler conversionHandler = new ConversionHandler(converterService);
 		router.setHandler(conversionHandler);
 		
 		conversionHandler.setHandler(new RestServletHandler());

@@ -1,5 +1,6 @@
 package info.orestes.rest.conversion;
 
+import info.orestes.rest.ServiceDocumentTypes;
 import info.orestes.rest.conversion.formats.StringFormat;
 
 import java.io.File;
@@ -126,7 +127,7 @@ public class ConverterService {
 		format.write(context, converter.toFormat(context, source, genericParams));
 	}
 	
-	public <T> T toObject(Context context, String source, Class<T> target, Class<?>... genericParams) {
+	public <T> T toObject(Context context, String source, Class<T> target) {
 		@SuppressWarnings("unchecked")
 		Converter<T, String> converter = (Converter<T, String>) get(target).get(StringFormat.TEXT_PLAIN);
 		
@@ -134,7 +135,7 @@ public class ConverterService {
 			throw new UnsupportedOperationException();
 		}
 		
-		return converter.toObject(context, source, genericParams);
+		return converter.toObject(context, source);
 	}
 	
 	protected void loadConverterPackage(String pkgName) {
@@ -173,6 +174,34 @@ public class ConverterService {
 			return classes;
 		} catch (Exception e) {
 			throw new RuntimeException("The converter package " + pkgName + " can't be loaded.", e);
+		}
+	}
+	
+	public Types createServiceDocumentTypes() {
+		return new Types();
+	}
+	
+	public class Types implements ServiceDocumentTypes {
+		
+		private final Map<String, Class<?>> types = new HashMap<>();
+		
+		private Types() {
+			for (Map<MediaType, Converter<?, ?>> map : converters.values()) {
+				Converter<?, ?> converter = map.get(StringFormat.TEXT_PLAIN);
+				
+				if (converter != null) {
+					types.put(converter.getTargetClass().getSimpleName(), converter.getTargetClass());
+				}
+			}
+		}
+		
+		public Map<String, Class<?>> getTypes() {
+			return types;
+		}
+		
+		@Override
+		public Class<?> getClassForName(String name) {
+			return types.get(name);
 		}
 	}
 }

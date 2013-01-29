@@ -1,15 +1,10 @@
 package info.orestes.rest;
+
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
-import info.orestes.rest.Method;
-import info.orestes.rest.MethodGroup;
-import info.orestes.rest.PathElement;
 import info.orestes.rest.PathElement.Type;
-import info.orestes.rest.RestServlet;
-import info.orestes.rest.ServiceDocumentParser;
-import info.orestes.rest.ServiceDocumentTypes;
 
 import java.util.HashMap;
 import java.util.List;
@@ -502,21 +497,5 @@ public class ServiceDocumentParserTest {
 	
 	private void assertDescritpion(String... expected) {
 		assertArrayEquals(expected, method.getDescription());
-	}
-	
-	public static class ServiceDocumentTestTypes implements ServiceDocumentTypes {
-		@Override
-		public Class<?> getClassForName(String name) {
-			switch (name) {
-				case "Integer":
-					return Integer.class;
-				case "String":
-					return String.class;
-				case "Object":
-					return Object.class;
-				default:
-					return null;
-			}
-		}
 	}
 }
