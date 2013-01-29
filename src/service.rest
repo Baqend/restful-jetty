@@ -4,7 +4,9 @@
 
 Calls Method A.1
 
-GET /   Testing1(String):Object
+@test : Integer Anzahl Ergebnisse
+
+GET /?test=1   Test():String
 
 ##Method A.2
 
@@ -20,7 +22,7 @@ Calls Method A.1
 >404 Are you stupid guy? I have never heard about that
 >400 Bad boy
 
-GET  /db/:ns/db_all;from=0;limit=10?name=Franz+Kafka  Testing1(String):Object
+GET  /db/:ns/db_all;from=0;limit=10?name=Franz+Kafka  Test():Object
 
 
 ##Objekt abrufen
@@ -28,4 +30,4 @@ Ruft ein Objekt ab.
 @ns : String Der Namespace der Klasse
 @q : String Die Klasse des Objektes
 
-GET  /db/:ns?q=1 Testing2(Object):Object
+GET  /db/:ns?q=1 Test(Object):Object

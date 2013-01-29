@@ -1,17 +1,19 @@
 package info.orestes.rest;
 
-import info.orestes.rest.Router.Route;
+import info.orestes.rest.RestRouter.Route;
+import info.orestes.rest.conversion.ReadableContext;
 
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
-public class RestRequest extends HttpServletRequestWrapper {
+public class RestRequest extends HttpServletRequestWrapper implements ReadableContext {
 	
-	private Map<String, Object> arguments;
-	private Route route;
-
+	private final Map<String, Object> arguments;
+	private final Route route;
+	private Object entity;
+	
 	public RestRequest(HttpServletRequest request, Route route, Map<String, Object> arguments) {
 		super(request);
 		
@@ -34,5 +36,14 @@ public class RestRequest extends HttpServletRequestWrapper {
 	
 	public void setArgument(String name, Object value) {
 		getArguments().put(name, value);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public <E> E getEntity() {
+		return (E) entity;
+	}
+	
+	public void setEntity(Object entity) {
+		this.entity = entity;
 	}
 }

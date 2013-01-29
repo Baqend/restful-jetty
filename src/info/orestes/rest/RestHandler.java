@@ -12,14 +12,15 @@ import org.eclipse.jetty.server.handler.HandlerWrapper;
 public abstract class RestHandler extends HandlerWrapper {
 	
 	@Override
-	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
+	public final void handle(String target, Request baseRequest, HttpServletRequest request,
+			HttpServletResponse response) throws IOException, ServletException {
+		
+		handle(target, baseRequest, (RestRequest) request, (RestResponse) response);
+	}
+	
+	public void handle(String target, Request baseRequest, RestRequest request, RestResponse response)
 			throws IOException, ServletException {
-		
-		doHandle((RestRequest) request, (RestResponse) response);
-		
 		super.handle(target, baseRequest, request, response);
 	}
-
-	public abstract void doHandle(RestRequest request, RestResponse response) throws IOException, ServletException;
 	
 }

@@ -20,7 +20,7 @@ import org.eclipse.jetty.http.HttpURI;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.HandlerWrapper;
 
-public class Router extends HandlerWrapper {
+public class RestRouter extends HandlerWrapper {
 	
 	private final List<Method> methods = new ArrayList<>();
 	@SuppressWarnings("unchecked")
@@ -53,6 +53,7 @@ public class Router extends HandlerWrapper {
 			Map<String, Object> matches = route.match(method, pathParts, matrix, query);
 			if (matches != null) {
 				super.handle(path, request, new RestRequest(req, route, matches), new RestResponse(res));
+				request.setHandled(true);
 				break;
 			}
 		}

@@ -4,13 +4,20 @@ import java.io.IOException;
 
 import javax.servlet.ServletException;
 
-public class RestServletHandler extends RestHandler {
+import org.eclipse.jetty.server.Request;
 
+public class RestServletHandler extends RestHandler {
+	
 	@Override
-	public void doHandle(RestRequest request, RestResponse response) throws ServletException, IOException {
+	public void handle(String target, Request req, RestRequest request, RestResponse response) throws ServletException,
+			IOException {
 		RestServlet servlet = request.getRoute().getServlet();
 		
-		servlet.service(request, response);
+		try {
+			servlet.service(request, response);
+		} finally {
+			req.setHandled(true);
+		}
 	}
-
+	
 }

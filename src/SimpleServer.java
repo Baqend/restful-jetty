@@ -1,9 +1,11 @@
 import info.orestes.rest.Method;
 import info.orestes.rest.MethodGroup;
+import info.orestes.rest.RestRouter;
 import info.orestes.rest.RestServletHandler;
-import info.orestes.rest.Router;
 import info.orestes.rest.ServiceDocumentParser;
 import info.orestes.rest.ServiceDocumentParserTest;
+import info.orestes.rest.conversion.ConversionHandler;
+import info.orestes.rest.conversion.ConverterService;
 
 import java.util.List;
 
@@ -33,23 +35,24 @@ public class SimpleServer {
 		// sslFactory);
 		// server.addConnector(connector);
 		
-		Router router = new Router();
+		RestRouter router = new RestRouter();
 		for (List<Method> list : lists) {
-			for (Method method : list) {
-				router.add(method);
-			}
+			router.addAll(list);
 		}
 		
-		router.setHandler(new RestServletHandler());
+		ConversionHandler conversionHandler = new ConversionHandler(new ConverterService());
+		router.setHandler(conversionHandler);
+		
+		conversionHandler.setHandler(new RestServletHandler());
 		
 		ContextHandlerCollection context = new ContextHandlerCollection();
 		
 		ContextHandler handler = new ContextHandler(context, "/");
 		handler.setHandler(router);
-		
-		// ContextHandler webHandler = new ContextHandler(context, "/");
-		// handler.setHandler(new ResourceHandler().);
-		
+		//
+		// // ContextHandler webHandler = new ContextHandler(context, "/");
+		// // handler.setHandler(new ResourceHandler().);
+		//
 		Server server = new Server(80);
 		server.setHandler(context);
 		server.start();

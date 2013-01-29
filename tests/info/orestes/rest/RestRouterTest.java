@@ -27,10 +27,10 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class RouterTest {
+public class RestRouterTest {
 	
 	private static List<MethodGroup> groups;
-	private Router router;
+	private RestRouter router;
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -41,7 +41,7 @@ public class RouterTest {
 	
 	@Before
 	public void setUp() {
-		router = new Router();
+		router = new RestRouter();
 		for (List<Method> group : groups) {
 			router.addAll(group);
 		}
