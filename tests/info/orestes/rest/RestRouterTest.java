@@ -116,7 +116,8 @@ public class RestRouterTest {
 		
 		router.setHandler(new RestHandler() {
 			@Override
-			public void doHandle(RestRequest request, RestResponse response) throws IOException, ServletException {
+			public void handle(String target, Request baseRequest, RestRequest request, RestResponse response)
+					throws IOException, ServletException {
 				assertSame(path + " was mismatched", expected, request.getRoute().getMethod());
 				
 				for (Entry<String, String> entry : args.entrySet()) {

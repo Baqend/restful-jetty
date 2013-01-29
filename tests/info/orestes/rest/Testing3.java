@@ -9,6 +9,6 @@ public class Testing3 extends RestServlet {
 	
 	@Override
 	public void doGet(RestRequest req, RestResponse resp) throws ServletException, IOException {
-		resp.
+		
 	}
 }
