@@ -2,7 +2,7 @@ package info.orestes.rest.conversion.string;
 
 import info.orestes.rest.conversion.Context;
 import info.orestes.rest.conversion.Converter;
-import info.orestes.rest.conversion.formats.StringFormat;
+import info.orestes.rest.conversion.format.StringFormat;
 
 public class StringCharacterConverter extends Converter<Character, String> {
 	

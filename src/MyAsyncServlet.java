@@ -1,5 +1,5 @@
-import info.orestes.rest.RestRequest;
-import info.orestes.rest.RestResponse;
+import info.orestes.rest.Request;
+import info.orestes.rest.Response;
 import info.orestes.rest.RestServlet;
 
 import java.io.IOException;
@@ -10,7 +10,7 @@ import javax.servlet.ServletException;
 public class MyAsyncServlet extends RestServlet {
 	
 	@Override
-	public void doGet(RestRequest request, RestResponse response) throws ServletException, IOException {
+	public void doGet(Request request, Response response) throws ServletException, IOException {
 		final AsyncContext context = request.startAsync(request, response);
 		
 		context.start(new Runnable() {
@@ -20,7 +20,7 @@ public class MyAsyncServlet extends RestServlet {
 					Thread.sleep(10000);
 				} catch (InterruptedException e) {}
 				
-				((RestResponse) context.getResponse()).setEntity("Text");
+				((Response) context.getResponse()).setEntity("Text");
 				
 				context.complete();
 			}

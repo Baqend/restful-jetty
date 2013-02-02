@@ -1,9 +1,9 @@
 package info.orestes.rest.conversion;
 
-import info.orestes.rest.Method;
-import info.orestes.rest.RestHandler;
-import info.orestes.rest.RestRequest;
-import info.orestes.rest.RestResponse;
+import info.orestes.rest.Request;
+import info.orestes.rest.Response;
+import info.orestes.rest.service.Method;
+import info.orestes.rest.service.RestHandler;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,8 +15,6 @@ import java.util.Set;
 import javax.servlet.AsyncEvent;
 import javax.servlet.AsyncListener;
 import javax.servlet.ServletException;
-
-import org.eclipse.jetty.server.Request;
 
 public class ConversionHandler extends RestHandler implements AsyncListener {
 	
@@ -31,19 +29,18 @@ public class ConversionHandler extends RestHandler implements AsyncListener {
 	}
 	
 	@Override
-	public void handle(String target, Request req, RestRequest request, final RestResponse response)
-			throws ServletException, IOException {
+	public void handle(Request request, final Response response) throws ServletException, IOException {
 		
-		Method method = request.getRoute().getMethod();
+		Method method = request.getRestMethod();
 		
 		boolean handle = true;
 		for (Entry<String, Object> entry : request.getArguments().entrySet()) {
 			Class<?> argType = method.getArguments().get(entry.getKey()).getValueType();
 			try {
-				entry.setValue(getConverterService().toObject(request, (String) entry.getValue(), argType));
+				entry.setValue(getConverterService().toObject(request, argType, (String) entry.getValue()));
 			} catch (Exception e) {
-				response.sendError(RestResponse.SC_BAD_REQUEST, "The argument " + entry.getKey()
-						+ " can not be parsed. " + e.getMessage());
+				response.sendError(Response.SC_BAD_REQUEST, "The argument " + entry.getKey() + " can not be parsed. "
+						+ e.getMessage());
 				handle = false;
 			}
 		}
@@ -56,7 +53,7 @@ public class ConversionHandler extends RestHandler implements AsyncListener {
 				Object entity = getConverterService().toObject(request, mediaType, requestType);
 				request.setEntity(entity);
 			} catch (UnsupportedOperationException e) {
-				response.sendError(RestResponse.SC_UNSUPPORTED_MEDIA_TYPE, e.getMessage());
+				response.sendError(Response.SC_UNSUPPORTED_MEDIA_TYPE, e.getMessage());
 				handle = false;
 			}
 		}
@@ -72,7 +69,7 @@ public class ConversionHandler extends RestHandler implements AsyncListener {
 		}
 		
 		if (handle) {
-			super.handle(target, req, request, response);
+			super.handle(request, response);
 			if (!request.isAsyncStarted()) {
 				postHandle(request, response);
 			} else if (!request.getAsyncContext().hasOriginalRequestAndResponse()) {
@@ -81,17 +78,19 @@ public class ConversionHandler extends RestHandler implements AsyncListener {
 		}
 	}
 	
-	protected void postHandle(RestRequest request, RestResponse response) throws IOException {
-		Class<?> responseType = request.getRoute().getMethod().getResponseType();
+	@SuppressWarnings("unchecked")
+	protected <T> void postHandle(Request request, Response response) throws IOException {
+		Class<T> responseType = (Class<T>) request.getRestMethod().getResponseType();
 		
 		if (responseType != null) {
 			try {
 				String contentType = response.getContentType();
 				
 				MediaType mediaType = contentType == null ? null : new MediaType(contentType);
-				getConverterService().toRepresentation(response, response.getEntity(), mediaType);
+				getConverterService().toRepresentation(response, responseType, mediaType,
+						responseType.cast(response.getEntity()));
 			} catch (UnsupportedOperationException e) {
-				response.sendError(RestResponse.SC_NOT_ACCEPTABLE);
+				response.sendError(Response.SC_NOT_ACCEPTABLE);
 			}
 		}
 	}
@@ -141,6 +140,6 @@ public class ConversionHandler extends RestHandler implements AsyncListener {
 	
 	@Override
 	public void onComplete(AsyncEvent event) throws IOException {
-		postHandle((RestRequest) event.getSuppliedRequest(), (RestResponse) event.getSuppliedResponse());
+		postHandle((Request) event.getSuppliedRequest(), (Response) event.getSuppliedResponse());
 	}
 }

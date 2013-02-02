@@ -1,6 +1,7 @@
-package info.orestes.rest;
+package info.orestes.rest.service;
 
-import info.orestes.rest.PathElement.Type;
+import info.orestes.rest.RestServlet;
+import info.orestes.rest.service.PathElement.Type;
 
 import java.util.HashMap;
 import java.util.Map;

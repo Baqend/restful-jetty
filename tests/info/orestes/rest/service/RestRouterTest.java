@@ -1,4 +1,4 @@
-package info.orestes.rest;
+package info.orestes.rest.service;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
@@ -7,7 +7,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import info.orestes.rest.PathElement.Type;
+import info.orestes.rest.Request;
+import info.orestes.rest.Response;
+import info.orestes.rest.service.PathElement.Type;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,7 +23,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.http.HttpURI;
-import org.eclipse.jetty.server.Request;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -115,9 +116,8 @@ public class RestRouterTest {
 		
 		router.setHandler(new RestHandler() {
 			@Override
-			public void handle(String target, Request baseRequest, RestRequest request, RestResponse response)
-					throws IOException, ServletException {
-				assertSame(path + " was mismatched", expected, request.getRoute().getMethod());
+			public void handle(Request request, Response response) throws IOException, ServletException {
+				assertSame(path + " was mismatched", expected, request.getRestMethod());
 				
 				for (Entry<String, String> entry : args.entrySet()) {
 					assertEquals(entry.getValue(), request.getArgument(entry.getKey()));
@@ -127,7 +127,7 @@ public class RestRouterTest {
 			}
 		});
 		
-		Request req = mock(Request.class);
+		org.eclipse.jetty.server.Request req = mock(org.eclipse.jetty.server.Request.class);
 		HttpServletResponse res = mock(HttpServletResponse.class);
 		
 		HttpURI uri = new HttpURI(path);

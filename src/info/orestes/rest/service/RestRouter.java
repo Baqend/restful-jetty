@@ -1,6 +1,7 @@
-package info.orestes.rest;
+package info.orestes.rest.service;
 
-import info.orestes.rest.PathElement.Type;
+import info.orestes.rest.RestServlet;
+import info.orestes.rest.service.PathElement.Type;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.eclipse.jetty.http.HttpURI;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.HandlerWrapper;
+import org.eclipse.jetty.util.UrlEncoded;
 
 public class RestRouter extends HandlerWrapper {
 	
@@ -39,10 +41,10 @@ public class RestRouter extends HandlerWrapper {
 		int next;
 		int offset = 1;
 		while ((next = path.indexOf('/', offset)) != -1) {
-			pathParts.add(path.substring(offset, next));
+			pathParts.add(UrlEncoded.decodeString(path, offset, next - offset, null));
 			offset = next + 1;
 		}
-		pathParts.add(path.substring(offset));
+		pathParts.add(UrlEncoded.decodeString(path, offset, path.length() - offset, null));
 		
 		for (Route route : getRoutes(pathParts.size())) {
 			String method = request.getMethod();
@@ -52,7 +54,8 @@ public class RestRouter extends HandlerWrapper {
 			
 			Map<String, Object> matches = route.match(method, pathParts, matrix, query);
 			if (matches != null) {
-				super.handle(path, request, new RestRequest(req, route, matches), new RestResponse(res));
+				super.handle(path, request, new RestRequest(req, route.getMethod(), matches, route.getServlet()),
+						new RestResponse(res));
 				request.setHandled(true);
 				break;
 			}
@@ -65,9 +68,10 @@ public class RestRouter extends HandlerWrapper {
 		for (String str : params) {
 			int index = str.indexOf('=');
 			if (index == -1) {
-				map.put(str, null);
+				map.put(UrlEncoded.decodeString(str, 0, str.length(), null), null);
 			} else {
-				map.put(str.substring(0, index), str.substring(index + 1));
+				map.put(UrlEncoded.decodeString(str, 0, index, null),
+						UrlEncoded.decodeString(str, index + 1, str.length() - index - 1, null));
 			}
 		}
 		

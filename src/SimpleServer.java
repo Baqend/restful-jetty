@@ -1,10 +1,10 @@
-import info.orestes.rest.Method;
-import info.orestes.rest.MethodGroup;
-import info.orestes.rest.RestRouter;
-import info.orestes.rest.RestServletHandler;
-import info.orestes.rest.ServiceDocumentParser;
 import info.orestes.rest.conversion.ConversionHandler;
 import info.orestes.rest.conversion.ConverterService;
+import info.orestes.rest.service.Method;
+import info.orestes.rest.service.MethodGroup;
+import info.orestes.rest.service.RestRouter;
+import info.orestes.rest.service.RestServletHandler;
+import info.orestes.rest.service.ServiceDocumentParser;
 
 import java.util.List;
 

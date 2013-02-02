@@ -1,4 +1,4 @@
-package info.orestes.rest;
+package info.orestes.rest.service;
 
 @SuppressWarnings("serial")
 public class ServiceDocumentParserException extends RuntimeException {

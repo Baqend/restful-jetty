@@ -145,7 +145,7 @@ GET  /db/:ns/db_all;from=0;limit=?name=Franz+Kafka  info.orestes.rest.Testing1(S
 
 ##Method E.2
 
-A realy complex method.
+A really complex method.
 Which hopefully nobody understand and therefore never been used
 
 @a : String The a arg

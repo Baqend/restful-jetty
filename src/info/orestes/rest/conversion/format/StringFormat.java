@@ -1,4 +1,4 @@
-package info.orestes.rest.conversion.formats;
+package info.orestes.rest.conversion.format;
 
 import info.orestes.rest.conversion.ConverterFormat;
 import info.orestes.rest.conversion.MediaType;
@@ -17,6 +17,8 @@ public class StringFormat extends ConverterFormat<String> {
 	
 	@Override
 	public void write(WriteableContext context, String formatedContent) throws IOException {
+		context.setContentLength(formatedContent.length());
+		
 		context.getWriter().append(formatedContent);
 	}
 	

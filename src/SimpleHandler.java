@@ -14,7 +14,6 @@ public class SimpleHandler extends AbstractHandler {
 			throws IOException, ServletException {
 		
 		System.out.println(arg);
-		
 		System.out.println(request.getContextPath());
 		System.out.println(request.getPathInfo());
 		System.out.println(request.getRequestURL());

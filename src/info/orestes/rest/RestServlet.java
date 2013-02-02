@@ -10,15 +10,15 @@ import javax.servlet.ServletResponse;
 @SuppressWarnings("serial")
 public class RestServlet extends GenericServlet {
 	
-	protected void doDelete(RestRequest request, RestResponse response) throws ServletException, IOException {
+	protected void doDelete(Request request, Response response) throws ServletException, IOException {
 		notSupported(request, response);
 	}
 	
-	protected void doGet(RestRequest request, RestResponse response) throws ServletException, IOException {
+	protected void doGet(Request request, Response response) throws ServletException, IOException {
 		notSupported(request, response);
 	}
 	
-	protected void doHead(RestRequest request, RestResponse response) throws ServletException, IOException {
+	protected void doHead(Request request, Response response) throws ServletException, IOException {
 		doGet(request, response);
 		
 		int length = response.getBufferSize();
@@ -27,19 +27,19 @@ public class RestServlet extends GenericServlet {
 		response.setContentLength(length);
 	}
 	
-	protected void doOptions(RestRequest request, RestResponse response) throws ServletException, IOException {
+	protected void doOptions(Request request, Response response) throws ServletException, IOException {
 		notSupported(request, response);
 	}
 	
-	protected void doPost(RestRequest request, RestResponse response) throws ServletException, IOException {
+	protected void doPost(Request request, Response response) throws ServletException, IOException {
 		notSupported(request, response);
 	}
 	
-	protected void doPut(RestRequest request, RestResponse response) throws ServletException, IOException {
+	protected void doPut(Request request, Response response) throws ServletException, IOException {
 		notSupported(request, response);
 	}
 	
-	public void service(RestRequest request, RestResponse response) throws ServletException, IOException {
+	public void service(Request request, Response response) throws ServletException, IOException {
 		switch (request.getMethod()) {
 			case "DELETE":
 				doDelete(request, response);
@@ -66,16 +66,16 @@ public class RestServlet extends GenericServlet {
 	
 	@Override
 	public final void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
-		service((RestRequest) req, (RestResponse) res);
+		service((Request) req, (Response) res);
 	}
 	
-	protected void notSupported(RestRequest request, RestResponse response) throws IOException {
+	protected void notSupported(Request request, Response response) throws IOException {
 		String protocol = request.getProtocol();
 		
 		if (protocol.endsWith("1.1")) {
-			response.sendError(RestResponse.SC_METHOD_NOT_ALLOWED);
+			response.sendError(Response.SC_METHOD_NOT_ALLOWED);
 		} else {
-			response.sendError(RestResponse.SC_BAD_REQUEST);
+			response.sendError(Response.SC_BAD_REQUEST);
 		}
 	}
 }

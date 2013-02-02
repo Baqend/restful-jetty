@@ -1,4 +1,4 @@
-package info.orestes.rest;
+package info.orestes.rest.service;
 
 import java.util.LinkedList;
 

@@ -1,17 +1,20 @@
-package info.orestes.rest;
+package info.orestes.rest.service;
+
+import info.orestes.rest.RestServlet;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.eclipse.jetty.util.UrlEncoded;
 
 public class ServiceDocumentParser {
 	
@@ -307,7 +310,7 @@ public class ServiceDocumentParser {
 			if (value.isEmpty()) {
 				value = null;
 			} else {
-				value = URLDecoder.decode(value, "UTF-8");
+				value = UrlEncoded.decodeString(value, 0, value.length(), "UTF-8");
 			}
 			
 			name = name.substring(0, assign);

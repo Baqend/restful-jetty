@@ -1,4 +1,4 @@
-package info.orestes.rest;
+package info.orestes.rest.service;
 
 public interface ServiceDocumentTypes {
 	

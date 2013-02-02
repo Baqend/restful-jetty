@@ -1,10 +1,14 @@
-package info.orestes.rest;
+package info.orestes.rest.service;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
-import info.orestes.rest.PathElement.Type;
+import info.orestes.rest.RestServlet;
+import info.orestes.rest.Testing1;
+import info.orestes.rest.Testing2;
+import info.orestes.rest.Testing3;
+import info.orestes.rest.service.PathElement.Type;
 
 import java.util.HashMap;
 import java.util.List;
@@ -393,7 +397,7 @@ public class ServiceDocumentParserTest {
 	
 	@Test
 	public void routeE2() {
-		assertDescritpion("A realy complex method.", "Which hopefully nobody understand and therefore never been used");
+		assertDescritpion("A really complex method.", "Which hopefully nobody understand and therefore never been used");
 		assertArgumentSize(12);
 		
 		assertResultSize(0);

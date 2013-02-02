@@ -1,7 +1,7 @@
 package info.orestes.rest.conversion;
 
-import info.orestes.rest.ServiceDocumentTypes;
-import info.orestes.rest.conversion.formats.StringFormat;
+import info.orestes.rest.conversion.format.StringFormat;
+import info.orestes.rest.service.ServiceDocumentTypes;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,11 +46,20 @@ import java.util.Set;
  */
 public class ConverterService {
 	
+	public static final String FORMAT_PACKAGE_NAME = "info.orestes.rest.conversion.format";
+	public static final Class<?>[] EMPTY_GENERIC_ARRAY = new Class[0];
+	
 	private final Map<Class<?>, Map<MediaType, Converter<?, ?>>> converters = new HashMap<>();
 	private final Map<Class<?>, ConverterFormat<?>> formats = new HashMap<>();
 	
-	public ConverterService() {
-		addFormat(new StringFormat());
+	public void init() {
+		for (Class<?> cls : getPackageClasses(FORMAT_PACKAGE_NAME)) {
+			try {
+				addFormat(cls.asSubclass(ConverterFormat.class).newInstance());
+			} catch (Exception e) {
+				throw new RuntimeException("The format handler " + cls.getName() + " can not be loaded.", e);
+			}
+		}
 	}
 	
 	public void addFormat(ConverterFormat<?> format) {
@@ -64,7 +73,7 @@ public class ConverterService {
 	
 	public void add(Converter<?, ?> converter) {
 		if (!formats.containsKey(converter.getFormatType())) {
-			throw new RuntimeException("Ther is no format converter available for the converter "
+			throw new IllegalArgumentException("Ther is no format converter available for the converter "
 					+ converter.getClass().getName());
 		}
 		
@@ -78,10 +87,15 @@ public class ConverterService {
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public <T> Map<MediaType, Converter<T, ?>> get(Class<T> type) {
+	private <T> Map<MediaType, Converter<T, ?>> get(Class<T> type) {
 		Map<MediaType, Converter<T, ?>> map = (Map) converters.get(type);
 		
 		return map == null ? Collections.<MediaType, Converter<T, ?>> emptyMap() : map;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public <T, F> Converter<T, F> get(Class<T> type, MediaType target) {
+		return (Converter<T, F>) get(type).get(target);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -99,10 +113,13 @@ public class ConverterService {
 		}
 	}
 	
-	public <T, F> T toObject(ReadableContext context, MediaType source, Class<T> target, Class<?>... genericParams)
+	public <T, F> T toObject(ReadableContext context, MediaType source, Class<T> target) throws IOException {
+		return toObject(context, source, target, EMPTY_GENERIC_ARRAY);
+	}
+	
+	private <T, F> T toObject(ReadableContext context, MediaType source, Class<T> target, Class<?>[] genericParams)
 			throws IOException {
-		@SuppressWarnings("unchecked")
-		Converter<T, F> converter = (Converter<T, F>) get(target).get(source);
+		Converter<T, F> converter = get(target, source);
 		
 		if (converter == null) {
 			throw new UnsupportedOperationException("The media type " + source + " is not supported");
@@ -113,10 +130,14 @@ public class ConverterService {
 		return converter.toObject(context, format.read(context), genericParams);
 	}
 	
-	public <T, F> void toRepresentation(WriteableContext context, T source, MediaType target, Class<?>... genericParams)
+	public <T, F> void toRepresentation(WriteableContext context, Class<T> source, MediaType target, T entity)
 			throws IOException {
-		@SuppressWarnings("unchecked")
-		Converter<T, F> converter = (Converter<T, F>) get(source.getClass()).get(target);
+		toRepresentation(context, source, target, EMPTY_GENERIC_ARRAY, entity);
+	}
+	
+	private <T, F> void toRepresentation(WriteableContext context, Class<T> source, MediaType target,
+			Class<?>[] genericParams, T entity) throws IOException {
+		Converter<T, F> converter = get(source, target);
 		
 		if (converter == null) {
 			throw new UnsupportedOperationException("The media type " + target + " is not supported");
@@ -124,12 +145,11 @@ public class ConverterService {
 		
 		ConverterFormat<F> format = getFormat(converter);
 		
-		format.write(context, converter.toFormat(context, source, genericParams));
+		format.write(context, converter.toFormat(context, entity, genericParams));
 	}
 	
-	public <T> T toObject(Context context, String source, Class<T> target) {
-		@SuppressWarnings("unchecked")
-		Converter<T, String> converter = (Converter<T, String>) get(target).get(StringFormat.TEXT_PLAIN);
+	public <T> T toObject(Context context, Class<T> type, String source) {
+		Converter<T, String> converter = get(type, StringFormat.TEXT_PLAIN);
 		
 		if (converter == null) {
 			throw new UnsupportedOperationException();
@@ -138,7 +158,17 @@ public class ConverterService {
 		return converter.toObject(context, source);
 	}
 	
-	protected void loadConverterPackage(String pkgName) {
+	public <T> String toString(Context context, Class<T> type, T source) {
+		Converter<T, String> converter = get(type, StringFormat.TEXT_PLAIN);
+		
+		if (converter == null) {
+			throw new UnsupportedOperationException();
+		}
+		
+		return converter.toFormat(context, source);
+	}
+	
+	private void loadConverterPackage(String pkgName) {
 		List<Class<?>> classes = getPackageClasses(pkgName);
 		
 		for (Class<?> cls : classes) {
@@ -150,7 +180,7 @@ public class ConverterService {
 		}
 	}
 	
-	protected List<Class<?>> getPackageClasses(String pkgName) {
+	private List<Class<?>> getPackageClasses(String pkgName) {
 		try {
 			ClassLoader classLoader = ConverterService.class.getClassLoader();
 			String path = pkgName.replace('.', '/');

@@ -1,6 +1,8 @@
-package info.orestes.rest;
+package info.orestes.rest.service;
 
-class ServiceDocumentTestTypes implements ServiceDocumentTypes {
+import info.orestes.rest.service.ServiceDocumentTypes;
+
+public class ServiceDocumentTestTypes implements ServiceDocumentTypes {
 	@Override
 	public Class<?> getClassForName(String name) {
 		switch (name) {

@@ -1,6 +1,5 @@
 package info.orestes.rest.conversion;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
@@ -30,7 +29,6 @@ import java.lang.reflect.Type;
 public abstract class Converter<T, F> {
 	
 	private final Class<T> targetClass;
-	private Constructor<? extends T> constructor;
 	private final Class<F> formatType;
 	private final MediaType mediaType;
 	
@@ -57,61 +55,6 @@ public abstract class Converter<T, F> {
 	
 	public Class<F> getFormatType() {
 		return formatType;
-	}
-	
-	/**
-	 * Diese Methode dient für die {@link Constructor} initiierung in den
-	 * Unterklassen. Diese Methode wird wärend der initialisierungsfase
-	 * aufgerufen und soll den {@link Constructor} zurück geben, den die
-	 * {@link #newInstance(Object...)}-Methoden verwenden soll, um instanzen der
-	 * {@link #getTargetClass()} zu erzeugen
-	 * 
-	 * @return Der zu verendene {@link Constructor} für die instanziierung der
-	 *         Klasse, oder <code>null</code>, wenn der {@link Constructor} ohne
-	 *         Argumente verwendet werden soll
-	 * 
-	 * @throws Exception
-	 *             Wenn der {@link Constructor} nicht gefunden wurde, oder
-	 *             dieser nicht verwendet werden kann
-	 */
-	protected Constructor<? extends T> initConstructor() throws Exception {
-		return null;
-	}
-	
-	/**
-	 * Erzeugt eine neue Instanz der {@link #getTargetClass()}, indem es den
-	 * {@link Constructor}, der mit {@link #initConstructor()} gesetzt wurde
-	 * verwendet und ihm die <code>constructorArgs</code> Argumente übergibt.
-	 * Wurde kein {@link Constructor} mit {@link #initConstructor()} gesetztt,
-	 * so wird der {@link Class#newInstance()} Konstruktor verwendet
-	 * 
-	 * @param constructorArgs
-	 *            Die Argumente, die dem {@link Constructor} übergeben werden
-	 *            sollen
-	 * @return Ein neue Instanz der {@link #getTargetClass()}-Klasse
-	 */
-	protected T newInstance(Object... constructorArgs) {
-		try {
-			if (getConstructor() == null) {
-				return getTargetClass().newInstance();
-			} else {
-				return getConstructor().newInstance(constructorArgs);
-			}
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-	
-	/**
-	 * Gibt den zu verwendenen Konstruktor für die
-	 * {@link #newInstance(Object...)} Methode zurück.
-	 * 
-	 * @return Der Konstruktor für die {@link #newInstance(Object...)}, oder
-	 *         <code>null</code>, wenn der Standardkonstruktor verwendet werden
-	 *         soll
-	 */
-	public Constructor<? extends T> getConstructor() {
-		return constructor;
 	}
 	
 	/**

@@ -1,0 +1,33 @@
+#Group A
+
+##Method A.1
+
+A really complex method.
+Which hopefully nobody understand and therefore never been used
+
+@a : Float The a arg
+@b : Boolean The b arg
+@c : Byte The c arg
+@d : Long The d arg
+@e : Date The e arg
+@f : Character The f arg
+@g : String The g arg
+@h : Long The h arg
+@i : Integer The i arg
+@j : String The j arg
+@k : Double The k arg
+@l : Short The l arg
+
+GET  /db/:a/t/:b/:c;d=12;e=;f;g=Test+String?h&i=1&j=At_Home&k&l= info.orestes.rest.Testing3(Long):Boolean
+
+##Method A.2
+
+GET  / info.orestes.rest.Testing3():Integer
+
+##Method A.3
+
+GET  / info.orestes.rest.Testing3(Long)
+
+##Method A.4
+
+GET  / info.orestes.rest.Testing3()
