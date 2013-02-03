@@ -6,6 +6,8 @@ import info.orestes.rest.service.PathElement.Type;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.jetty.util.UrlEncoded;
+
 public class Method {
 	
 	private final String name;
@@ -67,7 +69,7 @@ public class Method {
 					}
 					
 					builder.append('/');
-					builder.append(value);
+					builder.append(UrlEncoded.encodeString(value));
 					break;
 				case MATRIX:
 				case QUERY:
@@ -92,11 +94,10 @@ public class Method {
 					
 					builder.append(element.getName());
 					builder.append('=');
-					builder.append(value);
+					builder.append(UrlEncoded.encodeString(value));
 					
+					prevType = element.getType();
 			}
-			
-			prevType = element.getType();
 		}
 		
 		return builder.toString();

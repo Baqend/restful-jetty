@@ -107,7 +107,7 @@ GET /;id   info.orestes.rest.Testing1(String):Object
 
 @test:String The test arg
 
-GET /test/;test= info.orestes.rest.Testing2():Object
+GET /testing/;test= info.orestes.rest.Testing2():Object
 
 ##Method D.3
 

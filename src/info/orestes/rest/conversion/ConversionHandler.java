@@ -37,7 +37,9 @@ public class ConversionHandler extends RestHandler implements AsyncListener {
 		for (Entry<String, Object> entry : request.getArguments().entrySet()) {
 			Class<?> argType = method.getArguments().get(entry.getKey()).getValueType();
 			try {
-				entry.setValue(getConverterService().toObject(request, argType, (String) entry.getValue()));
+				if (entry.getValue() != null) {
+					entry.setValue(getConverterService().toObject(request, argType, (String) entry.getValue()));
+				}
 			} catch (Exception e) {
 				response.sendError(Response.SC_BAD_REQUEST, "The argument " + entry.getKey() + " can not be parsed. "
 						+ e.getMessage());
@@ -65,6 +67,9 @@ public class ConversionHandler extends RestHandler implements AsyncListener {
 			MediaType mediaType = getPreferedMediaType(responseType, mediaTypes);
 			if (mediaType != null) {
 				response.setContentType(mediaType.toString());
+			} else {
+				response.sendError(Response.SC_NOT_ACCEPTABLE);
+				handle = false;
 			}
 		}
 		
@@ -87,8 +92,7 @@ public class ConversionHandler extends RestHandler implements AsyncListener {
 				String contentType = response.getContentType();
 				
 				MediaType mediaType = contentType == null ? null : new MediaType(contentType);
-				getConverterService().toRepresentation(response, responseType, mediaType,
-						responseType.cast(response.getEntity()));
+				getConverterService().toRepresentation(response, responseType, mediaType, response.getEntity());
 			} catch (UnsupportedOperationException e) {
 				response.sendError(Response.SC_NOT_ACCEPTABLE);
 			}

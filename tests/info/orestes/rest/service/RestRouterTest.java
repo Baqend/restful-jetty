@@ -64,6 +64,42 @@ public class RestRouterTest {
 	}
 	
 	@Test
+	public void testAllMethodsWithoutOptionalParams() {
+		for (Method method : router.getMethods()) {
+			Map<String, String> args = new HashMap<>();
+			
+			int value = 1;
+			for (PathElement el : method.getSignature()) {
+				if (el.getType() != Type.PATH && !el.isOptional()) {
+					args.put(el.getName(), "value" + value++);
+				}
+			}
+			
+			assertMethod(method, method.getAction(), method.createURI(args), args);
+		}
+	}
+	
+	@Test
+	public void testURIEncoding() {
+		Method method = groups.get(4).get(0);
+		
+		Map<String, String> args = new HashMap<>();
+		args.put("ns", "käse+=&br%20ot /;g=");
+		args.put("name", "käse+=&br%20ot /;g=");
+		
+		String uri = method.createURI(args);
+		String ns = uri.substring(4, uri.indexOf("/db_all"));
+		String name = uri.substring(uri.indexOf("?name=") + 6);
+		
+		for (String seq : new String[] { "ä", "=", "&", " ", "/", ";", "e+", "r%20" }) {
+			assertEquals(-1, ns.indexOf(seq));
+			assertEquals(-1, name.indexOf(seq));
+		}
+		System.out.println(uri);
+		assertMethod(method, method.getAction(), uri, args);
+	}
+	
+	@Test
 	public void testGetMethods() {
 		int i = 0;
 		for (List<Method> group : groups) {
@@ -136,13 +172,14 @@ public class RestRouterTest {
 		
 		try {
 			router.start();
-			router.handle(uri.getDecodedPath(), req, req, res);
+			router.handle(uri.getPath(), req, req, res);
 			router.stop();
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 		
 		if (expected != null) {
+			System.out.println(path);
 			verify(res).setStatus(RestResponse.SC_OK);
 		} else {
 			verify(res, never()).setStatus(RestResponse.SC_OK);

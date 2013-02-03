@@ -127,16 +127,20 @@ public class ConverterService {
 		
 		ConverterFormat<F> format = getFormat(converter);
 		
-		return converter.toObject(context, format.read(context), genericParams);
+		try {
+			return converter.toObject(context, format.read(context), genericParams);
+		} catch (Exception e) {
+			throw new IOException("The request body can't be processed", e);
+		}
 	}
 	
-	public <T, F> void toRepresentation(WriteableContext context, Class<T> source, MediaType target, T entity)
+	public <T, F> void toRepresentation(WriteableContext context, Class<T> source, MediaType target, Object entity)
 			throws IOException {
 		toRepresentation(context, source, target, EMPTY_GENERIC_ARRAY, entity);
 	}
 	
 	private <T, F> void toRepresentation(WriteableContext context, Class<T> source, MediaType target,
-			Class<?>[] genericParams, T entity) throws IOException {
+			Class<?>[] genericParams, Object entity) throws IOException {
 		Converter<T, F> converter = get(source, target);
 		
 		if (converter == null) {
@@ -145,7 +149,11 @@ public class ConverterService {
 		
 		ConverterFormat<F> format = getFormat(converter);
 		
-		format.write(context, converter.toFormat(context, entity, genericParams));
+		try {
+			format.write(context, converter.toFormat(context, source.cast(entity), genericParams));
+		} catch (Exception e) {
+			throw new IOException("The response body can't be processed", e);
+		}
 	}
 	
 	public <T> T toObject(Context context, Class<T> type, String source) {
@@ -155,7 +163,11 @@ public class ConverterService {
 			throw new UnsupportedOperationException();
 		}
 		
-		return converter.toObject(context, source);
+		try {
+			return converter.toObject(context, source);
+		} catch (Exception e) {
+			throw new UnsupportedOperationException(e);
+		}
 	}
 	
 	public <T> String toString(Context context, Class<T> type, T source) {
@@ -165,7 +177,11 @@ public class ConverterService {
 			throw new UnsupportedOperationException();
 		}
 		
-		return converter.toFormat(context, source);
+		try {
+			return converter.toFormat(context, source);
+		} catch (Exception e) {
+			throw new UnsupportedOperationException(e);
+		}
 	}
 	
 	private void loadConverterPackage(String pkgName) {

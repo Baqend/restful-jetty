@@ -323,7 +323,7 @@ public class ServiceDocumentParserTest {
 		
 		assertAction("GET");
 		
-		assertPath(0, "test");
+		assertPath(0, "testing");
 		assertPath(1, "");
 		assertMatrix(2, "test", true, String.class, null);
 		
