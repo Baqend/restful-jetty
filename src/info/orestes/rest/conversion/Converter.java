@@ -32,6 +32,8 @@ public abstract class Converter<T, F> {
 	private final Class<F> formatType;
 	private final MediaType mediaType;
 	
+	private ConverterService converterService;
+	
 	/**
 	 * creates a new Converter instance which can convert between java types and
 	 * a formated representation of the supplied media type
@@ -49,6 +51,10 @@ public abstract class Converter<T, F> {
 		formatType = (Class<F>) genericArgs[1];
 	}
 	
+	void init(ConverterService converterService) {
+		this.converterService = converterService;
+	}
+	
 	public MediaType getMediaType() {
 		return mediaType;
 	}
@@ -64,6 +70,32 @@ public abstract class Converter<T, F> {
 	 */
 	public Class<T> getTargetClass() {
 		return targetClass;
+	}
+	
+	private <E> Converter<E, F> conv(Class<E> type) {
+		Converter<E, F> conv = converterService.<E, F> get(type, getMediaType());
+		
+		if (conv == null) {
+			throw new UnsupportedOperationException("There is no converter available for " + type);
+		}
+		
+		return conv;
+	}
+	
+	protected <E> F toFormat(Context context, Class<E> type, E source) {
+		return conv(type).toFormat(context, source);
+	}
+	
+	protected <E> F toFormat(Context context, GenericClass<E> type, E source) {
+		return conv(type.getRawType()).toFormat(context, source, type.getActualTypeArguments());
+	}
+	
+	protected <E> E toObject(Context context, Class<E> type, F source) {
+		return conv(type).toObject(context, source);
+	}
+	
+	protected <E> E toObject(Context context, GenericClass<E> type, F source) {
+		return conv(type.getRawType()).toObject(context, source, type.getActualTypeArguments());
 	}
 	
 	// /**

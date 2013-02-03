@@ -84,6 +84,7 @@ public class ConverterService {
 		}
 		
 		map.put(converter.getMediaType(), converter);
+		converter.init(this);
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -117,6 +118,10 @@ public class ConverterService {
 		return toObject(context, source, target, EMPTY_GENERIC_ARRAY);
 	}
 	
+	public <T, F> T toObject(ReadableContext context, MediaType source, GenericClass<T> target) throws IOException {
+		return toObject(context, source, target.getRawType(), target.getActualTypeArguments());
+	}
+	
 	private <T, F> T toObject(ReadableContext context, MediaType source, Class<T> target, Class<?>[] genericParams)
 			throws IOException {
 		Converter<T, F> converter = get(target, source);
@@ -136,11 +141,16 @@ public class ConverterService {
 	
 	public <T, F> void toRepresentation(WriteableContext context, Class<T> source, MediaType target, Object entity)
 			throws IOException {
-		toRepresentation(context, source, target, EMPTY_GENERIC_ARRAY, entity);
+		toRepresentation(context, entity, source, EMPTY_GENERIC_ARRAY, target);
 	}
 	
-	private <T, F> void toRepresentation(WriteableContext context, Class<T> source, MediaType target,
-			Class<?>[] genericParams, Object entity) throws IOException {
+	public <T, F> void toRepresentation(WriteableContext context, GenericClass<T> source, MediaType target,
+			Object entity) throws IOException {
+		toRepresentation(context, entity, source.getRawType(), source.getActualTypeArguments(), target);
+	}
+	
+	private <T, F> void toRepresentation(WriteableContext context, Object entity, Class<T> source,
+			Class<?>[] genericParams, MediaType target) throws IOException {
 		Converter<T, F> converter = get(source, target);
 		
 		if (converter == null) {
