@@ -4,7 +4,7 @@
 
 Calls Method A.1
 
-GET / info.orestes.rest.Testing1(String):Object
+GET / info.orestes.rest.Testing1  (String  ) :  Object
 
 ##Method A.2
 
@@ -17,18 +17,18 @@ multi line comment.
 >200 ok
 
 >404 not found
-GET /test info.orestes.rest.Testing2():Object
+GET /test info.orestes.rest.Testing2() : Object
 ##Method A.3
 
 POST /test/33 info.orestes.rest.Testing3
 
 ##Method A.4
 
-PUT   /a/b/c      info.orestes.rest.Testing3(Object)
+PUT   /a/b/c      info.orestes.rest.Testing3(  Object  )
 
 ##Method A.5
 
-DELETE /a/b/c info.orestes.rest.Testing1:Integer
+DELETE /a/b/c info.orestes.rest.Testing1    : Integer
 
 #Group B
 
@@ -36,18 +36,18 @@ DELETE /a/b/c info.orestes.rest.Testing1:Integer
 
 @id:Integer The id arg
 
-GET /:id   info.orestes.rest.Testing1(String):Object
+GET /:id   info.orestes.rest.Testing1 ( String ) : Object
 
 ##Method B.2
 
 @test:String The test arg
 
-GET /test/:test info.orestes.rest.Testing2():Object
+GET /test/:test info.orestes.rest.Testing2(  ) : Object
 
 ##Method B.3
 
 @id:String The id arg
-@test:Object The test arg
+@test:Boolean The test arg
 
 POST /:test/33/:id info.orestes.rest.Testing3
 
@@ -57,13 +57,13 @@ Test Method B.4
 
 @a :String The a arg
 @c: Integer The c arg
-@b : Object The b arg
+@b : Boolean The b arg
 @d  :   String The d arg
 
 >200 ok
 > 404 not found
 
-PUT   /:a/:b/:c/:d      info.orestes.rest.Testing3(Object)
+PUT   /:a/:b/:c/:d      info.orestes.rest.Testing3   ( Object )
 
 #Group C
 
@@ -71,13 +71,13 @@ PUT   /:a/:b/:c/:d      info.orestes.rest.Testing3(Object)
 
 @id:Integer The id arg
 
-GET /?id   info.orestes.rest.Testing1(String):Object
+GET /?id   info.orestes.rest.Testing1   (   String   )   :   Object
 
 ##Method C.2
 
 @test:String The test arg
 
-GET /test/?test= info.orestes.rest.Testing2():Object
+GET /test/?test= info.orestes.rest.Testing2(    )   :  Object
 
 ##Method C.3
 
@@ -162,3 +162,13 @@ Which hopefully nobody understand and therefore never been used
 @l : String The l arg
 
 GET  /db/:a/t/:b/:c;d=12;e=;f;g=Test+String?h&i=1&j=At_Home&k&l= info.orestes.rest.Testing3(Object):Object
+
+##Method F.1
+
+GET /generics   info.orestes.rest.Testing1(Map[String, Integer]): List[Integer]
+
+##Method F.2
+
+@id:Integer The id arg
+
+GET /generics/;id   info.orestes.rest.Testing2(  Map [  String   , Object   ] )

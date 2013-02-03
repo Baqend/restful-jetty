@@ -1,15 +1,12 @@
 package info.orestes.rest.conversion.format;
 
 import info.orestes.rest.conversion.ConverterFormat;
-import info.orestes.rest.conversion.MediaType;
 import info.orestes.rest.conversion.ReadableContext;
 import info.orestes.rest.conversion.WriteableContext;
 
 import java.io.IOException;
 
 public class StringFormat extends ConverterFormat<String> {
-	
-	public static final MediaType TEXT_PLAIN = new MediaType("text/plain");
 	
 	public StringFormat() {
 		super("info.orestes.rest.conversion.string");

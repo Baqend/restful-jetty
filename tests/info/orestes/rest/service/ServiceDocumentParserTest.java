@@ -2,6 +2,7 @@ package info.orestes.rest.service;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import info.orestes.rest.RestServlet;
@@ -194,7 +195,7 @@ public class ServiceDocumentParserTest {
 		
 		assertAction("POST");
 		
-		assertVariable(0, "test", Object.class);
+		assertVariable(0, "test", Boolean.class);
 		assertPath(1, "33");
 		assertVariable(2, "id", String.class);
 		
@@ -215,7 +216,7 @@ public class ServiceDocumentParserTest {
 		assertAction("PUT");
 		
 		assertVariable(0, "a", String.class);
-		assertVariable(1, "b", Object.class);
+		assertVariable(1, "b", Boolean.class);
 		assertVariable(2, "c", Integer.class);
 		assertVariable(3, "d", String.class);
 		
@@ -424,6 +425,34 @@ public class ServiceDocumentParserTest {
 		asserResponseType(Object.class);
 	}
 	
+	@Test
+	public void routeF1() {
+		assertArgumentSize(0);
+		assertResultSize(0);
+		
+		assertAction("GET");
+		
+		assertPath(0, "generics");
+		asserTarget(Testing1.class);
+		asserRequestType(Map.class, String.class, Integer.class);
+		asserResponseType(List.class, Integer.class);
+	}
+	
+	@Test
+	public void routeF2() {
+		assertArgumentSize(1);
+		assertResultSize(0);
+		
+		assertAction("GET");
+		
+		assertPath(0, "generics");
+		assertPath(1, "");
+		assertMatrix(2, "id", false, Integer.class, null);
+		asserTarget(Testing2.class);
+		asserRequestType(Map.class, String.class, Object.class);
+		asserResponseType(null);
+	}
+	
 	private void assertPath(int index, String name) {
 		assertPathElement(index, Type.PATH, name, null, false, null, null);
 	}
@@ -479,12 +508,22 @@ public class ServiceDocumentParserTest {
 		assertSame(servlet, method.getTarget());
 	}
 	
-	private void asserRequestType(Class<?> requestType) {
-		assertSame(requestType, method.getRequestType());
+	private void asserRequestType(Class<?> requestType, Class<?>... genericParams) {
+		if (requestType == null) {
+			assertNull(method.getRequestType());
+		} else {
+			assertSame(requestType, method.getRequestType().getRawType());
+			assertArrayEquals(genericParams, method.getRequestType().getActualTypeArguments());
+		}
 	}
 	
-	private void asserResponseType(Class<?> responseType) {
-		assertSame(responseType, method.getResponseType());
+	private void asserResponseType(Class<?> responseType, Class<?>... genericParams) {
+		if (responseType == null) {
+			assertNull(method.getResponseType());
+		} else {
+			assertSame(responseType, method.getResponseType().getRawType());
+			assertArrayEquals(genericParams, method.getResponseType().getActualTypeArguments());
+		}
 	}
 	
 	private void assertAction(String expected) {

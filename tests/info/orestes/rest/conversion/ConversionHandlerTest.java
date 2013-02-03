@@ -7,7 +7,6 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.doReturn;
 import info.orestes.rest.Request;
 import info.orestes.rest.Response;
-import info.orestes.rest.conversion.format.StringFormat;
 import info.orestes.rest.service.Method;
 import info.orestes.rest.service.MethodGroup;
 import info.orestes.rest.service.RestHandler;
@@ -277,7 +276,7 @@ public class ConversionHandlerTest {
 	
 	@Test(expected = IOException.class)
 	public final void testRequestContentExpected() throws Exception {
-		Method method = group.get(2);
+		Method method = group.get(4);
 		HashMap<String, Object> args = new HashMap<>();
 		
 		handle(method, args, null, new RestHandler() {
@@ -336,7 +335,7 @@ public class ConversionHandlerTest {
 			throws Exception {
 		if (requestEntity != null) {
 			Class<I> cls = (Class<I>) requestEntity.getClass();
-			converterService.toRepresentation(request, cls, StringFormat.TEXT_PLAIN, requestEntity);
+			converterService.toRepresentation(request, cls, ConverterService.TEXT_PLAIN, requestEntity);
 		}
 		
 		Request req = new RestRequest(request, method, arguments, null);
@@ -348,9 +347,10 @@ public class ConversionHandlerTest {
 		handler.handle(method.getName(), null, req, res);
 		
 		if (response.getContentLength() != -1) {
-			assertEquals(StringFormat.TEXT_PLAIN.toString(), response.getContentType());
-			Class<O> cls = (Class<O>) method.getResponseType();
-			return (O) converterService.toObject(response, StringFormat.TEXT_PLAIN, cls != null ? cls : String.class);
+			assertEquals(ConverterService.TEXT_PLAIN.toString(), response.getContentType());
+			Class<O> cls = (Class<O>) method.getResponseType().getRawType();
+			return (O) converterService.toObject(response, ConverterService.TEXT_PLAIN, cls != null ? cls
+					: String.class);
 		} else {
 			assertNull(response.getContentType());
 			return null;
@@ -402,7 +402,7 @@ public class ConversionHandlerTest {
 		private void init() {
 			if (out == null) {
 				try {
-					contentType = StringFormat.TEXT_PLAIN.toString();
+					contentType = ConverterService.TEXT_PLAIN.toString();
 					length = -1;
 					out = new PipedReader();
 					in = new PipedWriter(out);

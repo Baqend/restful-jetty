@@ -21,12 +21,12 @@ public class Method {
 	private int requiredArguments;
 	private final Map<Integer, String> expectedResults;
 	
-	private final Class<?> requestType;
-	private final Class<?> responseType;
+	private final EntityType<?> requestType;
+	private final EntityType<?> responseType;
 	
 	public Method(String name, String[] description, String action, PathElement[] signature,
-			Class<? extends RestServlet> target, Map<Integer, String> expectedResults, Class<?> requestType,
-			Class<?> responseType) {
+			Class<? extends RestServlet> target, Map<Integer, String> expectedResults, EntityType<?> requestType,
+			EntityType<?> responseType) {
 		this.name = name;
 		this.action = action;
 		this.description = description;
@@ -131,11 +131,11 @@ public class Method {
 		return expectedResults;
 	}
 	
-	public Class<?> getRequestType() {
+	public EntityType<?> getRequestType() {
 		return requestType;
 	}
 	
-	public Class<?> getResponseType() {
+	public EntityType<?> getResponseType() {
 		return responseType;
 	}
 	

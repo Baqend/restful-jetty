@@ -14,11 +14,15 @@ public class TestFormat extends ConverterFormat<Object> {
 	
 	@Override
 	public void write(WriteableContext context, Object formatedContent) throws IOException {
-		
+		String str = formatedContent.toString();
+		context.getWriter().write(str);
+		context.setContentLength(str.length());
 	}
 	
 	@Override
 	public Object read(ReadableContext context) throws IOException {
-		return new Object();
+		char[] str = new char[context.getContentLength()];
+		context.getReader().read(str);
+		return new String(str);
 	}
 }

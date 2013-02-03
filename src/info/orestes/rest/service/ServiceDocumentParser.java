@@ -25,7 +25,9 @@ public class ServiceDocumentParser {
 	private static final Pattern PARAM_PATTERN = Pattern.compile("@(\\w+)\\s*:\\s*(\\w+)\\s+(.*)");
 	private static final Pattern RESULT_PATTERN = Pattern.compile(">\\s*(\\d{3})\\s+(.*)");
 	private static final Pattern SIGNATURE_PATTERN = Pattern
-			.compile("([A-Z]+)\\s+(/\\S*)\\s+(\\w[\\w\\.]*)(\\((\\w+)?\\))?(\\s*:\\s*(\\w+))?");
+			.compile("([A-Z]+)\\s+(/\\S*)\\s+(\\w[\\w\\.]*)(\\s*\\(([^\\)]*)\\))?(\\s*:(.*))?");
+	private static final Pattern ENTITY_TYPE_PATTERN = Pattern
+			.compile("\\s*(\\w+)\\s*(\\[\\s*(\\w+\\s*(,\\s*\\w+\\s*)*)\\])?");
 	
 	private final ServiceDocumentTypes types;
 	private final ClassLoader classLoader;
@@ -70,8 +72,18 @@ public class ServiceDocumentParser {
 		}
 	}
 	
-	protected Class<?> getClassForType(String type) throws IOException {
-		Class<?> cls = getTypes().getClassForName(type);
+	protected Class<?> getClassForEntity(String type) throws IOException {
+		Class<?> cls = getTypes().getEntityClassForName(type);
+		
+		if (cls == null) {
+			throw new IOException("There is no class for the type " + type + " available");
+		}
+		
+		return cls;
+	}
+	
+	protected Class<?> getClassForArgument(String type) throws IOException {
+		Class<?> cls = getTypes().getArgumentClassForName(type);
 		
 		if (cls == null) {
 			throw new IOException("There is no class for the type " + type + " available");
@@ -188,7 +200,7 @@ public class ServiceDocumentParser {
 		if (line.charAt(0) == PARAM_PATTERN.pattern().charAt(0)) {
 			Matcher matcher = PARAM_PATTERN.matcher(line);
 			if (matcher.matches()) {
-				Class<?> type = getClassForType(matcher.group(2));
+				Class<?> type = getClassForArgument(matcher.group(2));
 				ArgumentDefinition arg = new ArgumentDefinition(matcher.group(1), type, matcher.group(3));
 				
 				if (currentArguments.containsKey(arg.name)) {
@@ -226,13 +238,12 @@ public class ServiceDocumentParser {
 		if (matcher.matches()) {
 			PathElement[] pathElements = parsePath(matcher.group(2));
 			
-			String requestType = matcher.group(5);
-			String responseType = matcher.group(7);
+			EntityType<?> requestType = matcher.group(5) == null ? null : parseEntityType(matcher.group(5));
+			EntityType<?> responseType = matcher.group(7) == null ? null : parseEntityType(matcher.group(7));
 			
 			Method method = new Method(currentName, currentDescription.toArray(new String[currentDescription.size()]),
-					matcher.group(1), pathElements, getClassForTarget(matcher.group(3)), currentResults,
-					requestType == null ? null : getClassForType(requestType), responseType == null ? null
-							: getClassForType(responseType));
+					matcher.group(1), pathElements, getClassForTarget(matcher.group(3)), currentResults, requestType,
+					responseType);
 			
 			currentGroup.add(method);
 			
@@ -337,6 +348,31 @@ public class ServiceDocumentParser {
 		
 		currentArguments.put(name, null);
 		return arg;
+	}
+	
+	private EntityType<?> parseEntityType(String entityType) throws IOException {
+		entityType = entityType.trim();
+		
+		if (entityType.isEmpty()) {
+			return null;
+		} else {
+			Matcher matcher = ENTITY_TYPE_PATTERN.matcher(entityType);
+			if (matcher.matches()) {
+				Class<?> type = getClassForEntity(matcher.group(1));
+				if (matcher.group(3) == null) {
+					return new EntityType<>(type);
+				} else {
+					String[] genericTypes = matcher.group(3).split(",");
+					Class<?>[] genericParams = new Class<?>[genericTypes.length];
+					for (int i = 0; i < genericTypes.length; ++i) {
+						genericParams[i] = getClassForEntity(genericTypes[i].trim());
+					}
+					return new EntityType<>(type, genericParams);
+				}
+			} else {
+				throw new IOException("An invalid entity type definition is used " + entityType);
+			}
+		}
 	}
 	
 	private static class ArgumentDefinition {

@@ -6,10 +6,13 @@ import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.stub;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import info.orestes.rest.GenericEntity;
 import info.orestes.rest.conversion.ConverterService.Types;
-import info.orestes.rest.conversion.format.StringFormat;
 import info.orestes.rest.conversion.string.StringLongConverter;
+import info.orestes.rest.conversion.testing.GenericEntityConverter;
 import info.orestes.rest.conversion.testing.LongConverter;
+import info.orestes.rest.conversion.testing.ObjectConverter;
+import info.orestes.rest.service.EntityType;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -66,21 +69,19 @@ public class ConverterServiceTest {
 		
 		cs.add(converter);
 		
-		assertNull(cs.get(Long.class, StringFormat.TEXT_PLAIN));
+		assertNull(cs.get(Long.class, ConverterService.TEXT_PLAIN));
 		
 		assertSame(converter, cs.get(Long.class, TEST_TYPE));
 	}
 	
 	@Test
 	public void testGetAvailableMediaTypes() {
-		assertEquals(0, cs.createServiceDocumentTypes().getTypes().size());
+		assertEquals(0, cs.createServiceDocumentTypes().getEntityTypes().size());
 		assertEquals(Collections.emptySet(), cs.getAvailableMediaTypes(Long.class));
 		
 		cs.init();
 		
-		assertEquals(0, cs.createServiceDocumentTypes().getTypes().size(), 10);
-		
-		Set<MediaType> mediaTypes = new HashSet<>(Arrays.<MediaType> asList(TEST_TYPE, StringFormat.TEXT_PLAIN));
+		Set<MediaType> mediaTypes = new HashSet<>(Arrays.<MediaType> asList(TEST_TYPE, ConverterService.TEXT_PLAIN));
 		assertEquals(mediaTypes, cs.getAvailableMediaTypes(Long.class));
 	}
 	
@@ -106,12 +107,46 @@ public class ConverterServiceTest {
 	}
 	
 	@Test
+	public void testToGenericObjectFromContext() throws IOException {
+		cs.addFormat(format);
+		cs.add(new ObjectConverter());
+		cs.add(new LongConverter());
+		cs.add(new GenericEntityConverter());
+		
+		stub(format.read(null)).toReturn("[34, 16, ljkshdf]");
+		
+		EntityType<GenericEntity<Long, Long, Object>> type = new EntityType<>(GenericEntity.class, Long.class,
+				Long.class, Object.class);
+		
+		GenericEntity<Long, Long, Object> entity = cs.toObject(null, TEST_TYPE, type);
+		assertEquals(34l, (long) entity.getA());
+		assertEquals(16l, (long) entity.getB());
+		assertEquals("ljkshdf", entity.getC());
+	}
+	
+	@Test
 	public void testToRepresentation() throws IOException {
 		cs.addFormat(format);
 		cs.add(new LongConverter());
 		
 		cs.toRepresentation(null, Long.class, TEST_TYPE, 123l);
 		verify(format).write(null, 123l);
+	}
+	
+	@Test
+	public void testGenericObjectToRepresentation() throws IOException {
+		cs.addFormat(format);
+		cs.add(new ObjectConverter());
+		cs.add(new LongConverter());
+		cs.add(new GenericEntityConverter());
+		
+		EntityType<GenericEntity<Long, Object, Long>> type = new EntityType<>(GenericEntity.class, Long.class,
+				Object.class, Long.class);
+		
+		GenericEntity<Long, Object, Long> entity = new GenericEntity<Long, Object, Long>(17l, "jhsdfjk", 42l);
+		
+		cs.toRepresentation(null, type, TEST_TYPE, entity);
+		verify(format).write(null, "[17, jhsdfjk, 42]");
 	}
 	
 	@Test(expected = UnsupportedOperationException.class)
@@ -174,16 +209,36 @@ public class ConverterServiceTest {
 		
 		Types types = cs.createServiceDocumentTypes();
 		
-		assertEquals(Boolean.class, types.getClassForName("Boolean"));
-		assertEquals(Byte.class, types.getClassForName("Byte"));
-		assertEquals(Character.class, types.getClassForName("Character"));
-		assertEquals(Date.class, types.getClassForName("Date"));
-		assertEquals(Double.class, types.getClassForName("Double"));
-		assertEquals(Float.class, types.getClassForName("Float"));
-		assertEquals(Integer.class, types.getClassForName("Integer"));
-		assertEquals(Long.class, types.getClassForName("Long"));
-		assertEquals(Short.class, types.getClassForName("Short"));
-		assertEquals(String.class, types.getClassForName("String"));
+		assertEquals(10, types.getArgumentTypes().size());
+		assertEquals(12, types.getEntityTypes().size());
+		
+		assertEquals(Boolean.class, types.getArgumentClassForName("Boolean"));
+		assertEquals(Byte.class, types.getArgumentClassForName("Byte"));
+		assertEquals(Character.class, types.getArgumentClassForName("Character"));
+		assertEquals(Date.class, types.getArgumentClassForName("Date"));
+		assertEquals(Double.class, types.getArgumentClassForName("Double"));
+		assertEquals(Float.class, types.getArgumentClassForName("Float"));
+		assertEquals(Integer.class, types.getArgumentClassForName("Integer"));
+		assertEquals(Long.class, types.getArgumentClassForName("Long"));
+		assertEquals(Short.class, types.getArgumentClassForName("Short"));
+		assertEquals(String.class, types.getArgumentClassForName("String"));
+		
+		assertNull(types.getArgumentClassForName("Object"));
+		assertNull(types.getArgumentClassForName("GenericEntity"));
+		
+		assertEquals(Boolean.class, types.getEntityClassForName("Boolean"));
+		assertEquals(Byte.class, types.getEntityClassForName("Byte"));
+		assertEquals(Character.class, types.getEntityClassForName("Character"));
+		assertEquals(Date.class, types.getEntityClassForName("Date"));
+		assertEquals(Double.class, types.getEntityClassForName("Double"));
+		assertEquals(Float.class, types.getEntityClassForName("Float"));
+		assertEquals(Integer.class, types.getEntityClassForName("Integer"));
+		assertEquals(Long.class, types.getEntityClassForName("Long"));
+		assertEquals(Short.class, types.getEntityClassForName("Short"));
+		assertEquals(String.class, types.getEntityClassForName("String"));
+		
+		assertEquals(Object.class, types.getEntityClassForName("Object"));
+		assertEquals(GenericEntity.class, types.getEntityClassForName("GenericEntity"));
 	}
 	
 }

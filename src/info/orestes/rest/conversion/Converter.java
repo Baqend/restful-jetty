@@ -1,7 +1,8 @@
 package info.orestes.rest.conversion;
 
+import info.orestes.rest.service.EntityType;
+
 import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 
 /**
  * Ein {@link Converter} konvertiert ein {@link Object} vom Typ <code>T</code>
@@ -46,8 +47,15 @@ public abstract class Converter<T, F> {
 		this.mediaType = mediaType;
 		
 		ParameterizedType type = (ParameterizedType) getClass().getGenericSuperclass();
-		Type[] genericArgs = type.getActualTypeArguments();
-		targetClass = (Class<T>) genericArgs[0];
+		java.lang.reflect.Type[] genericArgs = type.getActualTypeArguments();
+		
+		if (genericArgs[0] instanceof ParameterizedType) {
+			// the converter handles a generic type
+			targetClass = (Class<T>) ((ParameterizedType) genericArgs[0]).getRawType();
+		} else {
+			targetClass = (Class<T>) genericArgs[0];
+		}
+		
 		formatType = (Class<F>) genericArgs[1];
 	}
 	
@@ -72,30 +80,26 @@ public abstract class Converter<T, F> {
 		return targetClass;
 	}
 	
-	private <E> Converter<E, F> conv(Class<E> type) {
-		Converter<E, F> conv = converterService.<E, F> get(type, getMediaType());
-		
-		if (conv == null) {
-			throw new UnsupportedOperationException("There is no converter available for " + type);
-		}
-		
-		return conv;
+	protected <E> F toFormat(Context context, Class<E> type, Object source) {
+		Converter<E, F> converter = converterService.conv(getMediaType(), type, EntityType.EMPTY_GENERIC_ARRAY);
+		return converter.toFormat(context, type.cast(source), EntityType.EMPTY_GENERIC_ARRAY);
 	}
 	
-	protected <E> F toFormat(Context context, Class<E> type, E source) {
-		return conv(type).toFormat(context, source);
-	}
-	
-	protected <E> F toFormat(Context context, GenericClass<E> type, E source) {
-		return conv(type.getRawType()).toFormat(context, source, type.getActualTypeArguments());
+	protected <E> F toFormat(Context context, EntityType<E> generictype, Object source) {
+		Class<E> type = generictype.getRawType();
+		Converter<E, F> converter = converterService.conv(getMediaType(), type, generictype.getActualTypeArguments());
+		return converter.toFormat(context, type.cast(source), generictype.getActualTypeArguments());
 	}
 	
 	protected <E> E toObject(Context context, Class<E> type, F source) {
-		return conv(type).toObject(context, source);
+		Converter<E, F> converter = converterService.conv(getMediaType(), type, EntityType.EMPTY_GENERIC_ARRAY);
+		return converter.toObject(context, source, EntityType.EMPTY_GENERIC_ARRAY);
 	}
 	
-	protected <E> E toObject(Context context, GenericClass<E> type, F source) {
-		return conv(type.getRawType()).toObject(context, source, type.getActualTypeArguments());
+	protected <E> E toObject(Context context, EntityType<E> generictype, F source) {
+		Class<E> type = generictype.getRawType();
+		Converter<E, F> converter = converterService.conv(getMediaType(), type, generictype.getActualTypeArguments());
+		return converter.toObject(context, source, generictype.getActualTypeArguments());
 	}
 	
 	// /**
@@ -199,7 +203,7 @@ public abstract class Converter<T, F> {
 	 * @return Das Representationsformat, dass das konvertierte Objekt
 	 *         repräsentiert
 	 */
-	public abstract F toFormat(Context context, T source, Class<?>... genericParams);
+	public abstract F toFormat(Context context, T source, Class<?>[] genericParams);
 	
 	/**
 	 * Konvertiert ein Objekt aus dem Representationsformat <code>F</code>
@@ -218,6 +222,6 @@ public abstract class Converter<T, F> {
 	 * @return Das Objekt, dass durch das Representationsformat repräsentiert
 	 *         wird
 	 */
-	public abstract T toObject(Context context, F source, Class<?>... genericParams);
+	public abstract T toObject(Context context, F source, Class<?>[] genericParams);
 	
 }

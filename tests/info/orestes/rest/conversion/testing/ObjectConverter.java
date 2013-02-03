@@ -11,12 +11,12 @@ public class ObjectConverter extends Converter<Object, Object> {
 	}
 	
 	@Override
-	public Object toFormat(Context context, Object source, Class<?>... genericParams) {
+	public Object toFormat(Context context, Object source, Class<?>[] genericParams) {
 		return source;
 	}
 	
 	@Override
-	public Object toObject(Context context, Object source, Class<?>... genericParams) {
+	public Object toObject(Context context, Object source, Class<?>[] genericParams) {
 		return source;
 	}
 	

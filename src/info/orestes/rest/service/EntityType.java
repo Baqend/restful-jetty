@@ -1,15 +1,22 @@
-package info.orestes.rest.conversion;
+package info.orestes.rest.service;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
-public class GenericClass<T> implements ParameterizedType {
+public class EntityType<T> implements ParameterizedType {
+	public static final Class<?>[] EMPTY_GENERIC_ARRAY = new Class[0];
 	
 	private final Class<T> rawType;
 	private final Class<?>[] actualTypeArguments;
 	
-	public GenericClass(Class<T> rawType, Class<?>... actualTypeArguments) {
-		this.rawType = rawType;
+	public EntityType(Class<T> type) {
+		this.rawType = type;
+		this.actualTypeArguments = EMPTY_GENERIC_ARRAY;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public EntityType(Class<?> rawType, Class<?>... actualTypeArguments) {
+		this.rawType = (Class<T>) rawType;
 		this.actualTypeArguments = actualTypeArguments;
 	}
 	
@@ -27,5 +34,4 @@ public class GenericClass<T> implements ParameterizedType {
 	public Type getOwnerType() {
 		return null;
 	}
-	
 }

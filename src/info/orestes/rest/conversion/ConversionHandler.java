@@ -2,6 +2,7 @@ package info.orestes.rest.conversion;
 
 import info.orestes.rest.Request;
 import info.orestes.rest.Response;
+import info.orestes.rest.service.EntityType;
 import info.orestes.rest.service.Method;
 import info.orestes.rest.service.RestHandler;
 
@@ -47,7 +48,7 @@ public class ConversionHandler extends RestHandler implements AsyncListener {
 			}
 		}
 		
-		Class<?> requestType = method.getRequestType();
+		EntityType<?> requestType = method.getRequestType();
 		if (requestType != null) {
 			MediaType mediaType = new MediaType(request.getContentType());
 			
@@ -60,11 +61,11 @@ public class ConversionHandler extends RestHandler implements AsyncListener {
 			}
 		}
 		
-		Class<?> responseType = method.getResponseType();
+		EntityType<?> responseType = method.getResponseType();
 		if (responseType != null) {
 			List<MediaType> mediaTypes = parseMediaTypes(request.getHeader("Accept"));
 			
-			MediaType mediaType = getPreferedMediaType(responseType, mediaTypes);
+			MediaType mediaType = getPreferedMediaType(responseType.getRawType(), mediaTypes);
 			if (mediaType != null) {
 				response.setContentType(mediaType.toString());
 			} else {
@@ -85,7 +86,7 @@ public class ConversionHandler extends RestHandler implements AsyncListener {
 	
 	@SuppressWarnings("unchecked")
 	protected <T> void postHandle(Request request, Response response) throws IOException {
-		Class<T> responseType = (Class<T>) request.getRestMethod().getResponseType();
+		EntityType<T> responseType = (EntityType<T>) request.getRestMethod().getResponseType();
 		
 		if (responseType != null) {
 			try {

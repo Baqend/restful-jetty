@@ -11,13 +11,13 @@ public class LongConverter extends Converter<Long, Object> {
 	}
 	
 	@Override
-	public Object toFormat(Context context, Long source, Class<?>... genericParams) {
+	public Object toFormat(Context context, Long source, Class<?>[] genericParams) {
 		return source;
 	}
 	
 	@Override
-	public Long toObject(Context context, Object source, Class<?>... genericParams) {
-		return (Long) source;
+	public Long toObject(Context context, Object source, Class<?>[] genericParams) {
+		return Long.valueOf(source.toString());
 	}
 	
 }

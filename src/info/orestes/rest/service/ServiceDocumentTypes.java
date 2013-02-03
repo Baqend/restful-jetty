@@ -2,6 +2,8 @@ package info.orestes.rest.service;
 
 public interface ServiceDocumentTypes {
 	
-	public Class<?> getClassForName(String name);
+	public Class<?> getEntityClassForName(String name);
+	
+	public Class<?> getArgumentClassForName(String name);
 	
 }
