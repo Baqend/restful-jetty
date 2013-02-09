@@ -20,6 +20,7 @@ public class SimpleServer {
 	 */
 	public static void main(String[] args) throws Exception {
 		ConverterService converterService = new ConverterService();
+		converterService.init();
 		
 		ServiceDocumentParser parser = new ServiceDocumentParser(converterService.createServiceDocumentTypes());
 		

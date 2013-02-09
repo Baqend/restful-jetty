@@ -1,10 +1,11 @@
 package info.orestes.rest.conversion;
 
-import info.orestes.rest.service.ServiceDocumentTypes;
 import info.orestes.rest.service.EntityType;
+import info.orestes.rest.service.ServiceDocumentTypes;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -202,7 +203,9 @@ public class ConverterService {
 		
 		for (Class<?> cls : classes) {
 			try {
-				add(cls.asSubclass(Converter.class).newInstance());
+				if (!Modifier.isAbstract(cls.getModifiers())) {
+					add(cls.asSubclass(Converter.class).newInstance());
+				}
 			} catch (Exception e) {
 				throw new RuntimeException("The converter " + cls.getName() + " can't be initialized.", e);
 			}

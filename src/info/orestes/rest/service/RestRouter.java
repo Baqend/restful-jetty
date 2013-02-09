@@ -55,7 +55,7 @@ public class RestRouter extends HandlerWrapper {
 			Map<String, Object> matches = route.match(method, pathParts, matrix, query);
 			if (matches != null) {
 				super.handle(path, request, new RestRequest(req, route.getMethod(), matches, route.getServlet()),
-						new RestResponse(res));
+						new RestResponse(res, matches));
 				request.setHandled(true);
 				break;
 			}

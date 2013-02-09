@@ -276,7 +276,7 @@ public class ConversionHandlerTest {
 	
 	@Test(expected = IOException.class)
 	public final void testRequestContentExpected() throws Exception {
-		Method method = group.get(4);
+		Method method = group.get(2);
 		HashMap<String, Object> args = new HashMap<>();
 		
 		handle(method, args, null, new RestHandler() {
@@ -338,15 +338,19 @@ public class ConversionHandlerTest {
 			converterService.toRepresentation(request, cls, ConverterService.TEXT_PLAIN, requestEntity);
 		}
 		
+		request.getWriter().close();
+		
 		Request req = new RestRequest(request, method, arguments, null);
-		Response res = new RestResponse(response);
+		Response res = new RestResponse(response, arguments);
 		
 		handler.setHandler(callback);
 		
 		handler.start();
 		handler.handle(method.getName(), null, req, res);
 		
-		if (response.getContentLength() != -1) {
+		response.getWriter().close();
+		
+		if (response.getReader().ready()) {
 			assertEquals(ConverterService.TEXT_PLAIN.toString(), response.getContentType());
 			Class<O> cls = (Class<O>) method.getResponseType().getRawType();
 			return (O) converterService.toObject(response, ConverterService.TEXT_PLAIN, cls != null ? cls
@@ -361,20 +365,7 @@ public class ConversionHandlerTest {
 		// do not init here will never called
 		private PipedReader out;
 		private PipedWriter in;
-		private int length = -1;
 		private String contentType;
-		
-		@Override
-		public int getContentLength() {
-			init();
-			return length;
-		}
-		
-		@Override
-		public void setContentLength(int length) {
-			init();
-			this.length = length;
-		}
 		
 		@Override
 		public String getContentType() {
@@ -403,7 +394,6 @@ public class ConversionHandlerTest {
 			if (out == null) {
 				try {
 					contentType = ConverterService.TEXT_PLAIN.toString();
-					length = -1;
 					out = new PipedReader();
 					in = new PipedWriter(out);
 				} catch (IOException e) {
@@ -417,20 +407,7 @@ public class ConversionHandlerTest {
 		// do not init here will never called
 		private PipedReader out;
 		private PipedWriter in;
-		private int length;
 		private String contentType;
-		
-		@Override
-		public int getContentLength() {
-			init();
-			return length;
-		}
-		
-		@Override
-		public void setContentLength(int length) {
-			init();
-			this.length = length;
-		}
 		
 		@Override
 		public String getContentType() {
@@ -467,7 +444,6 @@ public class ConversionHandlerTest {
 		private void init() {
 			if (out == null) {
 				try {
-					length = -1;
 					out = new PipedReader();
 					in = new PipedWriter(out);
 				} catch (IOException e) {

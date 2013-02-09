@@ -14,18 +14,19 @@ public class StringFormat extends ConverterFormat<String> {
 	
 	@Override
 	public void write(WriteableContext context, String formatedContent) throws IOException {
-		context.setContentLength(formatedContent.length());
-		
 		context.getWriter().append(formatedContent);
 	}
 	
 	@Override
 	public String read(ReadableContext context) throws IOException {
-		char[] buffer = new char[context.getContentLength()];
+		StringBuilder builder = new StringBuilder();
 		
-		context.getReader().read(buffer);
+		int read;
+		char[] buff = new char[128];
+		while ((read = context.getReader().read(buff)) != -1) {
+			builder.append(buff, 0, read);
+		}
 		
-		return new String(buffer);
+		return builder.toString();
 	}
-	
 }

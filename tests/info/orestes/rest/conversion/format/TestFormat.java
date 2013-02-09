@@ -16,13 +16,18 @@ public class TestFormat extends ConverterFormat<Object> {
 	public void write(WriteableContext context, Object formatedContent) throws IOException {
 		String str = formatedContent.toString();
 		context.getWriter().write(str);
-		context.setContentLength(str.length());
 	}
 	
 	@Override
 	public Object read(ReadableContext context) throws IOException {
-		char[] str = new char[context.getContentLength()];
-		context.getReader().read(str);
-		return new String(str);
+		StringBuilder builder = new StringBuilder();
+		
+		int read;
+		char[] buff = new char[128];
+		while ((read = context.getReader().read(buff)) != -1) {
+			builder.append(buff, 0, read);
+		}
+		
+		return builder.toString();
 	}
 }
