@@ -6,6 +6,7 @@ import info.orestes.rest.util.ClassUtil;
 
 import java.io.IOException;
 import java.lang.reflect.Modifier;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -195,6 +196,8 @@ public class ConverterService {
 	}
 	
 	public MediaType getPreferedMediaType(List<MediaType> acceptedMediaTypes, Class<?> type) {
+		Collections.sort(acceptedMediaTypes);
+		
 		for (MediaType mediaType : acceptedMediaTypes) {
 			for (Entry<MediaType, ConverterFormat<?>> entry : mediaTypes.entrySet()) {
 				if (entry.getValue().contains(type) && entry.getKey().isCompatible(mediaType)) {
