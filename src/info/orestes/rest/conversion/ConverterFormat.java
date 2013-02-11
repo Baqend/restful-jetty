@@ -1,7 +1,10 @@
 package info.orestes.rest.conversion;
 
+import info.orestes.rest.util.ClassUtil;
+
 import java.io.IOException;
-import java.lang.reflect.ParameterizedType;
+import java.util.HashMap;
+import java.util.Set;
 
 public abstract class ConverterFormat<F> {
 	
@@ -9,13 +12,14 @@ public abstract class ConverterFormat<F> {
 	
 	private final Class<F> formatType;
 	private final String converterPackageName;
+	private final HashMap<Class<?>, Converter<?, F>> converters = new HashMap<>();
 	
 	@SuppressWarnings("unchecked")
 	public ConverterFormat(String converterPackageName) {
 		this.converterPackageName = converterPackageName;
 		
-		ParameterizedType type = (ParameterizedType) getClass().getGenericSuperclass();
-		formatType = (Class<F>) type.getActualTypeArguments()[0];
+		Class<?>[] generics = ClassUtil.getGenericArguments(ConverterFormat.class, getClass());
+		formatType = (Class<F>) generics[0];
 	}
 	
 	public Class<F> getFormatType() {
@@ -24,6 +28,35 @@ public abstract class ConverterFormat<F> {
 	
 	public String getConverterPackageName() {
 		return converterPackageName;
+	}
+	
+	public boolean contains(Class<?> type) {
+		return converters.containsKey(type);
+	}
+	
+	public void add(Converter<?, F> converter) {
+		converters.put(converter.getTargetClass(), converter);
+		converter.init(this);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public <T> Converter<T, F> get(Class<T> type, Class<?>[] genericParams) {
+		Converter<T, F> converter = (Converter<T, F>) converters.get(type);
+		
+		if (converter == null) {
+			throw new UnsupportedOperationException("The media type is not supported for the type " + type);
+		}
+		
+		if (type.getTypeParameters().length != genericParams.length) {
+			throw new IllegalArgumentException("The type " + type + " declares " + type.getTypeParameters().length
+					+ " generic arguments but " + genericParams.length + " was given");
+		}
+		
+		return converter;
+	}
+	
+	public Set<Class<?>> getSupportedTypes() {
+		return converters.keySet();
 	}
 	
 	/**

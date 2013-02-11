@@ -2,87 +2,102 @@ package info.orestes.rest.conversion;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.mockito.Mockito.stub;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.assertTrue;
 import info.orestes.rest.GenericEntity;
 import info.orestes.rest.conversion.ConverterService.Types;
-import info.orestes.rest.conversion.string.StringLongConverter;
+import info.orestes.rest.conversion.format.GenericTestFormat;
+import info.orestes.rest.conversion.format.TestFormat;
 import info.orestes.rest.conversion.testing.GenericEntityConverter;
+import info.orestes.rest.conversion.testing.GenericLongConverter;
 import info.orestes.rest.conversion.testing.LongConverter;
 import info.orestes.rest.conversion.testing.ObjectConverter;
 import info.orestes.rest.service.EntityType;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 public class ConverterServiceTest {
 	public static MediaType TEST_TYPE = new MediaType("application/test.java-object");
 	
-	@Mock
-	private ConverterFormat<Object> format;
-	@Mock
-	private Converter<Long, Object> converter;
 	private ConverterService cs;
+	private boolean called;
 	
 	@Before
 	public void setUp() {
 		MockitoAnnotations.initMocks(this);
 		
 		cs = new ConverterService();
-		
-		when(format.getFormatType()).thenReturn(Object.class);
-		when(format.getConverterPackageName()).thenReturn(null);
-		
-		when(converter.getFormatType()).thenReturn(Object.class);
-		when(converter.getTargetClass()).thenReturn(Long.class);
-		when(converter.getMediaType()).thenReturn(TEST_TYPE);
+		called = false;
 	}
 	
 	@Test
-	public void testAddAndGetFormat() {
-		cs.addFormat(format);
-		
-		assertNull(cs.getFormat(new StringLongConverter()));
-		
-		assertSame(format, cs.getFormat(converter));
+	public void testAddFormat() {
+		cs.addFormat(new TestFormat());
+		cs.add(new LongConverter());
+	}
+	
+	@Test
+	public void testAddSubclassFormat() {
+		cs.addFormat(new TestFormat() {});
+		cs.add(new LongConverter());
+	}
+	
+	@Test
+	public void testAddGenericSubclassFormat() {
+		cs.addFormat(new GenericTestFormat<Object>() {});
+		cs.add(new LongConverter());
 	}
 	
 	@Test(expected = IllegalArgumentException.class)
 	public void testAddUnknownFormat() {
-		cs.add(new StringLongConverter());
+		cs.add(new LongConverter());
 	}
 	
 	@Test
-	public void testAddAndGet() {
-		cs.addFormat(format);
-		
-		cs.add(converter);
-		
-		assertNull(cs.get(Long.class, ConverterService.TEXT_PLAIN));
-		
-		assertSame(converter, cs.get(Long.class, TEST_TYPE));
-	}
-	
-	@Test
-	public void testGetAvailableMediaTypes() {
+	public void testAdd() {
 		assertEquals(0, cs.createServiceDocumentTypes().getEntityTypes().size());
-		assertEquals(Collections.emptySet(), cs.getAvailableMediaTypes(Long.class));
+		assertNull(cs.getPreferedMediaType(Arrays.asList(new MediaType("*/*")), Long.class));
+		
+		cs.addFormat(new TestFormat());
+		cs.add(new LongConverter());
+		
+		assertNull(cs.getPreferedMediaType(Arrays.asList(ConverterService.TEXT_PLAIN), Long.class));
+		assertEquals(TEST_TYPE, cs.getPreferedMediaType(Arrays.asList(TEST_TYPE), Long.class));
+	}
+	
+	@Test
+	public void testAddSubClass() {
+		cs.addFormat(new TestFormat());
+		cs.add(new LongConverter() {});
+		
+		assertNull(cs.getPreferedMediaType(Arrays.asList(ConverterService.TEXT_PLAIN), Long.class));
+		assertEquals(TEST_TYPE, cs.getPreferedMediaType(Arrays.asList(TEST_TYPE), Long.class));
+	}
+	
+	@Test
+	public void testAddGenericSubClass() {
+		cs.addFormat(new TestFormat());
+		cs.add(new GenericLongConverter<Long>() {});
+		
+		assertNull(cs.getPreferedMediaType(Arrays.asList(ConverterService.TEXT_PLAIN), Long.class));
+		assertEquals(TEST_TYPE, cs.getPreferedMediaType(Arrays.asList(TEST_TYPE), Long.class));
+	}
+	
+	@Test
+	public void testInit() {
+		assertEquals(0, cs.createServiceDocumentTypes().getEntityTypes().size());
+		assertNull(cs.getPreferedMediaType(Arrays.asList(new MediaType("*/*")), Long.class));
 		
 		cs.init();
 		
-		Set<MediaType> mediaTypes = new HashSet<>(Arrays.<MediaType> asList(TEST_TYPE, ConverterService.TEXT_PLAIN));
-		assertEquals(mediaTypes, cs.getAvailableMediaTypes(Long.class));
+		assertEquals(ConverterService.TEXT_PLAIN,
+				cs.getPreferedMediaType(Arrays.asList(new MediaType("text/*")), Long.class));
+		assertEquals(TEST_TYPE, cs.getPreferedMediaType(Arrays.asList(new MediaType("application/*")), Long.class));
 	}
 	
 	@Test(expected = UnsupportedOperationException.class)
@@ -92,28 +107,42 @@ public class ConverterServiceTest {
 	
 	@Test(expected = UnsupportedOperationException.class)
 	public void testToObjectFromContextUnknownConverter() throws IOException {
-		cs.addFormat(format);
+		cs.addFormat(new TestFormat() {
+			@Override
+			public String getConverterPackageName() {
+				return null;
+			}
+		});
+		
 		cs.toObject(null, TEST_TYPE, Long.class);
 	}
 	
 	@Test
 	public void testToObjectFromContext() throws IOException {
-		cs.addFormat(format);
-		cs.add(new LongConverter());
+		cs.addFormat(new TestFormat() {
+			@Override
+			public Object read(ReadableContext context) throws IOException {
+				return "123";
+			}
+		});
 		
-		stub(format.read(null)).toReturn(Long.valueOf(123l));
+		cs.add(new LongConverter());
 		
 		assertEquals(123l, (long) cs.toObject(null, TEST_TYPE, Long.class));
 	}
 	
 	@Test
 	public void testToGenericObjectFromContext() throws IOException {
-		cs.addFormat(format);
+		cs.addFormat(new TestFormat() {
+			@Override
+			public Object read(ReadableContext context) throws IOException {
+				return "[34, 16, ljkshdf]";
+			}
+		});
+		
 		cs.add(new ObjectConverter());
 		cs.add(new LongConverter());
 		cs.add(new GenericEntityConverter());
-		
-		stub(format.read(null)).toReturn("[34, 16, ljkshdf]");
 		
 		EntityType<GenericEntity<Long, Long, Object>> type = new EntityType<>(GenericEntity.class, Long.class,
 				Long.class, Object.class);
@@ -126,15 +155,30 @@ public class ConverterServiceTest {
 	
 	@Test
 	public void testToRepresentation() throws IOException {
+		TestFormat format = new TestFormat() {
+			@Override
+			public void write(WriteableContext context, Object formatedContent) throws IOException {
+				assertEquals(123l, formatedContent);
+				called = true;
+			}
+		};
+		
 		cs.addFormat(format);
 		cs.add(new LongConverter());
 		
 		cs.toRepresentation(null, Long.class, TEST_TYPE, 123l);
-		verify(format).write(null, 123l);
+		assertTrue(called);
 	}
 	
 	@Test
 	public void testGenericObjectToRepresentation() throws IOException {
+		TestFormat format = new TestFormat() {
+			@Override
+			public void write(WriteableContext context, Object formatedContent) throws IOException {
+				assertEquals("[17, jhsdfjk, 42]", formatedContent);
+				called = true;
+			}
+		};
 		cs.addFormat(format);
 		cs.add(new ObjectConverter());
 		cs.add(new LongConverter());
@@ -146,7 +190,7 @@ public class ConverterServiceTest {
 		GenericEntity<Long, Object, Long> entity = new GenericEntity<Long, Object, Long>(17l, "jhsdfjk", 42l);
 		
 		cs.toRepresentation(null, type, TEST_TYPE, entity);
-		verify(format).write(null, "[17, jhsdfjk, 42]");
+		assertTrue(called);
 	}
 	
 	@Test(expected = UnsupportedOperationException.class)

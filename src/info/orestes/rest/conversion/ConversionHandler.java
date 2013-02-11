@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import javax.servlet.AsyncEvent;
 import javax.servlet.AsyncListener;
@@ -65,7 +64,7 @@ public class ConversionHandler extends RestHandler implements AsyncListener {
 		if (responseType != null) {
 			List<MediaType> mediaTypes = parseMediaTypes(request.getHeader("Accept"));
 			
-			MediaType mediaType = getPreferedMediaType(responseType.getRawType(), mediaTypes);
+			MediaType mediaType = converterService.getPreferedMediaType(mediaTypes, responseType.getRawType());
 			if (mediaType != null) {
 				response.setContentType(mediaType.toString());
 			} else {
@@ -112,26 +111,6 @@ public class ConversionHandler extends RestHandler implements AsyncListener {
 		} else {
 			return null;
 		}
-	}
-	
-	protected MediaType getPreferedMediaType(Class<?> type, List<MediaType> mediaTypes) {
-		Set<MediaType> supportedMediaTypes = getConverterService().getAvailableMediaTypes(type);
-		
-		if (!supportedMediaTypes.isEmpty()) {
-			if (mediaTypes.isEmpty()) {
-				return supportedMediaTypes.iterator().next();
-			}
-			
-			for (MediaType mediaType : mediaTypes) {
-				for (MediaType supportedMediaType : supportedMediaTypes) {
-					if (supportedMediaType.isCompatible(mediaType)) {
-						return supportedMediaType;
-					}
-				}
-			}
-		}
-		
-		return null;
 	}
 	
 	@Override

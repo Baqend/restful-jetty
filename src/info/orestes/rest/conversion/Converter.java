@@ -1,8 +1,7 @@
 package info.orestes.rest.conversion;
 
 import info.orestes.rest.service.EntityType;
-
-import java.lang.reflect.ParameterizedType;
+import info.orestes.rest.util.ClassUtil;
 
 /**
  * Ein {@link Converter} konvertiert ein {@link Object} vom Typ <code>T</code>
@@ -33,7 +32,16 @@ public abstract class Converter<T, F> {
 	private final Class<F> formatType;
 	private final MediaType mediaType;
 	
-	private ConverterService converterService;
+	private ConverterFormat<F> format;
+	
+	/**
+	 * creates a new Converter instance which can convert between java types and
+	 * a formated representation. This converter can not be used to convert and
+	 * representation directly
+	 */
+	public Converter() {
+		this(null);
+	}
 	
 	/**
 	 * creates a new Converter instance which can convert between java types and
@@ -46,21 +54,14 @@ public abstract class Converter<T, F> {
 	public Converter(MediaType mediaType) {
 		this.mediaType = mediaType;
 		
-		ParameterizedType type = (ParameterizedType) getClass().getGenericSuperclass();
-		java.lang.reflect.Type[] genericArgs = type.getActualTypeArguments();
+		Class<?>[] generics = ClassUtil.getGenericArguments(Converter.class, getClass());
 		
-		if (genericArgs[0] instanceof ParameterizedType) {
-			// the converter handles a generic type
-			targetClass = (Class<T>) ((ParameterizedType) genericArgs[0]).getRawType();
-		} else {
-			targetClass = (Class<T>) genericArgs[0];
-		}
-		
-		formatType = (Class<F>) genericArgs[1];
+		targetClass = (Class<T>) generics[0];
+		formatType = (Class<F>) generics[1];
 	}
 	
-	void init(ConverterService converterService) {
-		this.converterService = converterService;
+	void init(ConverterFormat<F> format) {
+		this.format = format;
 	}
 	
 	public MediaType getMediaType() {
@@ -80,111 +81,31 @@ public abstract class Converter<T, F> {
 		return targetClass;
 	}
 	
+	public ConverterFormat<F> getFormat() {
+		return format;
+	}
+	
 	protected <E> F toFormat(Context context, Class<E> type, Object source) {
-		Converter<E, F> converter = converterService.conv(getMediaType(), type, EntityType.EMPTY_GENERIC_ARRAY);
+		Converter<E, F> converter = getFormat().get(type, EntityType.EMPTY_GENERIC_ARRAY);
 		return converter.toFormat(context, type.cast(source), EntityType.EMPTY_GENERIC_ARRAY);
 	}
 	
 	protected <E> F toFormat(Context context, EntityType<E> generictype, Object source) {
 		Class<E> type = generictype.getRawType();
-		Converter<E, F> converter = converterService.conv(getMediaType(), type, generictype.getActualTypeArguments());
+		Converter<E, F> converter = getFormat().get(type, generictype.getActualTypeArguments());
 		return converter.toFormat(context, type.cast(source), generictype.getActualTypeArguments());
 	}
 	
 	protected <E> E toObject(Context context, Class<E> type, F source) {
-		Converter<E, F> converter = converterService.conv(getMediaType(), type, EntityType.EMPTY_GENERIC_ARRAY);
+		Converter<E, F> converter = getFormat().get(type, EntityType.EMPTY_GENERIC_ARRAY);
 		return converter.toObject(context, source, EntityType.EMPTY_GENERIC_ARRAY);
 	}
 	
 	protected <E> E toObject(Context context, EntityType<E> generictype, F source) {
 		Class<E> type = generictype.getRawType();
-		Converter<E, F> converter = converterService.conv(getMediaType(), type, generictype.getActualTypeArguments());
+		Converter<E, F> converter = getFormat().get(type, generictype.getActualTypeArguments());
 		return converter.toObject(context, source, generictype.getActualTypeArguments());
 	}
-	
-	// /**
-	// * Setzt das zugehörige {@link OrestesApplication} -Objekt für diesen
-	// Converter, an dem unter anderem der zugehörige {@link ConverterService}
-	// und der {@link TypeService} registriert sind
-	// * @param application Das {@link OrestesApplication} -Objekt
-	//
-	// */
-	// public void setApplication(OrestesApplication application) {
-	// this.application = application;
-	// }
-	//
-	// /**
-	// * Gibt den zugehörigen Formatregistry, an dem dieser Converter
-	// registriert ist, zurück
-	// * @return Der zum diesen Converter zugehörige {@link ConverterService}
-	// */
-	// public ConverterService getConverterService() {
-	// return getApplication().getConverterService();
-	// }
-	//
-	// /**
-	// * Gibt die Basis URI des Servers zurück
-	// * @return Die Basis URI des Servers
-	// */
-	// public Reference getBaseURI() {
-	// return getApplication().getBaseURI();
-	// }
-	//
-	// public String toAbsolute(String relativeURI) {
-	// return new Reference(getBaseURI(),
-	// relativeURI).getTargetRef().toString();
-	// }
-	//
-	// public String toRelative(String absoluteURI) {
-	// return new
-	// Reference(absoluteURI).getRelativeRef(getBaseURI()).toString();
-	// }
-	
-	// /**
-	// * Gibt einen {@link Converter} zurück, der die Instanzen der angegebene
-	// * Klasse in den angegebenen {@link MediaType} konvertieren kann und
-	// zurück.
-	// * Der Konverter der zurück gegeben wird verarbeitet das gleiche
-	// * Representationsformat wie dieser Konverter.
-	// *
-	// * <code>Note:</code> Diese Methode sollte nur verwendet werden, wenn der
-	// * {@link MediaType} sich zwar von dem dieses Konverters unterschieded,
-	// aber
-	// * der zurückzugebene Konverter das gleiche Representationsformat
-	// verwendet,
-	// * wie dieser Konverter
-	// *
-	// * @param <C>
-	// * Den Typen, die der Konverter verarbeiten kann
-	// * @param cls
-	// * Die Klasse, des zu verarbeitenen Typen
-	// * @param mediaType
-	// * Der {@link MediaType} den der Konverter verarbeitet
-	// * @return Der Konverter der den Typen <code>T</code> in das
-	// * Representationsformat <code>F</code> konvertieren kann
-	// */
-	// @SuppressWarnings("unchecked")
-	// public <C> Converter<C, F> getConverter(Class<C> cls, MediaType
-	// mediaType) {
-	// return (Converter<C, F>) getConverterService().get(cls, mediaType);
-	// }
-	//
-	// /**
-	// * Gibt einen {@link Converter} zurück, der die Instanzen der angegebene
-	// * Klasse in das gleiche Representationsformat konvertieren kann wie
-	// dieser
-	// * Konverter.
-	// *
-	// * @param <C>
-	// * Den Typen, die der Konverter verarbeiten kann
-	// * @param cls
-	// * Die Klasse, des zu verarbeitenen Typen
-	// * @return Der Konverter der den Typen <code>T</code> in das
-	// * Representationsformat <code>F</code> konvertieren kann
-	// */
-	// public <C> Converter<C, F> getConverter(Class<C> cls) {
-	// return getConverter(cls, getMediaType());
-	// }
 	
 	/**
 	 * Konvertiert ein Objekt von Typ <code>T</code> in das
