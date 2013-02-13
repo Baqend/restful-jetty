@@ -22,7 +22,8 @@ import org.junit.Test;
 import org.mockito.MockitoAnnotations;
 
 public class ConverterServiceTest {
-	public static MediaType TEST_TYPE = new MediaType("application/test.java-object");
+	public static final String TEST_TYPE = "application/test.java-object";
+	public static final MediaType TEST_MEDIA_TYPE = new MediaType(TEST_TYPE);
 	
 	private ConverterService cs;
 	private boolean called;
@@ -66,8 +67,8 @@ public class ConverterServiceTest {
 		cs.addFormat(new TestFormat());
 		cs.add(new LongConverter());
 		
-		assertNull(cs.getPreferedMediaType(Arrays.asList(ConverterService.TEXT_PLAIN), Long.class));
-		assertEquals(TEST_TYPE, cs.getPreferedMediaType(Arrays.asList(TEST_TYPE), Long.class));
+		assertNull(cs.getPreferedMediaType(Arrays.asList(new MediaType(MediaType.TEXT_PLAIN)), Long.class));
+		assertEquals(TEST_MEDIA_TYPE, cs.getPreferedMediaType(Arrays.asList(TEST_MEDIA_TYPE), Long.class));
 	}
 	
 	@Test
@@ -75,8 +76,8 @@ public class ConverterServiceTest {
 		cs.addFormat(new TestFormat());
 		cs.add(new LongConverter() {});
 		
-		assertNull(cs.getPreferedMediaType(Arrays.asList(ConverterService.TEXT_PLAIN), Long.class));
-		assertEquals(TEST_TYPE, cs.getPreferedMediaType(Arrays.asList(TEST_TYPE), Long.class));
+		assertNull(cs.getPreferedMediaType(Arrays.asList(new MediaType(MediaType.TEXT_PLAIN)), Long.class));
+		assertEquals(TEST_MEDIA_TYPE, cs.getPreferedMediaType(Arrays.asList(TEST_MEDIA_TYPE), Long.class));
 	}
 	
 	@Test
@@ -84,8 +85,8 @@ public class ConverterServiceTest {
 		cs.addFormat(new TestFormat());
 		cs.add(new GenericLongConverter<Long>() {});
 		
-		assertNull(cs.getPreferedMediaType(Arrays.asList(ConverterService.TEXT_PLAIN), Long.class));
-		assertEquals(TEST_TYPE, cs.getPreferedMediaType(Arrays.asList(TEST_TYPE), Long.class));
+		assertNull(cs.getPreferedMediaType(Arrays.asList(new MediaType(MediaType.TEXT_PLAIN)), Long.class));
+		assertEquals(TEST_MEDIA_TYPE, cs.getPreferedMediaType(Arrays.asList(TEST_MEDIA_TYPE), Long.class));
 	}
 	
 	@Test
@@ -95,14 +96,15 @@ public class ConverterServiceTest {
 		
 		cs.init();
 		
-		assertEquals(ConverterService.TEXT_PLAIN,
+		assertEquals(new MediaType(MediaType.TEXT_PLAIN),
 				cs.getPreferedMediaType(Arrays.asList(new MediaType("text/*")), Long.class));
-		assertEquals(TEST_TYPE, cs.getPreferedMediaType(Arrays.asList(new MediaType("application/*")), Long.class));
+		assertEquals(TEST_MEDIA_TYPE,
+				cs.getPreferedMediaType(Arrays.asList(new MediaType("application/*")), Long.class));
 	}
 	
 	@Test(expected = UnsupportedOperationException.class)
 	public void testToObjectFromContextUnknownFormat() throws IOException {
-		cs.toObject(null, TEST_TYPE, Long.class);
+		cs.toObject(null, TEST_MEDIA_TYPE, Long.class);
 	}
 	
 	@Test(expected = UnsupportedOperationException.class)
@@ -114,7 +116,7 @@ public class ConverterServiceTest {
 			}
 		});
 		
-		cs.toObject(null, TEST_TYPE, Long.class);
+		cs.toObject(null, TEST_MEDIA_TYPE, Long.class);
 	}
 	
 	@Test
@@ -128,7 +130,7 @@ public class ConverterServiceTest {
 		
 		cs.add(new LongConverter());
 		
-		assertEquals(123l, (long) cs.toObject(null, TEST_TYPE, Long.class));
+		assertEquals(123l, (long) cs.toObject(null, TEST_MEDIA_TYPE, Long.class));
 	}
 	
 	@Test
@@ -147,7 +149,7 @@ public class ConverterServiceTest {
 		EntityType<GenericEntity<Long, Long, Object>> type = new EntityType<>(GenericEntity.class, Long.class,
 				Long.class, Object.class);
 		
-		GenericEntity<Long, Long, Object> entity = cs.toObject(null, TEST_TYPE, type);
+		GenericEntity<Long, Long, Object> entity = cs.toObject(null, TEST_MEDIA_TYPE, type);
 		assertEquals(34l, (long) entity.getA());
 		assertEquals(16l, (long) entity.getB());
 		assertEquals("ljkshdf", entity.getC());
@@ -166,7 +168,7 @@ public class ConverterServiceTest {
 		cs.addFormat(format);
 		cs.add(new LongConverter());
 		
-		cs.toRepresentation(null, Long.class, TEST_TYPE, 123l);
+		cs.toRepresentation(null, Long.class, TEST_MEDIA_TYPE, 123l);
 		assertTrue(called);
 	}
 	
@@ -189,7 +191,7 @@ public class ConverterServiceTest {
 		
 		GenericEntity<Long, Object, Long> entity = new GenericEntity<Long, Object, Long>(17l, "jhsdfjk", 42l);
 		
-		cs.toRepresentation(null, type, TEST_TYPE, entity);
+		cs.toRepresentation(null, type, TEST_MEDIA_TYPE, entity);
 		assertTrue(called);
 	}
 	

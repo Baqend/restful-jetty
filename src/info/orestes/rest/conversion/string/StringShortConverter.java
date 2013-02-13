@@ -1,14 +1,12 @@
 package info.orestes.rest.conversion.string;
 
+import info.orestes.rest.conversion.Accept;
 import info.orestes.rest.conversion.Context;
 import info.orestes.rest.conversion.Converter;
-import info.orestes.rest.conversion.ConverterService;
+import info.orestes.rest.conversion.MediaType;
 
+@Accept(MediaType.TEXT_PLAIN)
 public class StringShortConverter extends Converter<Short, String> {
-	
-	public StringShortConverter() {
-		super(ConverterService.TEXT_PLAIN);
-	}
 	
 	@Override
 	public String toFormat(Context context, Short source, Class<?>[] genericParams) {

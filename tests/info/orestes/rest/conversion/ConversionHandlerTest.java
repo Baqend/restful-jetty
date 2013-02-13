@@ -335,7 +335,7 @@ public class ConversionHandlerTest {
 			throws Exception {
 		if (requestEntity != null) {
 			Class<I> cls = (Class<I>) requestEntity.getClass();
-			converterService.toRepresentation(request, cls, ConverterService.TEXT_PLAIN, requestEntity);
+			converterService.toRepresentation(request, cls, new MediaType(MediaType.TEXT_PLAIN), requestEntity);
 		}
 		
 		request.getWriter().close();
@@ -351,9 +351,9 @@ public class ConversionHandlerTest {
 		response.getWriter().close();
 		
 		if (response.getReader().ready()) {
-			assertEquals(ConverterService.TEXT_PLAIN.toString(), response.getContentType());
+			assertEquals(MediaType.TEXT_PLAIN, response.getContentType());
 			Class<O> cls = (Class<O>) method.getResponseType().getRawType();
-			return (O) converterService.toObject(response, ConverterService.TEXT_PLAIN, cls != null ? cls
+			return (O) converterService.toObject(response, new MediaType(MediaType.TEXT_PLAIN), cls != null ? cls
 					: String.class);
 		} else {
 			assertNull(response.getContentType());
@@ -393,7 +393,7 @@ public class ConversionHandlerTest {
 		private void init() {
 			if (out == null) {
 				try {
-					contentType = ConverterService.TEXT_PLAIN.toString();
+					contentType = MediaType.TEXT_PLAIN;
 					out = new PipedReader();
 					in = new PipedWriter(out);
 				} catch (IOException e) {

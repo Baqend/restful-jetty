@@ -1,14 +1,12 @@
 package info.orestes.rest.conversion.testing;
 
+import info.orestes.rest.conversion.Accept;
 import info.orestes.rest.conversion.Context;
 import info.orestes.rest.conversion.Converter;
 import info.orestes.rest.conversion.ConverterServiceTest;
 
+@Accept(value = ConverterServiceTest.TEST_TYPE)
 public abstract class GenericLongConverter<T> extends Converter<T, Object> {
-	
-	public GenericLongConverter() {
-		super(ConverterServiceTest.TEST_TYPE);
-	}
 	
 	@Override
 	public Object toFormat(Context context, T source, Class<?>[] genericParams) {

@@ -13,29 +13,23 @@ import org.junit.Test;
 
 public class ContentNegotiationTest {
 	
+	@Accept(value = "text/html")
+	private static class HTMLConverter extends LongConverter {}
+	
+	@Accept(value = "application/json")
+	private static class JSONConverter extends LongConverter {}
+	
+	@Accept(value = "text/xml")
+	private static class XMLConverter extends LongConverter {}
+	
 	ConverterService cs = new ConverterService();
 	
 	@Before
 	public void setUp() throws Exception {
 		cs.addFormat(new TestFormat());
-		cs.add(new LongConverter() {
-			@Override
-			public MediaType getMediaType() {
-				return new MediaType("text/html");
-			}
-		});
-		cs.add(new LongConverter() {
-			@Override
-			public MediaType getMediaType() {
-				return new MediaType("application/json");
-			}
-		});
-		cs.add(new LongConverter() {
-			@Override
-			public MediaType getMediaType() {
-				return new MediaType("text/xml");
-			}
-		});
+		cs.add(new HTMLConverter());
+		cs.add(new JSONConverter());
+		cs.add(new XMLConverter());
 	}
 	
 	@After

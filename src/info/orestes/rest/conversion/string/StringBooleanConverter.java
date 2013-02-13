@@ -1,14 +1,12 @@
 package info.orestes.rest.conversion.string;
 
+import info.orestes.rest.conversion.Accept;
 import info.orestes.rest.conversion.Context;
 import info.orestes.rest.conversion.Converter;
-import info.orestes.rest.conversion.ConverterService;
+import info.orestes.rest.conversion.MediaType;
 
+@Accept(MediaType.TEXT_PLAIN)
 public class StringBooleanConverter extends Converter<Boolean, String> {
-	
-	public StringBooleanConverter() {
-		super(ConverterService.TEXT_PLAIN);
-	}
 	
 	@Override
 	public String toFormat(Context context, Boolean source, Class<?>[] genericParams) {

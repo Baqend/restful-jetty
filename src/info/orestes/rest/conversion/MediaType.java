@@ -2,6 +2,8 @@ package info.orestes.rest.conversion;
 
 public class MediaType implements Comparable<MediaType> {
 	
+	public static final String TEXT_PLAIN = "text/plain";
+	
 	private final String type;
 	private final String subtype;
 	private final float quality;

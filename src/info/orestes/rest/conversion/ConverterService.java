@@ -5,6 +5,7 @@ import info.orestes.rest.service.ServiceDocumentTypes;
 import info.orestes.rest.util.ClassUtil;
 
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.HashMap;
@@ -43,7 +44,8 @@ import java.util.Map.Entry;
 public class ConverterService {
 	
 	public static final String FORMAT_PACKAGE_NAME = "info.orestes.rest.conversion.format";
-	public static final MediaType TEXT_PLAIN = new MediaType("text/plain");
+	
+	private static final MediaType ARGUMENT_MEDIA_TYPE = new MediaType(MediaType.TEXT_PLAIN);
 	
 	private final Map<MediaType, ConverterFormat<?>> mediaTypes = new HashMap<>();
 	private final Map<Class<?>, ConverterFormat<?>> formats = new HashMap<>();
@@ -77,13 +79,20 @@ public class ConverterService {
 					+ converter.getClass().getName());
 		}
 		
-		if (converter.getMediaType() != null) {
-			ConverterFormat<?> mediaTypeFormat = mediaTypes.get(converter.getMediaType());
-			if (mediaTypeFormat == null) {
-				mediaTypes.put(converter.getMediaType(), format);
-			} else if (mediaTypeFormat != format) {
-				throw new IllegalArgumentException(
-						"The converter format type is not compatible with the media type format.");
+		for (Annotation annotation : converter.getClass().getAnnotations()) {
+			if (annotation.annotationType().equals(Accept.class)) {
+				Accept accept = (Accept) annotation;
+				for (String mediaTypeString : accept.value()) {
+					MediaType mediaType = new MediaType(mediaTypeString);
+					
+					ConverterFormat<?> mediaTypeFormat = mediaTypes.get(mediaType);
+					if (mediaTypeFormat == null) {
+						mediaTypes.put(mediaType, format);
+					} else if (mediaTypeFormat != format) {
+						throw new IllegalArgumentException(
+								"The converter format type is not compatible with the media type format.");
+					}
+				}
 			}
 		}
 		
@@ -151,7 +160,7 @@ public class ConverterService {
 	public <T> T toObject(Context context, Class<T> type, String source) {
 		try {
 			@SuppressWarnings("unchecked")
-			ConverterFormat<String> format = (ConverterFormat<String>) mediaTypes.get(ConverterService.TEXT_PLAIN);
+			ConverterFormat<String> format = (ConverterFormat<String>) mediaTypes.get(ARGUMENT_MEDIA_TYPE);
 			
 			return format.get(type, EntityType.EMPTY_GENERIC_ARRAY).toObject(context, source,
 					EntityType.EMPTY_GENERIC_ARRAY);
@@ -165,7 +174,7 @@ public class ConverterService {
 	public <T> String toString(Context context, Class<T> type, T source) {
 		try {
 			@SuppressWarnings("unchecked")
-			ConverterFormat<String> format = (ConverterFormat<String>) mediaTypes.get(ConverterService.TEXT_PLAIN);
+			ConverterFormat<String> format = (ConverterFormat<String>) mediaTypes.get(ARGUMENT_MEDIA_TYPE);
 			
 			return format.get(type, EntityType.EMPTY_GENERIC_ARRAY).toFormat(context, source,
 					EntityType.EMPTY_GENERIC_ARRAY);
@@ -217,7 +226,7 @@ public class ConverterService {
 		private Types() {
 			for (Entry<MediaType, ConverterFormat<?>> entry : mediaTypes.entrySet()) {
 				for (Class<?> type : entry.getValue().getSupportedTypes()) {
-					if (entry.getKey().equals(TEXT_PLAIN)) {
+					if (entry.getKey().equals(ARGUMENT_MEDIA_TYPE)) {
 						argumentTypes.put(type.getSimpleName(), type);
 					}
 					

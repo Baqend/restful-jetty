@@ -1,8 +1,9 @@
 package info.orestes.rest.conversion.string;
 
+import info.orestes.rest.conversion.Accept;
 import info.orestes.rest.conversion.Context;
 import info.orestes.rest.conversion.Converter;
-import info.orestes.rest.conversion.ConverterService;
+import info.orestes.rest.conversion.MediaType;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -10,11 +11,8 @@ import java.util.GregorianCalendar;
 
 import javax.xml.bind.DatatypeConverter;
 
+@Accept(MediaType.TEXT_PLAIN)
 public class StringDateConverter extends Converter<Date, String> {
-	
-	public StringDateConverter() {
-		super(ConverterService.TEXT_PLAIN);
-	}
 	
 	@Override
 	public String toFormat(Context context, Date source, Class<?>[] genericParams) {

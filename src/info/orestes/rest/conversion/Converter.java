@@ -30,30 +30,15 @@ public abstract class Converter<T, F> {
 	
 	private final Class<T> targetClass;
 	private final Class<F> formatType;
-	private final MediaType mediaType;
 	
 	private ConverterFormat<F> format;
 	
 	/**
 	 * creates a new Converter instance which can convert between java types and
-	 * a formated representation. This converter can not be used to convert and
-	 * representation directly
-	 */
-	public Converter() {
-		this(null);
-	}
-	
-	/**
-	 * creates a new Converter instance which can convert between java types and
-	 * a formated representation of the supplied media type
-	 * 
-	 * @param mediaType
-	 *            The media type which can be processed by this converter
+	 * a formated representation.
 	 */
 	@SuppressWarnings("unchecked")
-	public Converter(MediaType mediaType) {
-		this.mediaType = mediaType;
-		
+	public Converter() {
 		Class<?>[] generics = ClassUtil.getGenericArguments(Converter.class, getClass());
 		
 		targetClass = (Class<T>) generics[0];
@@ -62,10 +47,6 @@ public abstract class Converter<T, F> {
 	
 	void init(ConverterFormat<F> format) {
 		this.format = format;
-	}
-	
-	public MediaType getMediaType() {
-		return mediaType;
 	}
 	
 	public Class<F> getFormatType() {
