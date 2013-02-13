@@ -3,6 +3,8 @@ package info.orestes.rest.conversion;
 import info.orestes.rest.service.EntityType;
 import info.orestes.rest.service.ServiceDocumentTypes;
 import info.orestes.rest.util.ClassUtil;
+import info.orestes.rest.util.Inject;
+import info.orestes.rest.util.Module;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -47,10 +49,16 @@ public class ConverterService {
 	
 	private static final MediaType ARGUMENT_MEDIA_TYPE = new MediaType(MediaType.TEXT_PLAIN);
 	
+	private final Module module;
 	private final Map<MediaType, ConverterFormat<?>> mediaTypes = new HashMap<>();
 	private final Map<Class<?>, ConverterFormat<?>> formats = new HashMap<>();
 	
-	public void init() {
+	@Inject
+	public ConverterService(Module module) {
+		this.module = module;
+	}
+	
+	public void loadConverters() {
 		for (Class<?> cls : ClassUtil.getPackageClasses(FORMAT_PACKAGE_NAME)) {
 			try {
 				if (!Modifier.isAbstract(cls.getModifiers())) {
@@ -189,13 +197,20 @@ public class ConverterService {
 		List<Class<?>> classes = ClassUtil.getPackageClasses(pkgName);
 		
 		for (Class<?> cls : classes) {
-			try {
-				if (!Modifier.isAbstract(cls.getModifiers())) {
-					Converter<?, ?> conv = cls.asSubclass(Converter.class).newInstance();
-					add(conv);
+			if (!Modifier.isAbstract(cls.getModifiers())) {
+				Converter<?, ?> conv;
+				
+				try {
+					conv = module.inject(cls.asSubclass(Converter.class));
+				} catch (IllegalArgumentException e) {
+					try {
+						conv = cls.asSubclass(Converter.class).newInstance();
+					} catch (InstantiationException | IllegalAccessException ex) {
+						throw new RuntimeException("The converter " + cls.getName() + " can't be initialized.", ex);
+					}
 				}
-			} catch (Exception e) {
-				throw new RuntimeException("The converter " + cls.getName() + " can't be initialized.", e);
+				
+				add(conv);
 			}
 		}
 	}

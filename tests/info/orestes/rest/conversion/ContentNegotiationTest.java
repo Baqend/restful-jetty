@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import info.orestes.rest.conversion.format.TestFormat;
 import info.orestes.rest.conversion.testing.LongConverter;
+import info.orestes.rest.util.Module;
 
 import java.util.Arrays;
 
@@ -22,7 +23,7 @@ public class ContentNegotiationTest {
 	@Accept(value = "text/xml")
 	private static class XMLConverter extends LongConverter {}
 	
-	ConverterService cs = new ConverterService();
+	ConverterService cs = new ConverterService(new Module());
 	
 	@Before
 	public void setUp() throws Exception {

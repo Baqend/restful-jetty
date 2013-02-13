@@ -13,6 +13,7 @@ import info.orestes.rest.service.RestHandler;
 import info.orestes.rest.service.RestRequest;
 import info.orestes.rest.service.RestResponse;
 import info.orestes.rest.service.ServiceDocumentParser;
+import info.orestes.rest.util.Module;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -37,7 +38,7 @@ import org.mockito.MockitoAnnotations;
 
 public class ConversionHandlerTest {
 	
-	private static final ConverterService converterService = new ConverterService();
+	private static final ConverterService converterService = new ConverterService(new Module());
 	private static final ConversionHandler handler = new ConversionHandler(converterService);
 	private static MethodGroup group;
 	
@@ -48,7 +49,7 @@ public class ConversionHandlerTest {
 	
 	@BeforeClass
 	public static void setUpClass() {
-		converterService.init();
+		converterService.loadConverters();
 		ServiceDocumentParser p = new ServiceDocumentParser(converterService.createServiceDocumentTypes());
 		group = p.parse("/conversion.test").get(0);
 	}

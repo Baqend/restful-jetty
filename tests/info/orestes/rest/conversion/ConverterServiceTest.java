@@ -12,6 +12,7 @@ import info.orestes.rest.conversion.testing.GenericLongConverter;
 import info.orestes.rest.conversion.testing.LongConverter;
 import info.orestes.rest.conversion.testing.ObjectConverter;
 import info.orestes.rest.service.EntityType;
+import info.orestes.rest.util.Module;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -32,7 +33,7 @@ public class ConverterServiceTest {
 	public void setUp() {
 		MockitoAnnotations.initMocks(this);
 		
-		cs = new ConverterService();
+		cs = new ConverterService(new Module());
 		called = false;
 	}
 	
@@ -94,7 +95,7 @@ public class ConverterServiceTest {
 		assertEquals(0, cs.createServiceDocumentTypes().getEntityTypes().size());
 		assertNull(cs.getPreferedMediaType(Arrays.asList(new MediaType("*/*")), Long.class));
 		
-		cs.init();
+		cs.loadConverters();
 		
 		assertEquals(new MediaType(MediaType.TEXT_PLAIN),
 				cs.getPreferedMediaType(Arrays.asList(new MediaType("text/*")), Long.class));
@@ -217,7 +218,7 @@ public class ConverterServiceTest {
 	
 	@Test
 	public void testToObjectFromString() {
-		cs.init();
+		cs.loadConverters();
 		
 		assertEquals(123l, (long) cs.toObject(null, Long.class, "123"));
 	}
@@ -244,14 +245,14 @@ public class ConverterServiceTest {
 	
 	@Test
 	public void testToString() {
-		cs.init();
+		cs.loadConverters();
 		
 		assertEquals("123", cs.toString(null, Long.class, 123l));
 	}
 	
 	@Test
 	public void testCreateServiceDocumentTypes() {
-		cs.init();
+		cs.loadConverters();
 		
 		Types types = cs.createServiceDocumentTypes();
 		

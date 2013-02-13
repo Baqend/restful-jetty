@@ -5,6 +5,7 @@ import info.orestes.rest.service.MethodGroup;
 import info.orestes.rest.service.RestRouter;
 import info.orestes.rest.service.RestServletHandler;
 import info.orestes.rest.service.ServiceDocumentParser;
+import info.orestes.rest.util.Module;
 
 import java.util.List;
 
@@ -19,8 +20,10 @@ public class SimpleServer {
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
-		ConverterService converterService = new ConverterService();
-		converterService.init();
+		Module module = new Module();
+		
+		ConverterService converterService = module.inject(ConverterService.class);
+		converterService.loadConverters();
 		
 		ServiceDocumentParser parser = new ServiceDocumentParser(converterService.createServiceDocumentTypes());
 		
