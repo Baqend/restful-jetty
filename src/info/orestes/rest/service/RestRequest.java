@@ -10,17 +10,24 @@ import javax.servlet.http.HttpServletRequestWrapper;
 
 public class RestRequest extends HttpServletRequestWrapper implements Request {
 	
+	private final org.eclipse.jetty.server.Request baseRequest;
 	private final Map<String, Object> arguments;
 	private final Method restMethod;
 	private final RestServlet target;
 	private Object entity;
 	
-	public RestRequest(HttpServletRequest request, Method restMethod, Map<String, Object> arguments, RestServlet target) {
+	public RestRequest(org.eclipse.jetty.server.Request baseRequest, HttpServletRequest request, Method restMethod,
+			Map<String, Object> arguments, RestServlet target) {
 		super(request);
 		
 		this.arguments = arguments;
 		this.restMethod = restMethod;
 		this.target = target;
+		this.baseRequest = baseRequest;
+	}
+	
+	public org.eclipse.jetty.server.Request getBaseRequest() {
+		return baseRequest;
 	}
 	
 	@Override

@@ -7,7 +7,6 @@ import info.orestes.rest.util.Inject;
 import info.orestes.rest.util.Module;
 
 import java.io.IOException;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.HashMap;
@@ -87,19 +86,17 @@ public class ConverterService {
 					+ converter.getClass().getName());
 		}
 		
-		for (Annotation annotation : converter.getClass().getAnnotations()) {
-			if (annotation.annotationType().equals(Accept.class)) {
-				Accept accept = (Accept) annotation;
-				for (String mediaTypeString : accept.value()) {
-					MediaType mediaType = new MediaType(mediaTypeString);
-					
-					ConverterFormat<?> mediaTypeFormat = mediaTypes.get(mediaType);
-					if (mediaTypeFormat == null) {
-						mediaTypes.put(mediaType, format);
-					} else if (mediaTypeFormat != format) {
-						throw new IllegalArgumentException(
-								"The converter format type is not compatible with the media type format.");
-					}
+		if (converter.getClass().isAnnotationPresent(Accept.class)) {
+			Accept accept = converter.getClass().getAnnotation(Accept.class);
+			for (String mediaTypeString : accept.value()) {
+				MediaType mediaType = new MediaType(mediaTypeString);
+				
+				ConverterFormat<?> mediaTypeFormat = mediaTypes.get(mediaType);
+				if (mediaTypeFormat == null) {
+					mediaTypes.put(mediaType, format);
+				} else if (mediaTypeFormat != format) {
+					throw new IllegalArgumentException(
+							"The converter format type is not compatible with the media type format.");
 				}
 			}
 		}
@@ -131,7 +128,7 @@ public class ConverterService {
 		} catch (UnsupportedOperationException e) {
 			throw e;
 		} catch (Exception e) {
-			throw new IOException("The request body can't be processed", e);
+			throw new IOException("The body can't be processed", e);
 		}
 	}
 	
@@ -161,7 +158,7 @@ public class ConverterService {
 		} catch (UnsupportedOperationException e) {
 			throw e;
 		} catch (Exception e) {
-			throw new IOException("The response body can't be processed", e);
+			throw new IOException("The body can't be processed", e);
 		}
 	}
 	
@@ -198,18 +195,7 @@ public class ConverterService {
 		
 		for (Class<?> cls : classes) {
 			if (!Modifier.isAbstract(cls.getModifiers())) {
-				Converter<?, ?> conv;
-				
-				try {
-					conv = module.inject(cls.asSubclass(Converter.class));
-				} catch (IllegalArgumentException e) {
-					try {
-						conv = cls.asSubclass(Converter.class).newInstance();
-					} catch (InstantiationException | IllegalAccessException ex) {
-						throw new RuntimeException("The converter " + cls.getName() + " can't be initialized.", ex);
-					}
-				}
-				
+				Converter<?, ?> conv = module.inject(cls.asSubclass(Converter.class));
 				add(conv);
 			}
 		}

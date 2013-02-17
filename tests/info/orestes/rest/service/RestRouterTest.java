@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import info.orestes.rest.Request;
 import info.orestes.rest.Response;
 import info.orestes.rest.service.PathElement.Type;
+import info.orestes.rest.util.Module;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -41,7 +42,7 @@ public class RestRouterTest {
 	
 	@Before
 	public void setUp() {
-		router = new RestRouter();
+		router = new RestRouter(new Module());
 		for (List<Method> group : groups) {
 			router.addAll(group);
 		}
@@ -95,7 +96,7 @@ public class RestRouterTest {
 			assertEquals(-1, ns.indexOf(seq));
 			assertEquals(-1, name.indexOf(seq));
 		}
-		System.out.println(uri);
+		
 		assertMethod(method, method.getAction(), uri, args);
 	}
 	
@@ -179,7 +180,6 @@ public class RestRouterTest {
 		}
 		
 		if (expected != null) {
-			System.out.println(path);
 			verify(res).setStatus(RestResponse.SC_OK);
 		} else {
 			verify(res, never()).setStatus(RestResponse.SC_OK);

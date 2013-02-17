@@ -22,7 +22,7 @@ public class Module {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public <T> T getInstance(Class<T> cls) {
+	public <T> T moduleInstance(Class<T> cls) {
 		T instance = (T) instances.get(cls);
 		
 		if (instance == null) {
@@ -38,7 +38,7 @@ public class Module {
 			
 			instances.put(cls, null);
 			
-			instance = inject(cls);
+			instance = inject(constr);
 			
 			instances.put(cls, instance);
 		}
@@ -54,7 +54,7 @@ public class Module {
 		Class<?>[] types = constructor.getParameterTypes();
 		Object[] params = new Object[types.length];
 		for (int i = 0; i < params.length; ++i) {
-			params[i] = getInstance(types[i]);
+			params[i] = moduleInstance(types[i]);
 		}
 		
 		try {
@@ -69,6 +69,7 @@ public class Module {
 		Constructor<T>[] constrs = (Constructor<T>[]) cls.getConstructors();
 		
 		Constructor<T> c = null;
+		Constructor<T> defaultConstr = null;
 		for (Constructor<T> constr : constrs) {
 			if (constr.isAnnotationPresent(Inject.class)) {
 				if (c == null) {
@@ -76,11 +77,17 @@ public class Module {
 				} else {
 					throw new IllegalArgumentException("Only classes with one Inject constructor are acceptable");
 				}
+			} else if (constr.getParameterTypes().length == 0) {
+				defaultConstr = constr;
 			}
 		}
 		
 		if (c == null) {
-			throw new IllegalArgumentException("No Inject constructor is defined");
+			if (defaultConstr != null) {
+				c = defaultConstr;
+			} else {
+				throw new IllegalArgumentException("No injectable constructor is defined");
+			}
 		}
 		
 		return c;

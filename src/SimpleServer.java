@@ -2,6 +2,7 @@ import info.orestes.rest.conversion.ConversionHandler;
 import info.orestes.rest.conversion.ConverterService;
 import info.orestes.rest.service.Method;
 import info.orestes.rest.service.MethodGroup;
+import info.orestes.rest.service.RestErrorHandler;
 import info.orestes.rest.service.RestRouter;
 import info.orestes.rest.service.RestServletHandler;
 import info.orestes.rest.service.ServiceDocumentParser;
@@ -39,7 +40,7 @@ public class SimpleServer {
 		// sslFactory);
 		// server.addConnector(connector);
 		
-		RestRouter router = new RestRouter();
+		RestRouter router = new RestRouter(module);
 		for (List<Method> list : lists) {
 			router.addAll(list);
 		}
@@ -59,6 +60,8 @@ public class SimpleServer {
 		//
 		Server server = new Server(80);
 		server.setHandler(context);
+		server.addBean(new RestErrorHandler(converterService));
+		
 		server.start();
 		server.join();
 	}

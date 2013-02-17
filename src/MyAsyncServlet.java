@@ -1,16 +1,16 @@
 import info.orestes.rest.Request;
 import info.orestes.rest.Response;
 import info.orestes.rest.RestServlet;
+import info.orestes.rest.error.RestException;
 
 import java.io.IOException;
 
 import javax.servlet.AsyncContext;
-import javax.servlet.ServletException;
 
 public class MyAsyncServlet extends RestServlet {
 	
 	@Override
-	public void doGet(Request request, Response response) throws ServletException, IOException {
+	public void doGet(Request request, final Response response) throws RestException, IOException {
 		final AsyncContext context = request.startAsync(request, response);
 		
 		context.start(new Runnable() {
@@ -20,7 +20,7 @@ public class MyAsyncServlet extends RestServlet {
 					Thread.sleep(10000);
 				} catch (InterruptedException e) {}
 				
-				((Response) context.getResponse()).setEntity("Text");
+				response.setEntity("Text");
 				
 				context.complete();
 			}

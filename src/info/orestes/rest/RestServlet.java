@@ -1,24 +1,25 @@
 package info.orestes.rest;
 
+import info.orestes.rest.error.RestException;
+
 import java.io.IOException;
 
 import javax.servlet.GenericServlet;
-import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
 @SuppressWarnings("serial")
 public class RestServlet extends GenericServlet {
 	
-	protected void doDelete(Request request, Response response) throws ServletException, IOException {
+	protected void doDelete(Request request, Response response) throws RestException, IOException {
 		notSupported(request, response);
 	}
 	
-	protected void doGet(Request request, Response response) throws ServletException, IOException {
+	protected void doGet(Request request, Response response) throws RestException, IOException {
 		notSupported(request, response);
 	}
 	
-	protected void doHead(Request request, Response response) throws ServletException, IOException {
+	protected void doHead(Request request, Response response) throws RestException, IOException {
 		doGet(request, response);
 		
 		int length = response.getBufferSize();
@@ -27,19 +28,19 @@ public class RestServlet extends GenericServlet {
 		response.setContentLength(length);
 	}
 	
-	protected void doOptions(Request request, Response response) throws ServletException, IOException {
+	protected void doOptions(Request request, Response response) throws RestException, IOException {
 		notSupported(request, response);
 	}
 	
-	protected void doPost(Request request, Response response) throws ServletException, IOException {
+	protected void doPost(Request request, Response response) throws RestException, IOException {
 		notSupported(request, response);
 	}
 	
-	protected void doPut(Request request, Response response) throws ServletException, IOException {
+	protected void doPut(Request request, Response response) throws RestException, IOException {
 		notSupported(request, response);
 	}
 	
-	public void service(Request request, Response response) throws ServletException, IOException {
+	public void service(Request request, Response response) throws RestException, IOException {
 		switch (request.getMethod()) {
 			case "DELETE":
 				doDelete(request, response);
@@ -65,7 +66,7 @@ public class RestServlet extends GenericServlet {
 	}
 	
 	@Override
-	public final void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
+	public final void service(ServletRequest req, ServletResponse res) throws RestException, IOException {
 		service((Request) req, (Response) res);
 	}
 	

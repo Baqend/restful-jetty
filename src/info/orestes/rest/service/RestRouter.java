@@ -2,6 +2,8 @@ package info.orestes.rest.service;
 
 import info.orestes.rest.RestServlet;
 import info.orestes.rest.service.PathElement.Type;
+import info.orestes.rest.util.Inject;
+import info.orestes.rest.util.Module;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,9 +26,15 @@ import org.eclipse.jetty.util.UrlEncoded;
 
 public class RestRouter extends HandlerWrapper {
 	
+	private final Module module;
 	private final List<Method> methods = new ArrayList<>();
 	@SuppressWarnings("unchecked")
 	private ArrayList<Route>[] routeLists = (ArrayList<Route>[]) new ArrayList<?>[10];
+	
+	@Inject
+	public RestRouter(Module module) {
+		this.module = module;
+	}
 	
 	@Override
 	public void handle(String path, Request request, HttpServletRequest req, HttpServletResponse res)
@@ -54,7 +62,8 @@ public class RestRouter extends HandlerWrapper {
 			
 			Map<String, Object> matches = route.match(method, pathParts, matrix, query);
 			if (matches != null) {
-				super.handle(path, request, new RestRequest(req, route.getMethod(), matches, route.getServlet()),
+				super.handle(path, request,
+						new RestRequest(request, req, route.getMethod(), matches, route.getServlet()),
 						new RestResponse(res, matches));
 				request.setHandled(true);
 				break;
@@ -183,7 +192,7 @@ public class RestRouter extends HandlerWrapper {
 		}
 	}
 	
-	public static class Route implements Comparable<Route> {
+	public class Route implements Comparable<Route> {
 		
 		private final Method method;
 		private RestServlet servlet;
@@ -200,11 +209,7 @@ public class RestRouter extends HandlerWrapper {
 			if (servlet == null) {
 				synchronized (this) {
 					if (servlet == null) {
-						try {
-							servlet = method.getTarget().newInstance();
-						} catch (InstantiationException | IllegalAccessException e) {
-							throw new RuntimeException(e);
-						}
+						servlet = module.inject(method.getTarget());
 					}
 				}
 			}
