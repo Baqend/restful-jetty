@@ -5,8 +5,9 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.doReturn;
-import info.orestes.rest.Request;
-import info.orestes.rest.Response;
+import info.orestes.rest.error.BadRequest;
+import info.orestes.rest.error.NotAcceptable;
+import info.orestes.rest.error.UnsupportedMediaType;
 import info.orestes.rest.service.Method;
 import info.orestes.rest.service.MethodGroup;
 import info.orestes.rest.service.RestHandler;
@@ -87,7 +88,7 @@ public class ConversionHandlerTest {
 		
 		boolean responseEntity = handle(method, args, 123l, new RestHandler() {
 			@Override
-			public void handle(Request request, Response response) throws IOException, ServletException {
+			public void handle(RestRequest request, RestResponse response) throws IOException, ServletException {
 				
 				assertEquals(42.42f, request.getArgument("a"));
 				assertEquals(false, request.getArgument("b"));
@@ -130,7 +131,7 @@ public class ConversionHandlerTest {
 		
 		boolean responseEntity = handle(method, args, 123l, new RestHandler() {
 			@Override
-			public void handle(Request request, Response response) throws IOException, ServletException {
+			public void handle(RestRequest request, RestResponse response) throws IOException, ServletException {
 				
 				assertEquals(42.42f, request.getArgument("a"));
 				assertEquals(false, request.getArgument("b"));
@@ -154,7 +155,7 @@ public class ConversionHandlerTest {
 		assertTrue(responseEntity);
 	}
 	
-	@Test(expected = ErrorSendException.class)
+	@Test(expected = BadRequest.class)
 	public final void testIllegalArguments() throws Exception {
 		Method method = group.get(0);
 		HashMap<String, Object> args = new HashMap<>();
@@ -171,17 +172,12 @@ public class ConversionHandlerTest {
 		args.put("k", Double.toString(98238479923.782973499));
 		args.put("l", null);
 		
-		try {
-			handle(method, args, 123l, new RestHandler() {
-				@Override
-				public void handle(Request request, Response response) throws IOException, ServletException {
-					fail("Illegal argument");
-				}
-			});
-		} catch (ErrorSendException e) {
-			assertEquals(Response.SC_BAD_REQUEST, e.getStatus());
-			throw e;
-		}
+		handle(method, args, 123l, new RestHandler() {
+			@Override
+			public void handle(RestRequest request, RestResponse response) throws IOException, ServletException {
+				fail("Illegal argument");
+			}
+		});
 	}
 	
 	@Test
@@ -191,7 +187,7 @@ public class ConversionHandlerTest {
 		
 		int responseEntity = handle(method, args, null, new RestHandler() {
 			@Override
-			public void handle(Request request, Response response) throws IOException, ServletException {
+			public void handle(RestRequest request, RestResponse response) throws IOException, ServletException {
 				assertNull(request.getEntity());
 				
 				response.setEntity(83456);
@@ -201,24 +197,19 @@ public class ConversionHandlerTest {
 		assertEquals(83456, responseEntity);
 	}
 	
-	@Test(expected = ErrorSendException.class)
+	@Test(expected = NotAcceptable.class)
 	public final void testUnsupportedResponseType() throws Exception {
 		Method method = group.get(1);
 		HashMap<String, Object> args = new HashMap<>();
 		
 		doReturn("text/xhtml").when(request).getHeader("Accept");
 		
-		try {
-			handle(method, args, null, new RestHandler() {
-				@Override
-				public void handle(Request request, Response response) throws IOException, ServletException {
-					fail("Response type not supported");
-				}
-			});
-		} catch (ErrorSendException e) {
-			assertEquals(Response.SC_NOT_ACCEPTABLE, e.getStatus());
-			throw e;
-		}
+		handle(method, args, null, new RestHandler() {
+			@Override
+			public void handle(RestRequest request, RestResponse response) throws IOException, ServletException {
+				fail("Response type not supported");
+			}
+		});
 	}
 	
 	@Test
@@ -228,7 +219,7 @@ public class ConversionHandlerTest {
 		
 		Object responseEntity = handle(method, args, 3132l, new RestHandler() {
 			@Override
-			public void handle(Request request, Response response) throws IOException, ServletException {
+			public void handle(RestRequest request, RestResponse response) throws IOException, ServletException {
 				assertEquals(3132l, request.getEntity());
 				
 				response.setEntity(null);
@@ -238,24 +229,19 @@ public class ConversionHandlerTest {
 		assertNull(responseEntity);
 	}
 	
-	@Test(expected = ErrorSendException.class)
+	@Test(expected = UnsupportedMediaType.class)
 	public final void testUnsupportedRequestType() throws Exception {
 		Method method = group.get(2);
 		HashMap<String, Object> args = new HashMap<>();
 		
 		request.setContentType("test/html");
 		
-		try {
-			handle(method, args, null, new RestHandler() {
-				@Override
-				public void handle(Request request, Response response) throws IOException, ServletException {
-					fail("Request type not supported");
-				}
-			});
-		} catch (ErrorSendException e) {
-			assertEquals(Response.SC_UNSUPPORTED_MEDIA_TYPE, e.getStatus());
-			throw e;
-		}
+		handle(method, args, null, new RestHandler() {
+			@Override
+			public void handle(RestRequest request, RestResponse response) throws IOException, ServletException {
+				fail("Request type not supported");
+			}
+		});
 	}
 	
 	@Test
@@ -265,7 +251,7 @@ public class ConversionHandlerTest {
 		
 		Object responseEntity = handle(method, args, null, new RestHandler() {
 			@Override
-			public void handle(Request request, Response response) throws IOException, ServletException {
+			public void handle(RestRequest request, RestResponse response) throws IOException, ServletException {
 				assertNull(request.getEntity());
 				
 				response.setEntity(null);
@@ -282,7 +268,7 @@ public class ConversionHandlerTest {
 		
 		handle(method, args, null, new RestHandler() {
 			@Override
-			public void handle(Request request, Response response) throws IOException, ServletException {
+			public void handle(RestRequest request, RestResponse response) throws IOException, ServletException {
 				fail("no request content was sent.");
 			}
 		});
@@ -295,7 +281,7 @@ public class ConversionHandlerTest {
 		
 		handle(method, args, "This is not a number", new RestHandler() {
 			@Override
-			public void handle(Request request, Response response) throws IOException, ServletException {
+			public void handle(RestRequest request, RestResponse response) throws IOException, ServletException {
 				fail("invalid request content was sent.");
 			}
 		});
@@ -308,7 +294,7 @@ public class ConversionHandlerTest {
 		
 		handle(method, args, null, new RestHandler() {
 			@Override
-			public void handle(Request request, Response response) throws IOException, ServletException {
+			public void handle(RestRequest request, RestResponse response) throws IOException, ServletException {
 				assertNull(request.getEntity());
 				
 				response.setEntity(null);
@@ -323,7 +309,7 @@ public class ConversionHandlerTest {
 		
 		handle(method, args, null, new RestHandler() {
 			@Override
-			public void handle(Request request, Response response) throws IOException, ServletException {
+			public void handle(RestRequest request, RestResponse response) throws IOException, ServletException {
 				assertNull(request.getEntity());
 				
 				response.setEntity("This is not a number");
@@ -341,13 +327,13 @@ public class ConversionHandlerTest {
 		
 		request.getWriter().close();
 		
-		Request req = new RestRequest(request, method, arguments, null);
-		Response res = new RestResponse(response, arguments);
+		RestRequest req = new RestRequest(null, request, method, arguments, null);
+		RestResponse res = new RestResponse(response, arguments);
 		
 		handler.setHandler(callback);
 		
 		handler.start();
-		handler.handle(method.getName(), null, req, res);
+		handler.handle(req, res);
 		
 		response.getWriter().close();
 		
@@ -433,13 +419,8 @@ public class ConversionHandlerTest {
 		}
 		
 		@Override
-		public void sendError(int sc) throws IOException {
-			sendError(sc, null);
-		}
-		
-		@Override
-		public void sendError(int sc, String msg) throws IOException {
-			throw new ErrorSendException(sc, msg);
+		public boolean isCommitted() {
+			return false;
 		}
 		
 		private void init() {

@@ -11,6 +11,7 @@ import info.orestes.rest.conversion.testing.GenericEntityConverter;
 import info.orestes.rest.conversion.testing.GenericLongConverter;
 import info.orestes.rest.conversion.testing.LongConverter;
 import info.orestes.rest.conversion.testing.ObjectConverter;
+import info.orestes.rest.error.RestException;
 import info.orestes.rest.service.EntityType;
 import info.orestes.rest.util.Module;
 
@@ -256,8 +257,8 @@ public class ConverterServiceTest {
 		
 		Types types = cs.createServiceDocumentTypes();
 		
-		assertEquals(10, types.getArgumentTypes().size());
-		assertEquals(12, types.getEntityTypes().size());
+		assertEquals(11, types.getArgumentTypes().size());
+		assertEquals(13, types.getEntityTypes().size());
 		
 		assertEquals(Boolean.class, types.getArgumentClassForName("Boolean"));
 		assertEquals(Byte.class, types.getArgumentClassForName("Byte"));
@@ -269,6 +270,7 @@ public class ConverterServiceTest {
 		assertEquals(Long.class, types.getArgumentClassForName("Long"));
 		assertEquals(Short.class, types.getArgumentClassForName("Short"));
 		assertEquals(String.class, types.getArgumentClassForName("String"));
+		assertEquals(RestException.class, types.getArgumentClassForName("RestException"));
 		
 		assertNull(types.getArgumentClassForName("Object"));
 		assertNull(types.getArgumentClassForName("GenericEntity"));

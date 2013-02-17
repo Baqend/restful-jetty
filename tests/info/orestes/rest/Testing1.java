@@ -1,14 +1,14 @@
 package info.orestes.rest;
 
-import java.io.IOException;
+import info.orestes.rest.error.RestException;
 
-import javax.servlet.ServletException;
+import java.io.IOException;
 
 @SuppressWarnings("serial")
 public class Testing1 extends RestServlet {
 	
 	@Override
-	public void doGet(Request req, Response resp) throws ServletException, IOException {
+	public void doGet(Request req, Response resp) throws RestException, IOException {
 		
 	}
 }

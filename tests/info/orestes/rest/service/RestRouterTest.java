@@ -7,8 +7,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import info.orestes.rest.Request;
-import info.orestes.rest.Response;
 import info.orestes.rest.service.PathElement.Type;
 import info.orestes.rest.util.Module;
 
@@ -153,7 +151,7 @@ public class RestRouterTest {
 		
 		router.setHandler(new RestHandler() {
 			@Override
-			public void handle(Request request, Response response) throws IOException, ServletException {
+			public void handle(RestRequest request, RestResponse response) throws IOException, ServletException {
 				assertSame(path + " was mismatched", expected, request.getRestMethod());
 				
 				for (Entry<String, String> entry : args.entrySet()) {
