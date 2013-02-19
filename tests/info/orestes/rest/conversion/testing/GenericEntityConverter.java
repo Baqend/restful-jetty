@@ -5,12 +5,14 @@ import info.orestes.rest.conversion.Accept;
 import info.orestes.rest.conversion.Context;
 import info.orestes.rest.conversion.Converter;
 import info.orestes.rest.conversion.ConverterServiceTest;
+import info.orestes.rest.error.RestException;
 
 @Accept(value = ConverterServiceTest.TEST_TYPE)
 public class GenericEntityConverter extends Converter<GenericEntity<?, ?, ?>, Object> {
 	
 	@Override
-	public Object toFormat(Context context, GenericEntity<?, ?, ?> source, Class<?>[] genericParams) {
+	public Object toFormat(Context context, GenericEntity<?, ?, ?> source, Class<?>[] genericParams)
+			throws RestException {
 		StringBuilder builder = new StringBuilder();
 		
 		builder.append("[");
@@ -25,7 +27,7 @@ public class GenericEntityConverter extends Converter<GenericEntity<?, ?, ?>, Ob
 	}
 	
 	@Override
-	public GenericEntity<?, ?, ?> toObject(Context context, Object o, Class<?>[] genericParams) {
+	public GenericEntity<?, ?, ?> toObject(Context context, Object o, Class<?>[] genericParams) throws RestException {
 		String source = o.toString();
 		String[] splits = source.substring(1, source.length() - 1).split(", ");
 		

@@ -1,5 +1,6 @@
 package info.orestes.rest.conversion;
 
+import info.orestes.rest.error.RestException;
 import info.orestes.rest.service.EntityType;
 import info.orestes.rest.service.ServiceDocumentTypes;
 import info.orestes.rest.util.ClassUtil;
@@ -57,7 +58,7 @@ public class ConverterService {
 		this.module = module;
 	}
 	
-	public void loadConverters() {
+	public void initConverters() {
 		for (Class<?> cls : ClassUtil.getPackageClasses(FORMAT_PACKAGE_NAME)) {
 			try {
 				if (!Modifier.isAbstract(cls.getModifiers())) {
@@ -104,16 +105,17 @@ public class ConverterService {
 		format.add(converter);
 	}
 	
-	public <T> T toObject(ReadableContext context, MediaType source, Class<T> target) throws IOException {
+	public <T> T toObject(ReadableContext context, MediaType source, Class<T> target) throws IOException, RestException {
 		return toObject(context, source, target, EntityType.EMPTY_GENERIC_ARRAY);
 	}
 	
-	public <T> T toObject(ReadableContext context, MediaType source, EntityType<T> target) throws IOException {
+	public <T> T toObject(ReadableContext context, MediaType source, EntityType<T> target) throws IOException,
+			RestException {
 		return toObject(context, source, target.getRawType(), target.getActualTypeArguments());
 	}
 	
 	private <T, F> T toObject(ReadableContext context, MediaType source, Class<T> target, Class<?>[] genericParams)
-			throws IOException {
+			throws IOException, RestException {
 		try {
 			@SuppressWarnings("unchecked")
 			ConverterFormat<F> format = (ConverterFormat<F>) mediaTypes.get(source);
@@ -127,23 +129,23 @@ public class ConverterService {
 			return converter.toObject(context, format.read(context), genericParams);
 		} catch (UnsupportedOperationException e) {
 			throw e;
-		} catch (Exception e) {
+		} catch (RuntimeException e) {
 			throw new IOException("The body can't be processed", e);
 		}
 	}
 	
 	public <T> void toRepresentation(WriteableContext context, Class<T> source, MediaType target, Object entity)
-			throws IOException {
+			throws IOException, RestException {
 		toRepresentation(context, entity, source, EntityType.EMPTY_GENERIC_ARRAY, target);
 	}
 	
 	public <T> void toRepresentation(WriteableContext context, EntityType<T> source, MediaType target, Object entity)
-			throws IOException {
+			throws IOException, RestException {
 		toRepresentation(context, entity, source.getRawType(), source.getActualTypeArguments(), target);
 	}
 	
 	private <T, F> void toRepresentation(WriteableContext context, Object entity, Class<T> source,
-			Class<?>[] genericParams, MediaType target) throws IOException {
+			Class<?>[] genericParams, MediaType target) throws IOException, RestException {
 		try {
 			@SuppressWarnings("unchecked")
 			ConverterFormat<F> format = (ConverterFormat<F>) mediaTypes.get(target);
@@ -154,10 +156,11 @@ public class ConverterService {
 			}
 			
 			Converter<T, F> converter = format.get(source, genericParams);
+			
 			format.write(context, converter.toFormat(context, source.cast(entity), genericParams));
 		} catch (UnsupportedOperationException e) {
 			throw e;
-		} catch (Exception e) {
+		} catch (RuntimeException e) {
 			throw new IOException("The body can't be processed", e);
 		}
 	}

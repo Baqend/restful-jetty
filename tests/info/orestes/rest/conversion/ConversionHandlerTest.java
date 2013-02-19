@@ -50,7 +50,7 @@ public class ConversionHandlerTest {
 	
 	@BeforeClass
 	public static void setUpClass() {
-		converterService.loadConverters();
+		converterService.initConverters();
 		ServiceDocumentParser p = new ServiceDocumentParser(converterService.createServiceDocumentTypes());
 		group = p.parse("/conversion.test").get(0);
 	}

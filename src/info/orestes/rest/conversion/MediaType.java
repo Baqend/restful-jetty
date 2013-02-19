@@ -1,5 +1,6 @@
 package info.orestes.rest.conversion;
 
+
 public class MediaType implements Comparable<MediaType> {
 	
 	public static final String TEXT_PLAIN = "text/plain";
@@ -51,6 +52,10 @@ public class MediaType implements Comparable<MediaType> {
 	}
 	
 	public boolean isCompatible(MediaType o) {
+		if (equals(o)) {
+			return true;
+		}
+		
 		if (getType().equals("*") || o.getType().equals("*")) {
 			return true;
 		} else if (getType().equals(o.getType())) {

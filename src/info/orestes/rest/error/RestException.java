@@ -13,7 +13,7 @@ public class RestException extends ServletException {
 	
 	public static final String ERROR_PACKAGE = "info.orestes.rest.error";
 	
-	private static final Map<Integer, Class<? extends RestException>> errorMap = new HashMap<>();
+	private static final Map<Object, Class<? extends RestException>> errorMap = new HashMap<>();
 	
 	private int statusCode;
 	private String reason;
@@ -22,8 +22,10 @@ public class RestException extends ServletException {
 		for (Class<?> cls : ClassUtil.getPackageClasses(ERROR_PACKAGE)) {
 			if (RestException.class.isAssignableFrom(cls)) {
 				Class<? extends RestException> exception = cls.asSubclass(RestException.class);
+				errorMap.put(exception.getClass().getSimpleName(), exception);
+				
 				HttpError error = exception.getAnnotation(HttpError.class);
-				if (error != null) {
+				if (error != null && exception.getSuperclass().equals(RestException.class)) {
 					errorMap.put(error.status(), exception);
 				}
 			}
@@ -34,10 +36,26 @@ public class RestException extends ServletException {
 		return errorMap.get(statusCode);
 	}
 	
+	public static Class<? extends RestException> getExceptionClass(String className) {
+		return errorMap.get(className);
+	}
+	
+	public static RestException create(String className, int statusCode, String message, Throwable throwable) {
+		Class<? extends RestException> exClass = getExceptionClass(className);
+		if (exClass != null) {
+			return create(exClass, statusCode, message, throwable);
+		} else {
+			return create(statusCode, message, throwable);
+		}
+	}
+	
 	public static RestException create(int statusCode, String message, Throwable throwable) {
+		return create(getExceptionClass(statusCode), statusCode, message, throwable);
+	}
+	
+	private static RestException create(Class<? extends RestException> exClass, int statusCode, String message,
+			Throwable throwable) {
 		RestException ex = null;
-		
-		Class<? extends RestException> exClass = getExceptionClass(statusCode);
 		if (exClass != null) {
 			try {
 				ex = exClass.getConstructor(String.class, Throwable.class).newInstance(message, throwable);

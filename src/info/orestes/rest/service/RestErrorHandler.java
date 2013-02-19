@@ -66,7 +66,13 @@ public class RestErrorHandler extends ErrorHandler {
 			e = RestException.create(code, message, throwable);
 		}
 		
-		converterService.toRepresentation(context, RestException.class, context.getMediaType(), e);
+		try {
+			converterService.toRepresentation(context, RestException.class, context.getMediaType(), e);
+		} catch (RestException ex) {
+			IOException re = new IOException("An error occurred while encoding the exception.", ex);
+			re.addSuppressed(e);
+			throw re;
+		}
 	}
 	
 	private static class ErrorContext implements WriteableContext {

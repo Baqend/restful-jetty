@@ -4,6 +4,7 @@ import info.orestes.rest.Request;
 import info.orestes.rest.Response;
 import info.orestes.rest.error.BadRequest;
 import info.orestes.rest.error.NotAcceptable;
+import info.orestes.rest.error.RestException;
 import info.orestes.rest.error.UnsupportedMediaType;
 import info.orestes.rest.service.EntityType;
 import info.orestes.rest.service.Method;
@@ -107,6 +108,8 @@ public class ConversionHandler extends RestHandler {
 				
 				MediaType mediaType = contentType == null ? null : new MediaType(contentType);
 				getConverterService().toRepresentation(response, responseType, mediaType, response.getEntity());
+			} catch (RestException e) {
+				response.sendError(e);
 			} catch (UnsupportedOperationException e) {
 				throw new IOException("The response body can not be handled", e);
 			}

@@ -1,5 +1,6 @@
 package info.orestes.rest.conversion;
 
+import info.orestes.rest.error.RestException;
 import info.orestes.rest.service.EntityType;
 import info.orestes.rest.util.ClassUtil;
 
@@ -66,23 +67,23 @@ public abstract class Converter<T, F> {
 		return format;
 	}
 	
-	protected <E> F toFormat(Context context, Class<E> type, Object source) {
+	protected <E> F toFormat(Context context, Class<E> type, Object source) throws RestException {
 		Converter<E, F> converter = getFormat().get(type, EntityType.EMPTY_GENERIC_ARRAY);
 		return converter.toFormat(context, type.cast(source), EntityType.EMPTY_GENERIC_ARRAY);
 	}
 	
-	protected <E> F toFormat(Context context, EntityType<E> generictype, Object source) {
+	protected <E> F toFormat(Context context, EntityType<E> generictype, Object source) throws RestException {
 		Class<E> type = generictype.getRawType();
 		Converter<E, F> converter = getFormat().get(type, generictype.getActualTypeArguments());
 		return converter.toFormat(context, type.cast(source), generictype.getActualTypeArguments());
 	}
 	
-	protected <E> E toObject(Context context, Class<E> type, F source) {
+	protected <E> E toObject(Context context, Class<E> type, F source) throws RestException {
 		Converter<E, F> converter = getFormat().get(type, EntityType.EMPTY_GENERIC_ARRAY);
 		return converter.toObject(context, source, EntityType.EMPTY_GENERIC_ARRAY);
 	}
 	
-	protected <E> E toObject(Context context, EntityType<E> generictype, F source) {
+	protected <E> E toObject(Context context, EntityType<E> generictype, F source) throws RestException {
 		Class<E> type = generictype.getRawType();
 		Converter<E, F> converter = getFormat().get(type, generictype.getActualTypeArguments());
 		return converter.toObject(context, source, generictype.getActualTypeArguments());
@@ -105,7 +106,7 @@ public abstract class Converter<T, F> {
 	 * @return Das Representationsformat, dass das konvertierte Objekt
 	 *         repräsentiert
 	 */
-	public abstract F toFormat(Context context, T source, Class<?>[] genericParams);
+	public abstract F toFormat(Context context, T source, Class<?>[] genericParams) throws RestException;
 	
 	/**
 	 * Konvertiert ein Objekt aus dem Representationsformat <code>F</code>
@@ -124,6 +125,6 @@ public abstract class Converter<T, F> {
 	 * @return Das Objekt, dass durch das Representationsformat repräsentiert
 	 *         wird
 	 */
-	public abstract T toObject(Context context, F source, Class<?>[] genericParams);
+	public abstract T toObject(Context context, F source, Class<?>[] genericParams) throws RestException;
 	
 }

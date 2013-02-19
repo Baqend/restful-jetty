@@ -96,7 +96,7 @@ public class ConverterServiceTest {
 		assertEquals(0, cs.createServiceDocumentTypes().getEntityTypes().size());
 		assertNull(cs.getPreferedMediaType(Arrays.asList(new MediaType("*/*")), Long.class));
 		
-		cs.loadConverters();
+		cs.initConverters();
 		
 		assertEquals(new MediaType(MediaType.TEXT_PLAIN),
 				cs.getPreferedMediaType(Arrays.asList(new MediaType("text/*")), Long.class));
@@ -105,12 +105,12 @@ public class ConverterServiceTest {
 	}
 	
 	@Test(expected = UnsupportedOperationException.class)
-	public void testToObjectFromContextUnknownFormat() throws IOException {
+	public void testToObjectFromContextUnknownFormat() throws IOException, RestException {
 		cs.toObject(null, TEST_MEDIA_TYPE, Long.class);
 	}
 	
 	@Test(expected = UnsupportedOperationException.class)
-	public void testToObjectFromContextUnknownConverter() throws IOException {
+	public void testToObjectFromContextUnknownConverter() throws IOException, RestException {
 		cs.addFormat(new TestFormat() {
 			@Override
 			public String getConverterPackageName() {
@@ -122,7 +122,7 @@ public class ConverterServiceTest {
 	}
 	
 	@Test
-	public void testToObjectFromContext() throws IOException {
+	public void testToObjectFromContext() throws IOException, RestException {
 		cs.addFormat(new TestFormat() {
 			@Override
 			public Object read(ReadableContext context) throws IOException {
@@ -136,7 +136,7 @@ public class ConverterServiceTest {
 	}
 	
 	@Test
-	public void testToGenericObjectFromContext() throws IOException {
+	public void testToGenericObjectFromContext() throws IOException, RestException {
 		cs.addFormat(new TestFormat() {
 			@Override
 			public Object read(ReadableContext context) throws IOException {
@@ -158,7 +158,7 @@ public class ConverterServiceTest {
 	}
 	
 	@Test
-	public void testToRepresentation() throws IOException {
+	public void testToRepresentation() throws IOException, RestException {
 		TestFormat format = new TestFormat() {
 			@Override
 			public void write(WriteableContext context, Object formatedContent) throws IOException {
@@ -175,7 +175,7 @@ public class ConverterServiceTest {
 	}
 	
 	@Test
-	public void testGenericObjectToRepresentation() throws IOException {
+	public void testGenericObjectToRepresentation() throws IOException, RestException {
 		TestFormat format = new TestFormat() {
 			@Override
 			public void write(WriteableContext context, Object formatedContent) throws IOException {
@@ -198,12 +198,19 @@ public class ConverterServiceTest {
 	}
 	
 	@Test(expected = UnsupportedOperationException.class)
-	public void testToObjectFromUnknownFormat() {
+	public void testNoAcceptAnnotation() throws IOException, RestException {
+		cs.initConverters();
+		
+		cs.toRepresentation(null, String.class, TEST_MEDIA_TYPE, "test");
+	}
+	
+	@Test(expected = UnsupportedOperationException.class)
+	public void testToObjectFromUnknownFormat() throws RestException {
 		cs.toObject(null, Long.class, "123");
 	}
 	
 	@Test(expected = UnsupportedOperationException.class)
-	public void testToObjectUnknownConverter() {
+	public void testToObjectUnknownConverter() throws RestException {
 		cs.addFormat(new ConverterFormat<String>(null) {
 			@Override
 			public void write(WriteableContext context, String formatedContent) throws IOException {}
@@ -218,8 +225,8 @@ public class ConverterServiceTest {
 	}
 	
 	@Test
-	public void testToObjectFromString() {
-		cs.loadConverters();
+	public void testToObjectFromString() throws RestException {
+		cs.initConverters();
 		
 		assertEquals(123l, (long) cs.toObject(null, Long.class, "123"));
 	}
@@ -246,14 +253,14 @@ public class ConverterServiceTest {
 	
 	@Test
 	public void testToString() {
-		cs.loadConverters();
+		cs.initConverters();
 		
 		assertEquals("123", cs.toString(null, Long.class, 123l));
 	}
 	
 	@Test
 	public void testCreateServiceDocumentTypes() {
-		cs.loadConverters();
+		cs.initConverters();
 		
 		Types types = cs.createServiceDocumentTypes();
 		
