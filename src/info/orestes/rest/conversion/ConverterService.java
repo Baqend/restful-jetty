@@ -50,12 +50,25 @@ public class ConverterService {
 	private static final MediaType ARGUMENT_MEDIA_TYPE = new MediaType(MediaType.TEXT_PLAIN);
 	
 	private final Module module;
-	private final Map<MediaType, ConverterFormat<?>> mediaTypes = new HashMap<>();
+	private final Map<MediaType, Map<Class<?>, Converter<?, ?>>> accept = new HashMap<>();
 	private final Map<Class<?>, ConverterFormat<?>> formats = new HashMap<>();
+	
+	public static void check(Converter<?, ?> converter, Class<?> type, Class<?>[] genericParams) {
+		if (converter == null) {
+			throw new UnsupportedOperationException("The media type is not supported for the type " + type);
+		}
+		
+		if (type.getTypeParameters().length != genericParams.length) {
+			throw new IllegalArgumentException("The type " + type + " declares " + type.getTypeParameters().length
+					+ " generic arguments but " + genericParams.length + " was given");
+		}
+	}
 	
 	@Inject
 	public ConverterService(Module module) {
 		this.module = module;
+		
+		accept.put(ARGUMENT_MEDIA_TYPE, new HashMap<Class<?>, Converter<?, ?>>());
 	}
 	
 	public void initConverters() {
@@ -88,21 +101,34 @@ public class ConverterService {
 		}
 		
 		if (converter.getClass().isAnnotationPresent(Accept.class)) {
-			Accept accept = converter.getClass().getAnnotation(Accept.class);
-			for (String mediaTypeString : accept.value()) {
+			Accept accepted = converter.getClass().getAnnotation(Accept.class);
+			for (String mediaTypeString : accepted.value()) {
 				MediaType mediaType = new MediaType(mediaTypeString);
 				
-				ConverterFormat<?> mediaTypeFormat = mediaTypes.get(mediaType);
-				if (mediaTypeFormat == null) {
-					mediaTypes.put(mediaType, format);
-				} else if (mediaTypeFormat != format) {
-					throw new IllegalArgumentException(
-							"The converter format type is not compatible with the media type format.");
+				Map<Class<?>, Converter<?, ?>> acceptTypes = accept.get(mediaType);
+				if (acceptTypes == null) {
+					accept.put(mediaType, acceptTypes = new HashMap<>());
 				}
+				
+				acceptTypes.put(converter.getTargetClass(), converter);
 			}
 		}
 		
 		format.add(converter);
+	}
+	
+	@SuppressWarnings("unchecked")
+	private <T, F> Converter<T, F> getConverter(MediaType mediaType, Class<?> type, Class<?>[] genericParams) {
+		Converter<?, ?> converter = null;
+		
+		Map<Class<?>, Converter<?, ?>> acceptTypes = accept.get(mediaType);
+		if (acceptTypes != null) {
+			converter = acceptTypes.get(type);
+		}
+		
+		check(converter, type, genericParams);
+		
+		return (Converter<T, F>) converter;
 	}
 	
 	public <T> T toObject(ReadableContext context, MediaType source, Class<T> target) throws IOException, RestException {
@@ -117,16 +143,9 @@ public class ConverterService {
 	private <T, F> T toObject(ReadableContext context, MediaType source, Class<T> target, Class<?>[] genericParams)
 			throws IOException, RestException {
 		try {
-			@SuppressWarnings("unchecked")
-			ConverterFormat<F> format = (ConverterFormat<F>) mediaTypes.get(source);
+			Converter<T, F> converter = getConverter(source, target, genericParams);
 			
-			if (format == null) {
-				throw new UnsupportedOperationException("The media type " + source + " is not supported for the type "
-						+ target);
-			}
-			
-			Converter<T, F> converter = format.get(target, genericParams);
-			return converter.toObject(context, format.read(context), genericParams);
+			return converter.toObject(context, converter.getFormat().read(context), genericParams);
 		} catch (UnsupportedOperationException e) {
 			throw e;
 		} catch (RuntimeException e) {
@@ -147,17 +166,9 @@ public class ConverterService {
 	private <T, F> void toRepresentation(WriteableContext context, Object entity, Class<T> source,
 			Class<?>[] genericParams, MediaType target) throws IOException, RestException {
 		try {
-			@SuppressWarnings("unchecked")
-			ConverterFormat<F> format = (ConverterFormat<F>) mediaTypes.get(target);
+			Converter<T, F> converter = getConverter(target, source, genericParams);
 			
-			if (format == null) {
-				throw new UnsupportedOperationException("The media type " + target + " is not supported for the type "
-						+ source);
-			}
-			
-			Converter<T, F> converter = format.get(source, genericParams);
-			
-			format.write(context, converter.toFormat(context, source.cast(entity), genericParams));
+			converter.getFormat().write(context, converter.toFormat(context, source.cast(entity), genericParams));
 		} catch (UnsupportedOperationException e) {
 			throw e;
 		} catch (RuntimeException e) {
@@ -167,11 +178,9 @@ public class ConverterService {
 	
 	public <T> T toObject(Context context, Class<T> type, String source) {
 		try {
-			@SuppressWarnings("unchecked")
-			ConverterFormat<String> format = (ConverterFormat<String>) mediaTypes.get(ARGUMENT_MEDIA_TYPE);
+			Converter<T, String> converter = getConverter(ARGUMENT_MEDIA_TYPE, type, EntityType.EMPTY_GENERIC_ARRAY);
 			
-			return format.get(type, EntityType.EMPTY_GENERIC_ARRAY).toObject(context, source,
-					EntityType.EMPTY_GENERIC_ARRAY);
+			return converter.toObject(context, source, EntityType.EMPTY_GENERIC_ARRAY);
 		} catch (UnsupportedOperationException e) {
 			throw e;
 		} catch (Exception e) {
@@ -181,11 +190,9 @@ public class ConverterService {
 	
 	public <T> String toString(Context context, Class<T> type, T source) {
 		try {
-			@SuppressWarnings("unchecked")
-			ConverterFormat<String> format = (ConverterFormat<String>) mediaTypes.get(ARGUMENT_MEDIA_TYPE);
+			Converter<T, String> converter = getConverter(ARGUMENT_MEDIA_TYPE, type, EntityType.EMPTY_GENERIC_ARRAY);
 			
-			return format.get(type, EntityType.EMPTY_GENERIC_ARRAY).toFormat(context, source,
-					EntityType.EMPTY_GENERIC_ARRAY);
+			return converter.toFormat(context, source, EntityType.EMPTY_GENERIC_ARRAY);
 		} catch (UnsupportedOperationException e) {
 			throw e;
 		} catch (Exception e) {
@@ -212,8 +219,8 @@ public class ConverterService {
 		Collections.sort(acceptedMediaTypes);
 		
 		for (MediaType mediaType : acceptedMediaTypes) {
-			for (Entry<MediaType, ConverterFormat<?>> entry : mediaTypes.entrySet()) {
-				if (entry.getValue().contains(type) && entry.getKey().isCompatible(mediaType)) {
+			for (Entry<MediaType, Map<Class<?>, Converter<?, ?>>> entry : accept.entrySet()) {
+				if (entry.getValue().containsKey(type) && entry.getKey().isCompatible(mediaType)) {
 					return entry.getKey();
 				}
 			}
@@ -228,14 +235,14 @@ public class ConverterService {
 		private final Map<String, Class<?>> argumentTypes = new HashMap<>();
 		
 		private Types() {
-			for (Entry<MediaType, ConverterFormat<?>> entry : mediaTypes.entrySet()) {
-				for (Class<?> type : entry.getValue().getSupportedTypes()) {
-					if (entry.getKey().equals(ARGUMENT_MEDIA_TYPE)) {
-						argumentTypes.put(type.getSimpleName(), type);
-					}
-					
+			for (Map<Class<?>, Converter<?, ?>> entry : accept.values()) {
+				for (Class<?> type : entry.keySet()) {
 					entityTypes.put(type.getSimpleName(), type);
 				}
+			}
+			
+			for (Class<?> cls : accept.get(ARGUMENT_MEDIA_TYPE).keySet()) {
+				argumentTypes.put(cls.getSimpleName(), cls);
 			}
 		}
 		

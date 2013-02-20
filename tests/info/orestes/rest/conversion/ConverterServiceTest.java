@@ -264,9 +264,6 @@ public class ConverterServiceTest {
 		
 		Types types = cs.createServiceDocumentTypes();
 		
-		assertEquals(11, types.getArgumentTypes().size());
-		assertEquals(13, types.getEntityTypes().size());
-		
 		assertEquals(Boolean.class, types.getArgumentClassForName("Boolean"));
 		assertEquals(Byte.class, types.getArgumentClassForName("Byte"));
 		assertEquals(Character.class, types.getArgumentClassForName("Character"));
@@ -295,6 +292,9 @@ public class ConverterServiceTest {
 		
 		assertEquals(Object.class, types.getEntityClassForName("Object"));
 		assertEquals(GenericEntity.class, types.getEntityClassForName("GenericEntity"));
+		
+		assertEquals(11, types.getArgumentTypes().size());
+		assertEquals(13, types.getEntityTypes().size());
 	}
 	
 }

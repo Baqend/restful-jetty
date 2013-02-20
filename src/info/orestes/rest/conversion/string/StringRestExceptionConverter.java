@@ -1,13 +1,16 @@
 package info.orestes.rest.conversion.string;
 
+import info.orestes.rest.conversion.Accept;
 import info.orestes.rest.conversion.Context;
 import info.orestes.rest.conversion.Converter;
+import info.orestes.rest.conversion.MediaType;
 import info.orestes.rest.error.RestException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 
+@Accept(MediaType.TEXT_PLAIN)
 public class StringRestExceptionConverter extends Converter<RestException, String> {
 	
 	@Override

@@ -43,14 +43,7 @@ public abstract class ConverterFormat<F> {
 	public <T> Converter<T, F> get(Class<T> type, Class<?>[] genericParams) {
 		Converter<T, F> converter = (Converter<T, F>) converters.get(type);
 		
-		if (converter == null) {
-			throw new UnsupportedOperationException("The media type is not supported for the type " + type);
-		}
-		
-		if (type.getTypeParameters().length != genericParams.length) {
-			throw new IllegalArgumentException("The type " + type + " declares " + type.getTypeParameters().length
-					+ " generic arguments but " + genericParams.length + " was given");
-		}
+		ConverterService.check(converter, type, genericParams);
 		
 		return converter;
 	}
