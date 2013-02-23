@@ -55,12 +55,13 @@ public class ConverterService {
 	
 	public static void check(Converter<?, ?> converter, Class<?> type, Class<?>[] genericParams) {
 		if (converter == null) {
-			throw new UnsupportedOperationException("The media type is not supported for the type " + type);
+			throw new UnsupportedOperationException("The media type is not supported for the " + type);
 		}
 		
-		if (type.getTypeParameters().length != genericParams.length) {
-			throw new IllegalArgumentException("The type " + type + " declares " + type.getTypeParameters().length
-					+ " generic arguments but " + genericParams.length + " was given");
+		int length = type.isArray() ? 1 : type.getTypeParameters().length;
+		if (length != genericParams.length) {
+			throw new IllegalArgumentException("The " + type + " declares " + length + " generic arguments but "
+					+ genericParams.length + " was given");
 		}
 	}
 	
@@ -205,8 +206,12 @@ public class ConverterService {
 		
 		for (Class<?> cls : classes) {
 			if (!Modifier.isAbstract(cls.getModifiers())) {
-				Converter<?, ?> conv = module.inject(cls.asSubclass(Converter.class));
-				add(conv);
+				try {
+					Converter<?, ?> conv = module.inject(cls.asSubclass(Converter.class));
+					add(conv);
+				} catch (RuntimeException e) {
+					throw new RuntimeException("The converter " + cls + " can't be initialized.", e);
+				}
 			}
 		}
 	}

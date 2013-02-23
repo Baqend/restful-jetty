@@ -1,8 +1,7 @@
 package info.orestes.rest.util;
 
-import info.orestes.rest.conversion.ConverterService;
-
 import java.io.File;
+import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
@@ -14,42 +13,87 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class ClassUtil {
-	public static final <T> Class<?>[] getGenericArguments(Class<T> forClass, Class<? extends T> subClass) {
-		Type[] genericParamaters = null;
+	private static final Class<?>[] EMPTY_CLASSES = new Class<?>[0];
+	
+	/**
+	 * Get all binded generic paramaters which are declared by forClass and are
+	 * defined by the subClass
+	 * 
+	 * @param forClass
+	 *            The generic {@link Class} who declares the generic paramaters
+	 * @param subClass
+	 *            The sub {@link Class} which binds the generic Paramaters to
+	 *            concrete Classes
+	 * @return An array of the binded Classes in the same order as they are
+	 *         declared by forClass
+	 */
+	public static <T> Class<?>[] getGenericArguments(Class<T> forClass, Class<? extends T> subClass) {
+		Class<?>[] genericParamaters = null;
 		Class<?> cls = subClass;
 		do {
 			Type type = cls.getGenericSuperclass();
 			
 			if (type instanceof Class) {
 				cls = (Class<?>) type;
+				genericParamaters = EMPTY_CLASSES;
 			} else {
 				ParameterizedType parameterizedType = (ParameterizedType) type;
-				Type[] actualParamaters = parameterizedType.getActualTypeArguments();
-				for (int i = 0; i < actualParamaters.length; ++i) {
-					if (actualParamaters[i] instanceof TypeVariable<?>) {
-						TypeVariable<?>[] typeParameters = cls.getTypeParameters();
-						for (int j = 0; j < typeParameters.length; ++j) {
-							if (actualParamaters[i].equals(typeParameters[j])) {
-								actualParamaters[i] = genericParamaters[j];
-								break;
-							}
-						}
-					} else if (actualParamaters[i] instanceof ParameterizedType) {
-						actualParamaters[i] = ((ParameterizedType) actualParamaters[i]).getRawType();
-					}
-				}
-				
-				genericParamaters = actualParamaters;
+				genericParamaters = resolveGenerics(parameterizedType, cls, genericParamaters);
 				cls = (Class<?>) parameterizedType.getRawType();
 			}
 		} while (!cls.equals(forClass));
 		
-		return Arrays.copyOf(genericParamaters, genericParamaters.length, Class[].class);
+		return genericParamaters;
 	}
 	
+	public static <T> Class<?>[] getGenericArguments(Field field) {
+		Type type = field.getGenericType();
+		if (type instanceof Class) {
+			return EMPTY_CLASSES;
+		} else {
+			return resolveGenerics((ParameterizedType) type, null, null);
+		}
+	}
+	
+	private static Class<?>[] resolveGenerics(ParameterizedType parameterizedType, Class<?> genericType,
+			Type[] genericTypeParamaters) {
+		Type[] actualParamaters = parameterizedType.getActualTypeArguments();
+		
+		for (int i = 0; i < actualParamaters.length; ++i) {
+			if (actualParamaters[i] instanceof TypeVariable<?>) {
+				if (genericTypeParamaters == null) {
+					throw new RuntimeException("The " + parameterizedType + " is not completely resolvable.");
+				}
+				
+				TypeVariable<?>[] typeParameters = genericType.getTypeParameters();
+				for (int j = 0; j < typeParameters.length; ++j) {
+					if (actualParamaters[i].equals(typeParameters[j])) {
+						actualParamaters[i] = genericTypeParamaters[j];
+						break;
+					}
+				}
+			} else if (actualParamaters[i] instanceof ParameterizedType) {
+				actualParamaters[i] = ((ParameterizedType) actualParamaters[i]).getRawType();
+			}
+		}
+		
+		if (actualParamaters.length == 0) {
+			return EMPTY_CLASSES;
+		} else {
+			return Arrays.copyOf(actualParamaters, actualParamaters.length, Class[].class);
+		}
+	}
+	
+	/**
+	 * Gets all {@link Class} objects form the package
+	 * 
+	 * @param pkgName
+	 *            The package name of the classes
+	 * @return All {@link Class}es of the given package
+	 */
 	public static List<Class<?>> getPackageClasses(String pkgName) {
 		try {
-			ClassLoader classLoader = ConverterService.class.getClassLoader();
+			ClassLoader classLoader = ClassUtil.class.getClassLoader();
 			String path = pkgName.replace('.', '/');
 			
 			List<File> folders = new ArrayList<>();

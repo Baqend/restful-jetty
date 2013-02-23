@@ -10,6 +10,10 @@ public class InternalServerError extends RestException {
 		super(message);
 	}
 	
+	public InternalServerError(Throwable throwable) {
+		super("An unexpected error occurred.", throwable);
+	}
+	
 	public InternalServerError(String message, Throwable throwable) {
 		super(message, throwable);
 	}

@@ -2,6 +2,7 @@ package info.orestes.rest.error;
 
 import info.orestes.rest.util.ClassUtil;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,10 +20,14 @@ public class RestException extends ServletException {
 	private String reason;
 	
 	static {
-		for (Class<?> cls : ClassUtil.getPackageClasses(ERROR_PACKAGE)) {
+		load(ERROR_PACKAGE);
+	}
+	
+	public static void load(String packageName) {
+		for (Class<?> cls : ClassUtil.getPackageClasses(packageName)) {
 			if (RestException.class.isAssignableFrom(cls)) {
 				Class<? extends RestException> exception = cls.asSubclass(RestException.class);
-				errorMap.put(exception.getClass().getSimpleName(), exception);
+				errorMap.put(exception.getSimpleName(), exception);
 				
 				HttpError error = exception.getAnnotation(HttpError.class);
 				if (error != null && exception.getSuperclass().equals(RestException.class)) {
@@ -55,16 +60,27 @@ public class RestException extends ServletException {
 	
 	private static RestException create(Class<? extends RestException> exClass, int statusCode, String message,
 			Throwable throwable) {
+		Exception suppressed = null;
+		
 		RestException ex = null;
 		if (exClass != null) {
 			try {
-				ex = exClass.getConstructor(String.class, Throwable.class).newInstance(message, throwable);
+				Constructor<? extends RestException> constr = exClass.getDeclaredConstructor(String.class,
+					Throwable.class);
+				constr.setAccessible(true);
+				ex = constr.newInstance(message, throwable);
 			} catch (InstantiationException | IllegalAccessException | InvocationTargetException
-					| NoSuchMethodException e) {}
+					| NoSuchMethodException e) {
+				suppressed = e;
+			}
 		}
 		
 		if (ex == null) {
 			ex = new RestException(statusCode, message, throwable);
+			
+			if (suppressed != null) {
+				ex.addSuppressed(suppressed);
+			}
 		}
 		
 		return ex;
