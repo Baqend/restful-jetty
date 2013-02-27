@@ -1,31 +1,24 @@
 package info.orestes.rest.conversion;
 
+import info.orestes.rest.Request;
 import info.orestes.rest.error.RestException;
 import info.orestes.rest.service.EntityType;
 import info.orestes.rest.util.ClassUtil;
 
 /**
- * Ein {@link Converter} konvertiert ein {@link Object} vom Typ <code>T</code>
- * in ein Repräsentationsformat <code>F</code> und anschließsend in eine
- * {@link Representation} des im Konstruktor angegebenen {@link MediaType} <br/>
- * <br/>
- * Jedes Representationsformat besitzt meist einen eigenen Basiskonverter, von
- * dem die spezifischen Typkonverter erben <br/>
- * <br/>
- * Beispiel {@link JSONObjectConverter}:<br/>
- * Repräsentation: StringRepresentation von JSON<br/>
- * Format: JSON-Element<br/>
- * Object: {@link IObject}<br/>
- * <br/>
- * <br/>
- * Basiskonverter {@link JSONConverter}: Repräsentation <-> Format
- * Unterkonverter {@link JSONObjectConverter}: Format <-> Object
+ * A {@link Converter} converts a specific java type <code>T</code> between an
+ * format and the java object. Therefore a {@link Converter} is only responsible
+ * to handle the conversion form and to one specific format declared by the
+ * parameter <code>F</code>.
+ * 
+ * <p>
+ * To read and write the format form bytes a {@link ConverterFormat} for the
+ * format <code>F</code> must be registered to the {@link ConverterService}
  * 
  * @param <T>
- *            Der Typ, den dieser Konverter konvertieren kann
+ *            The java type which can be handled by this converter
  * @param <F>
- *            Das Representationsformat, den dieser Konverter als zwischenformat
- *            verwendet
+ *            The format that this {@link Converter} decode and encode
  */
 public abstract class Converter<T, F> {
 	
@@ -35,8 +28,8 @@ public abstract class Converter<T, F> {
 	private ConverterFormat<F> format;
 	
 	/**
-	 * creates a new Converter instance which can convert between java types and
-	 * a formated representation.
+	 * Creates a new Converter instance which can convert between the java type
+	 * <code>T</code> and the format <code>F</code>
 	 */
 	@SuppressWarnings("unchecked")
 	public Converter() {
@@ -46,43 +39,130 @@ public abstract class Converter<T, F> {
 		formatType = (Class<F>) generics[1];
 	}
 	
+	/**
+	 * Initialize this converter with his associated {@link ConverterFormat}
+	 * 
+	 * @param format
+	 *            The associated {@link ConverterFormat} instance which provides
+	 *            all compatible {@link Converter}s of our format
+	 */
 	void init(ConverterFormat<F> format) {
 		this.format = format;
 	}
 	
+	/**
+	 * Returns the format type that this converter process. It is extracted form
+	 * the actual class signature
+	 * 
+	 * @return The format type <code>F</code> of this converter
+	 */
 	public Class<F> getFormatType() {
 		return formatType;
 	}
 	
 	/**
-	 * Gibt die Klasse zurück, dessen Instanzen dieser Konverter zurück gibt
+	 * Returns the java type that this converter handle. It is extracted form
+	 * the actual class signature
 	 * 
-	 * @return Die Klasse, dessen Instanzen diser Konverter zurück gibt
+	 * @return The java type <code>T</code> of this converter
 	 */
 	public Class<T> getTargetClass() {
 		return targetClass;
 	}
 	
+	/**
+	 * The associated {@link ConverterFormat} for this {@link Converter}
+	 * 
+	 * @return The associated {@link ConverterFormat}
+	 */
 	public ConverterFormat<F> getFormat() {
 		return format;
 	}
 	
+	/**
+	 * This helper method can be used by a {@link Converter} implementation to
+	 * convert other java types to our format
+	 * 
+	 * @param context
+	 *            The {@link Context} used by some {@link Converter}s to perform
+	 *            the conversion
+	 * @param type
+	 *            The java type of the decoded value
+	 * @param source
+	 *            The value to encode
+	 * @return The encoded value
+	 * @throws UnsupportedOperationException
+	 *             if no converter is available to handle the conversion
+	 * @throws RestException
+	 *             if an exception occurred while encoding the value
+	 */
 	protected <E> F toFormat(Context context, Class<E> type, Object source) throws RestException {
 		Converter<E, F> converter = getFormat().get(type, EntityType.EMPTY_GENERIC_ARRAY);
 		return converter.toFormat(context, type.cast(source), EntityType.EMPTY_GENERIC_ARRAY);
 	}
 	
+	/**
+	 * This helper method can be used by a {@link Converter} implementation to
+	 * convert other java types to our format
+	 * 
+	 * @param context
+	 *            The {@link Context} used by some {@link Converter}s to perform
+	 *            the conversion
+	 * @param generictype
+	 *            The java type with generic parameters of the decoded value
+	 * @param source
+	 *            The value to encode
+	 * @return The encoded value
+	 * @throws UnsupportedOperationException
+	 *             if no converter is available to handle the conversion
+	 * @throws RestException
+	 *             if an exception occurred while encoding the value
+	 */
 	protected <E> F toFormat(Context context, EntityType<E> generictype, Object source) throws RestException {
 		Class<E> type = generictype.getRawType();
 		Converter<E, F> converter = getFormat().get(type, generictype.getActualTypeArguments());
 		return converter.toFormat(context, type.cast(source), generictype.getActualTypeArguments());
 	}
 	
+	/**
+	 * This helper method can be used by a {@link Converter} implementation to
+	 * convert other java types to from format
+	 * 
+	 * @param context
+	 *            The {@link Context} used by some {@link Converter}s to perform
+	 *            the conversion
+	 * @param type
+	 *            The java type of the decoded value
+	 * @param source
+	 *            The value to decode
+	 * @return The decoded value
+	 * @throws UnsupportedOperationException
+	 *             if no converter is available to handle the conversion
+	 * @throws RestException
+	 *             if an exception occurred while decoding the value
+	 */
 	protected <E> E toObject(Context context, Class<E> type, F source) throws RestException {
 		Converter<E, F> converter = getFormat().get(type, EntityType.EMPTY_GENERIC_ARRAY);
 		return converter.toObject(context, source, EntityType.EMPTY_GENERIC_ARRAY);
 	}
 	
+	/**
+	 * This helper method can be used by a {@link Converter} implementation to
+	 * convert other java types from our format
+	 * 
+	 * @param context
+	 *            The {@link Context} used by some {@link Converter}s to perform
+	 *            the conversion
+	 * @param generictype
+	 *            The java type with generic parameters of the decoded value
+	 * @param source
+	 *            The value to decode
+	 * @return The decoded value
+	 * @throws UnsupportedOperationException
+	 *             if no converter is available to handle the conversion
+	 * @throws RestException
+	 *             if an exception occurred while decoding the value
+	 */
 	protected <E> E toObject(Context context, EntityType<E> generictype, F source) throws RestException {
 		Class<E> type = generictype.getRawType();
 		Converter<E, F> converter = getFormat().get(type, generictype.getActualTypeArguments());
@@ -90,40 +170,36 @@ public abstract class Converter<T, F> {
 	}
 	
 	/**
-	 * Konvertiert ein Objekt von Typ <code>T</code> in das
-	 * Representationsformat <code>F</code> konvertiert Ist der Typ generisch,
-	 * so müssen die Klassenobjekte der generischen Parameter mit angegeben
-	 * werden, damit das Objekt konvertiert werden kann
+	 * Encodes the given value to the format
 	 * 
 	 * @param context
-	 *            TODO
+	 *            The {@link Context} that can be used to access {@link Request}
+	 *            arguments
 	 * @param source
-	 *            Das zu konvertierende Objekt
+	 *            The value being encoded
 	 * @param genericParams
-	 *            Die Klassenobjekte der generischen Parameter des zu
-	 *            konvertierenden Objektes, sofern das Objekt generisch ist
-	 * 
-	 * @return Das Representationsformat, dass das konvertierte Objekt
-	 *         repräsentiert
+	 *            The actual generic parameter types that will be used to
+	 *            encoded the generic value
+	 * @return the encoded value
+	 * @throws RestException
+	 *             if an expected conversion error occurred
 	 */
 	public abstract F toFormat(Context context, T source, Class<?>[] genericParams) throws RestException;
 	
 	/**
-	 * Konvertiert ein Objekt aus dem Representationsformat <code>F</code>
-	 * zurück in ein Objekt von Typ <code>T</code> Ist der Typ generisch, so
-	 * müssen die Klassenobjekte der generischen Parameter mit angegeben werden,
-	 * damit das Objekt konvertiert werden kann
+	 * Decodes the given value from the format
 	 * 
 	 * @param context
-	 *            TODO
+	 *            The {@link Context} that can be used to access {@link Request}
+	 *            arguments
 	 * @param source
-	 *            Das zu konvertierende Representationsformat
+	 *            The value being decoded
 	 * @param genericParams
-	 *            Die Klassenobjekte der generischen Parameter des zu
-	 *            konvertierenden Objektes, sofern das Objekt generisch ist
-	 * 
-	 * @return Das Objekt, dass durch das Representationsformat repräsentiert
-	 *         wird
+	 *            The actual generic parameter types that will be used to decode
+	 *            the generic value
+	 * @return the decoded value
+	 * @throws RestException
+	 *             if an expected conversion error occurred
 	 */
 	public abstract T toObject(Context context, F source, Class<?>[] genericParams) throws RestException;
 	

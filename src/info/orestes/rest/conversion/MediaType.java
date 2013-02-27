@@ -1,6 +1,12 @@
 package info.orestes.rest.conversion;
 
-
+/**
+ * This class represents a HTTP media type which can be prioritized by a quality
+ * factor q
+ * 
+ * @author Florian
+ * 
+ */
 public class MediaType implements Comparable<MediaType> {
 	
 	public static final String TEXT_PLAIN = "text/plain";
@@ -9,6 +15,12 @@ public class MediaType implements Comparable<MediaType> {
 	private final String subtype;
 	private final float quality;
 	
+	/**
+	 * Creates a {@link MediaType} from a HTTP string representation
+	 * 
+	 * @param mediaType
+	 *            the media type string
+	 */
 	public MediaType(String mediaType) {
 		String[] parts = mediaType.split(";");
 		
@@ -33,24 +45,71 @@ public class MediaType implements Comparable<MediaType> {
 		quality = q;
 	}
 	
+	/**
+	 * Creates a media type programmatically with the default quality of 1
+	 * 
+	 * @param type
+	 *            the main type
+	 * @param subtype
+	 *            the sub type
+	 */
+	public MediaType(String type, String subtype) {
+		this(type, subtype, 1);
+	}
+	
+	/**
+	 * Creates a media type programmatically
+	 * 
+	 * @param type
+	 *            the main type
+	 * @param subtype
+	 *            the sub type
+	 * @param quality
+	 *            the quality factor
+	 */
 	public MediaType(String type, String subtype, float quality) {
 		this.type = type;
 		this.subtype = subtype;
 		this.quality = quality;
 	}
 	
+	/**
+	 * Get the main type of the media type
+	 * 
+	 * @return the main type
+	 */
 	public String getType() {
 		return type;
 	}
 	
+	/**
+	 * Get the sub type of the media type
+	 * 
+	 * @return the sub type
+	 */
 	public String getSubtype() {
 		return subtype;
 	}
 	
+	/**
+	 * Get the quality of the media type
+	 * 
+	 * @return the quality
+	 */
 	public float getQulity() {
 		return quality;
 	}
 	
+	/**
+	 * Compare this {@link MediaType} with the given one if they are compatible.
+	 * {@link MediaType}s are compatible if they declare the same main and sub
+	 * type or one or both declare the main and or sub type as a wildcard
+	 * 
+	 * @param o
+	 *            The {@link MediaType} to compare to
+	 * @return <code>true</code> if this {@link MediaType} is compatible to the
+	 *         given one, otherwise <code>false</code>
+	 */
 	public boolean isCompatible(MediaType o) {
 		if (equals(o)) {
 			return true;
