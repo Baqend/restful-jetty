@@ -10,9 +10,13 @@ public class RestServletHandler extends RestHandler {
 	
 	@Override
 	public void handle(RestRequest request, RestResponse response) throws ServletException, IOException {
-		RestServlet servlet = request.getTarget();
+		RestServlet servlet = request.getRoute().getServlet();
 		
-		servlet.service(request, response);
+		try {
+			servlet.service(request, response);
+		} catch (RuntimeException e) {
+			servlet.doCatch(request, e);
+		}
 	}
 	
 }

@@ -7,19 +7,18 @@ import info.orestes.rest.error.NotAcceptable;
 import info.orestes.rest.error.RestException;
 import info.orestes.rest.error.UnsupportedMediaType;
 import info.orestes.rest.service.EntityType;
-import info.orestes.rest.service.Method;
 import info.orestes.rest.service.RestHandler;
+import info.orestes.rest.service.RestMethod;
 import info.orestes.rest.service.RestRequest;
 import info.orestes.rest.service.RestResponse;
 import info.orestes.rest.util.Inject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
 
-import javax.servlet.AsyncEvent;
-import javax.servlet.AsyncListener;
 import javax.servlet.ServletException;
 
 import org.eclipse.jetty.http.HttpHeader;
@@ -37,22 +36,8 @@ import org.eclipse.jetty.http.HttpHeader;
  */
 public class ConversionHandler extends RestHandler {
 	
+	private static final List<MediaType> ANY = Arrays.asList(new MediaType(MediaType.ALL));
 	private final ConverterService converterService;
-	private final AsyncListener asyncListener = new AsyncListener() {
-		@Override
-		public void onTimeout(AsyncEvent event) throws IOException {}
-		
-		@Override
-		public void onStartAsync(AsyncEvent event) throws IOException {}
-		
-		@Override
-		public void onError(AsyncEvent event) throws IOException {}
-		
-		@Override
-		public void onComplete(AsyncEvent event) throws IOException {
-			postHandle((Request) event.getSuppliedRequest(), (Response) event.getSuppliedResponse());
-		}
-	};
 	
 	@Inject
 	public ConversionHandler(ConverterService converterService) {
@@ -61,49 +46,43 @@ public class ConversionHandler extends RestHandler {
 	
 	@Override
 	public void handle(RestRequest request, final RestResponse response) throws ServletException, IOException {
-		Method method = request.getRestMethod();
+		RestMethod method = request.getRestMethod();
 		
-		for (Entry<String, Object> entry : request.getArguments().entrySet()) {
-			Class<?> argType = method.getArguments().get(entry.getKey()).getValueType();
-			try {
-				if (entry.getValue() != null) {
-					entry.setValue(converterService.toObject(request, argType, (String) entry.getValue()));
+		if (!request.isAsyncStarted()) {
+			for (Entry<String, Object> entry : request.getArguments().entrySet()) {
+				Class<?> argType = method.getArguments().get(entry.getKey()).getValueType();
+				try {
+					if (entry.getValue() != null) {
+						entry.setValue(converterService.toObject(request, argType, (String) entry.getValue()));
+					}
+				} catch (Exception e) {
+					throw new BadRequest("The argument " + entry.getKey() + " can not be parsed.", e);
 				}
-			} catch (Exception e) {
-				throw new BadRequest("The argument " + entry.getKey() + " can not be parsed.", e);
 			}
 		}
 		
-		EntityType<?> requestType = method.getRequestType();
+		if (request.getEntity() == null) {
+			handleRequestEntity(request, response);
+		}
+		
+		super.handle(request, response);
+		
+		if (response.getEntity() != null && !response.isCommitted()) {
+			handelResponseEntity(request, response);
+		}
+	}
+	
+	private void handleRequestEntity(RestRequest request, RestResponse response) throws RestException, IOException {
+		EntityType<?> requestType = request.getRestMethod().getRequestType();
+		
 		if (requestType != null) {
 			MediaType mediaType = new MediaType(request.getContentType());
-			
 			try {
 				Object entity = converterService.toObject(request, mediaType, requestType);
 				request.setEntity(entity);
 			} catch (UnsupportedOperationException e) {
 				throw new UnsupportedMediaType("The request media type is not supported.", e);
 			}
-		}
-		
-		EntityType<?> responseType = method.getResponseType();
-		if (responseType != null) {
-			List<MediaType> mediaTypes = parseMediaTypes(request.getHeader(HttpHeader.ACCEPT.asString()));
-			
-			MediaType mediaType = converterService.getPreferedMediaType(mediaTypes, responseType.getRawType());
-			if (mediaType != null) {
-				response.setContentType(mediaType.toString());
-			} else {
-				throw new NotAcceptable("The requested response media types are not supported.");
-			}
-		}
-		
-		super.handle(request, response);
-		
-		if (!request.isAsyncStarted()) {
-			postHandle(request, response);
-		} else if (!request.getAsyncContext().hasOriginalRequestAndResponse()) {
-			request.getAsyncContext().addListener(asyncListener);
 		}
 	}
 	
@@ -116,20 +95,23 @@ public class ConversionHandler extends RestHandler {
 	 *            The response object
 	 * @throws IOException
 	 */
-	@SuppressWarnings("unchecked")
-	protected <T> void postHandle(Request request, Response response) throws IOException {
-		EntityType<T> responseType = (EntityType<T>) request.getRestMethod().getResponseType();
+	private void handelResponseEntity(Request request, Response response) throws IOException, RestException {
+		EntityType<?> responseType = request.getRestMethod().getResponseType();
 		
-		if (responseType != null && !response.isCommitted()) {
-			try {
-				String contentType = response.getContentType();
+		if (responseType != null) {
+			List<MediaType> mediaTypes = parseMediaTypes(request.getHeader(HttpHeader.ACCEPT.asString()));
+			
+			MediaType mediaType = converterService.getPreferedMediaType(mediaTypes, responseType.getRawType());
+			if (mediaType != null) {
+				response.setContentType(mediaType.toString());
 				
-				MediaType mediaType = contentType == null ? null : new MediaType(contentType);
-				converterService.toRepresentation(response, responseType, mediaType, response.getEntity());
-			} catch (RestException e) {
-				response.sendError(e);
-			} catch (UnsupportedOperationException e) {
-				throw new IOException("The response body can not be handled.", e);
+				try {
+					converterService.toRepresentation(response, responseType, mediaType, response.getEntity());
+				} catch (UnsupportedOperationException e) {
+					throw new IOException("The response body can not be handled.", e);
+				}
+			} else {
+				throw new NotAcceptable("The requested response media types are not supported.");
 			}
 		}
 	}
@@ -150,7 +132,7 @@ public class ConversionHandler extends RestHandler {
 			
 			return mediaTypes;
 		} else {
-			return null;
+			return ANY;
 		}
 	}
 }

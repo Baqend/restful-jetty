@@ -13,6 +13,10 @@ public class Module {
 		instances.put(Module.class, this);
 	}
 	
+	public boolean isBound(Class<?> cls) {
+		return constructors.containsKey(cls) || instances.containsKey(cls);
+	}
+	
 	public <T> void bind(Class<T> interf, Class<? extends T> binding) {
 		constructors.put(interf, getInjectableConstructor(binding));
 	}
@@ -75,7 +79,7 @@ public class Module {
 				if (c == null) {
 					c = constr;
 				} else {
-					throw new IllegalArgumentException("Only classes with one Inject constructor are acceptable");
+					throw new IllegalArgumentException("Only one Inject constructor can be defined in class " + cls);
 				}
 			} else if (constr.getParameterTypes().length == 0) {
 				defaultConstr = constr;
@@ -86,7 +90,7 @@ public class Module {
 			if (defaultConstr != null) {
 				c = defaultConstr;
 			} else {
-				throw new IllegalArgumentException("No injectable constructor is defined");
+				throw new IllegalArgumentException("No injectable constructor is defined for class " + cls);
 			}
 		}
 		

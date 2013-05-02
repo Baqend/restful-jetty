@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * <p>
@@ -48,7 +49,7 @@ public class ConverterService {
 	private static final MediaType ARGUMENT_MEDIA_TYPE = new MediaType(MediaType.TEXT_PLAIN);
 	
 	private final Module module;
-	private final Map<MediaType, Map<Class<?>, Converter<?, ?>>> accept = new HashMap<>();
+	private final Map<Class<?>, Map<MediaType, Converter<?, ?>>> accept = new HashMap<>();
 	private final Map<Class<?>, ConverterFormat<?>> formats = new HashMap<>();
 	
 	/**
@@ -96,8 +97,6 @@ public class ConverterService {
 	@Inject
 	public ConverterService(Module module) {
 		this.module = module;
-		
-		accept.put(ARGUMENT_MEDIA_TYPE, new HashMap<Class<?>, Converter<?, ?>>());
 	}
 	
 	/**
@@ -156,12 +155,12 @@ public class ConverterService {
 			for (String mediaTypeString : accepted.value()) {
 				MediaType mediaType = new MediaType(mediaTypeString);
 				
-				Map<Class<?>, Converter<?, ?>> acceptTypes = accept.get(mediaType);
+				Map<MediaType, Converter<?, ?>> acceptTypes = accept.get(converter.getTargetClass());
 				if (acceptTypes == null) {
-					accept.put(mediaType, acceptTypes = new HashMap<>());
+					accept.put(converter.getTargetClass(), acceptTypes = new HashMap<>());
 				}
 				
-				acceptTypes.put(converter.getTargetClass(), converter);
+				acceptTypes.put(mediaType, converter);
 			}
 		}
 		
@@ -192,9 +191,9 @@ public class ConverterService {
 	private <T, F> Converter<T, F> getConverter(MediaType mediaType, Class<?> type, Class<?>[] genericParams) {
 		Converter<?, ?> converter = null;
 		
-		Map<Class<?>, Converter<?, ?>> acceptTypes = accept.get(mediaType);
+		Map<MediaType, Converter<?, ?>> acceptTypes = accept.get(type);
 		if (acceptTypes != null) {
-			converter = acceptTypes.get(type);
+			converter = acceptTypes.get(mediaType);
 		}
 		
 		check(converter, type, genericParams);
@@ -447,6 +446,24 @@ public class ConverterService {
 	}
 	
 	/**
+	 * Gets a set of all {@link MediaType}s that can be handled for the given
+	 * type. The returned set is empty if the type is not supported.
+	 * 
+	 * @param type
+	 *            The type to handle
+	 * @return All supported {@link MediaType}s
+	 */
+	public Set<MediaType> getAcceptableMediaTypes(Class<?> type) {
+		Map<MediaType, Converter<?, ?>> map = accept.get(type);
+		
+		if (map == null) {
+			return Collections.emptySet();
+		} else {
+			return Collections.unmodifiableSet(map.keySet());
+		}
+	}
+	
+	/**
 	 * Gets the best {@link MediaType} form the list of prioritized media types
 	 * which is supported for the given type by this {@link ConverterService}
 	 * instance
@@ -462,9 +479,9 @@ public class ConverterService {
 		Collections.sort(acceptedMediaTypes);
 		
 		for (MediaType mediaType : acceptedMediaTypes) {
-			for (Entry<MediaType, Map<Class<?>, Converter<?, ?>>> entry : accept.entrySet()) {
-				if (entry.getValue().containsKey(type) && entry.getKey().isCompatible(mediaType)) {
-					return entry.getKey();
+			for (MediaType supportedType : getAcceptableMediaTypes(type)) {
+				if (supportedType.isCompatible(mediaType)) {
+					return supportedType;
 				}
 			}
 		}
@@ -489,14 +506,14 @@ public class ConverterService {
 		private final Map<String, Class<?>> argumentTypes = new HashMap<>();
 		
 		private Types() {
-			for (Map<Class<?>, Converter<?, ?>> entry : accept.values()) {
-				for (Class<?> type : entry.keySet()) {
-					entityTypes.put(type.getSimpleName(), type);
+			for (Entry<Class<?>, Map<MediaType, Converter<?, ?>>> entry : accept.entrySet()) {
+				Class<?> type = entry.getKey();
+				
+				entityTypes.put(type.getSimpleName(), type);
+				
+				if (entry.getValue().containsKey(ARGUMENT_MEDIA_TYPE)) {
+					argumentTypes.put(type.getSimpleName(), type);
 				}
-			}
-			
-			for (Class<?> cls : accept.get(ARGUMENT_MEDIA_TYPE).keySet()) {
-				argumentTypes.put(cls.getSimpleName(), cls);
 			}
 		}
 		

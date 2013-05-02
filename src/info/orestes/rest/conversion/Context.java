@@ -1,12 +1,12 @@
 package info.orestes.rest.conversion;
 
 import info.orestes.rest.Request;
-import info.orestes.rest.service.Method;
+import info.orestes.rest.service.RestMethod;
 
 public interface Context {
 	
 	/**
-	 * Returns the matched and converted {@link Method} argument if the
+	 * Returns the matched and converted {@link RestMethod} argument if the
 	 * {@link ConversionHandler} had previously processed the {@link Request}
 	 * otherwise the string value
 	 * 
@@ -16,7 +16,7 @@ public interface Context {
 	public <T> T getArgument(String name);
 	
 	/**
-	 * Set the matched {@link Method} argument to the given value. This method
+	 * Set the matched {@link RestMethod} argument to the given value. This method
 	 * is used to set extracted arguments form the request entity.
 	 * 
 	 * @param name

@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -25,9 +27,9 @@ public class ServiceDocumentParser {
 	private static final Pattern PARAM_PATTERN = Pattern.compile("@(\\w+)\\s*:\\s*(\\w+)\\s+(.*)");
 	private static final Pattern RESULT_PATTERN = Pattern.compile(">\\s*(\\d{3})\\s+(.*)");
 	private static final Pattern SIGNATURE_PATTERN = Pattern
-			.compile("([A-Z]+)\\s+(/\\S*)\\s+(\\w[\\w\\.]*)(\\s*\\(([^\\)]*)\\))?(\\s*:(.*))?");
+		.compile("([A-Z]+)\\s+(/\\S*)\\s+(\\w[\\w\\.]*)(\\s*\\(([^\\)]*)\\))?(\\s*:(.*))?");
 	private static final Pattern ENTITY_TYPE_PATTERN = Pattern
-			.compile("\\s*(\\w+)\\s*(\\[\\s*(\\w+\\s*(,\\s*\\w+\\s*)*)\\])?");
+		.compile("\\s*(\\w+)\\s*(\\[\\s*(\\w+\\s*(,\\s*\\w+\\s*)*)\\])?");
 	
 	private final ServiceDocumentTypes types;
 	private final ClassLoader classLoader;
@@ -236,14 +238,15 @@ public class ServiceDocumentParser {
 	private boolean parseSignature(String line) throws IOException {
 		Matcher matcher = SIGNATURE_PATTERN.matcher(line);
 		if (matcher.matches()) {
-			PathElement[] pathElements = parsePath(matcher.group(2));
+			List<PathElement> pathElements = parsePath(matcher.group(2));
 			
 			EntityType<?> requestType = matcher.group(5) == null ? null : parseEntityType(matcher.group(5));
 			EntityType<?> responseType = matcher.group(7) == null ? null : parseEntityType(matcher.group(7));
 			
-			Method method = new Method(currentName, currentDescription.toArray(new String[currentDescription.size()]),
-					matcher.group(1), pathElements, getClassForTarget(matcher.group(3)), currentResults, requestType,
-					responseType);
+			RestMethod method = new RestMethod(currentName, currentDescription.toArray(new String[currentDescription
+				.size()]),
+				matcher.group(1), pathElements, getClassForTarget(matcher.group(3)), currentResults, requestType,
+				responseType);
 			
 			currentGroup.add(method);
 			
@@ -253,7 +256,7 @@ public class ServiceDocumentParser {
 		}
 	}
 	
-	private PathElement[] parsePath(String completePath) throws IOException {
+	private List<PathElement> parsePath(String completePath) throws IOException {
 		int queryIndex = completePath.indexOf('?');
 		int matrixIndex = completePath.indexOf(';');
 		
@@ -297,7 +300,7 @@ public class ServiceDocumentParser {
 			}
 		}
 		
-		return elements.toArray(new PathElement[elements.size()]);
+		return new ArrayList<>(elements);
 	}
 	
 	private PathElement parsePathElement(String part) throws IOException {
@@ -321,7 +324,7 @@ public class ServiceDocumentParser {
 			if (value.isEmpty()) {
 				value = null;
 			} else {
-				value = UrlEncoded.decodeString(value, 0, value.length(), "UTF-8");
+				value = UrlEncoded.decodeString(value, 0, value.length(), Charset.forName("UTF-8"));
 			}
 			
 			name = name.substring(0, assign);

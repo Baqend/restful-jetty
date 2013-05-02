@@ -1,7 +1,7 @@
 package info.orestes.rest.service;
 
 import info.orestes.rest.Request;
-import info.orestes.rest.RestServlet;
+import info.orestes.rest.service.RestRouter.Route;
 
 import java.util.Map;
 
@@ -12,17 +12,16 @@ public class RestRequest extends HttpServletRequestWrapper implements Request {
 	
 	private final org.eclipse.jetty.server.Request baseRequest;
 	private final Map<String, Object> arguments;
-	private final Method restMethod;
-	private final RestServlet target;
+	private final Route route;
 	private Object entity;
 	
-	public RestRequest(org.eclipse.jetty.server.Request baseRequest, HttpServletRequest request, Method restMethod,
-			Map<String, Object> arguments, RestServlet target) {
+	@SuppressWarnings("unchecked")
+	public RestRequest(org.eclipse.jetty.server.Request baseRequest, HttpServletRequest request, Route route,
+		Map<String, ?> arguments) {
 		super(request);
 		
-		this.arguments = arguments;
-		this.restMethod = restMethod;
-		this.target = target;
+		this.arguments = (Map<String, Object>) arguments;
+		this.route = route;
 		this.baseRequest = baseRequest;
 	}
 	
@@ -31,13 +30,13 @@ public class RestRequest extends HttpServletRequestWrapper implements Request {
 	}
 	
 	@Override
-	public RestServlet getTarget() {
-		return target;
+	public Route getRoute() {
+		return route;
 	}
 	
 	@Override
-	public Method getRestMethod() {
-		return restMethod;
+	public RestMethod getRestMethod() {
+		return route.getMethod();
 	}
 	
 	@Override

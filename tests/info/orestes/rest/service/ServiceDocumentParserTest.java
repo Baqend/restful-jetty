@@ -1,10 +1,5 @@
 package info.orestes.rest.service;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
 import info.orestes.rest.RestServlet;
 import info.orestes.rest.Testing1;
 import info.orestes.rest.Testing2;
@@ -23,6 +18,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
 public class ServiceDocumentParserTest {
 	
 	public static final Pattern ROUTE_TEST = Pattern.compile("route([A-Z]*)([0-9]*)");
@@ -31,8 +32,8 @@ public class ServiceDocumentParserTest {
 	public TestName testName = new TestName();
 	
 	public static List<MethodGroup> groups;
-	public static Map<String, Method> methods = new HashMap<String, Method>();
-	public Method method;
+	public static Map<String, RestMethod> methods = new HashMap<String, RestMethod>();
+	public RestMethod method;
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -41,7 +42,7 @@ public class ServiceDocumentParserTest {
 		groups = parser.parse("/service.test");
 		
 		for (MethodGroup group : groups) {
-			for (Method method : group) {
+			for (RestMethod method : group) {
 				methods.put(method.getName(), method);
 			}
 		}
@@ -75,6 +76,8 @@ public class ServiceDocumentParserTest {
 		
 		assertAction("GET");
 		
+		assertSignatureParts(1, 0);
+		
 		assertPath(0, "");
 		asserTarget(Testing1.class);
 		asserRequestType(String.class);
@@ -92,6 +95,8 @@ public class ServiceDocumentParserTest {
 		
 		assertAction("GET");
 		
+		assertSignatureParts(1, 0);
+		
 		assertPath(0, "test");
 		
 		asserTarget(Testing2.class);
@@ -107,6 +112,8 @@ public class ServiceDocumentParserTest {
 		assertResultSize(0);
 		
 		assertAction("POST");
+		
+		assertSignatureParts(2, 0);
 		
 		assertPath(0, "test");
 		assertPath(1, "33");
@@ -124,6 +131,8 @@ public class ServiceDocumentParserTest {
 		assertResultSize(0);
 		
 		assertAction("PUT");
+		
+		assertSignatureParts(3, 0);
 		
 		assertPath(0, "a");
 		assertPath(1, "b");
@@ -143,6 +152,8 @@ public class ServiceDocumentParserTest {
 		
 		assertAction("DELETE");
 		
+		assertSignatureParts(3, 0);
+		
 		assertPath(0, "a");
 		assertPath(1, "b");
 		assertPath(2, "c");
@@ -161,6 +172,8 @@ public class ServiceDocumentParserTest {
 		
 		assertAction("GET");
 		
+		assertSignatureParts(1, 0);
+		
 		assertVariable(0, "id", Integer.class);
 		
 		asserTarget(Testing1.class);
@@ -176,6 +189,8 @@ public class ServiceDocumentParserTest {
 		assertResultSize(0);
 		
 		assertAction("GET");
+		
+		assertSignatureParts(2, 0);
 		
 		assertPath(0, "test");
 		assertVariable(1, "test", String.class);
@@ -193,6 +208,8 @@ public class ServiceDocumentParserTest {
 		assertResultSize(0);
 		
 		assertAction("POST");
+		
+		assertSignatureParts(3, 0);
 		
 		assertVariable(0, "test", Boolean.class);
 		assertPath(1, "33");
@@ -214,6 +231,8 @@ public class ServiceDocumentParserTest {
 		
 		assertAction("PUT");
 		
+		assertSignatureParts(4, 0);
+		
 		assertVariable(0, "a", String.class);
 		assertVariable(1, "b", Boolean.class);
 		assertVariable(2, "c", Integer.class);
@@ -233,6 +252,8 @@ public class ServiceDocumentParserTest {
 		
 		assertAction("GET");
 		
+		assertSignatureParts(1, 1);
+		
 		assertPath(0, "");
 		assertQuery(1, "id", false, Integer.class, null);
 		
@@ -249,6 +270,8 @@ public class ServiceDocumentParserTest {
 		assertResultSize(0);
 		
 		assertAction("GET");
+		
+		assertSignatureParts(2, 1);
 		
 		assertPath(0, "test");
 		assertPath(1, "");
@@ -267,6 +290,8 @@ public class ServiceDocumentParserTest {
 		assertResultSize(0);
 		
 		assertAction("POST");
+		
+		assertSignatureParts(1, 3);
 		
 		assertPath(0, "");
 		assertQuery(1, "test", true, String.class, null);
@@ -287,6 +312,8 @@ public class ServiceDocumentParserTest {
 		
 		assertAction("PUT");
 		
+		assertSignatureParts(1, 3);
+		
 		assertPath(0, "test");
 		assertQuery(1, "a", true, String.class, null);
 		assertQuery(2, "b", false, Integer.class, null);
@@ -306,6 +333,8 @@ public class ServiceDocumentParserTest {
 		
 		assertAction("GET");
 		
+		assertSignatureParts(1, 1);
+		
 		assertPath(0, "");
 		assertMatrix(1, "id", false, Integer.class, null);
 		
@@ -322,6 +351,8 @@ public class ServiceDocumentParserTest {
 		assertResultSize(0);
 		
 		assertAction("GET");
+		
+		assertSignatureParts(2, 1);
 		
 		assertPath(0, "testing");
 		assertPath(1, "");
@@ -341,6 +372,8 @@ public class ServiceDocumentParserTest {
 		
 		assertAction("POST");
 		
+		assertSignatureParts(1, 3);
+		
 		assertPath(0, "");
 		assertMatrix(1, "test", true, String.class, null);
 		assertMatrix(2, "id", true, Integer.class, "33");
@@ -359,6 +392,8 @@ public class ServiceDocumentParserTest {
 		assertResultSize(0);
 		
 		assertAction("PUT");
+		
+		assertSignatureParts(1, 3);
 		
 		assertPath(0, "test");
 		assertMatrix(1, "a", true, String.class, null);
@@ -383,6 +418,8 @@ public class ServiceDocumentParserTest {
 		
 		assertAction("GET");
 		
+		assertSignatureParts(3, 3);
+		
 		assertPath(0, "db");
 		assertVariable(1, "ns", "The name of the class", String.class);
 		assertPath(2, "db_all");
@@ -403,6 +440,8 @@ public class ServiceDocumentParserTest {
 		assertResultSize(0);
 		
 		assertAction("GET");
+		
+		assertSignatureParts(5, 9);
 		
 		assertPath(0, "db");
 		assertVariable(1, "a", String.class);
@@ -431,6 +470,8 @@ public class ServiceDocumentParserTest {
 		
 		assertAction("GET");
 		
+		assertSignatureParts(1, 0);
+		
 		assertPath(0, "generics");
 		asserTarget(Testing1.class);
 		asserRequestType(Map.class, String.class, Integer.class);
@@ -443,6 +484,8 @@ public class ServiceDocumentParserTest {
 		assertResultSize(0);
 		
 		assertAction("GET");
+		
+		assertSignatureParts(2, 1);
 		
 		assertPath(0, "generics");
 		assertPath(1, "");
@@ -482,9 +525,14 @@ public class ServiceDocumentParserTest {
 		assertPathElement(index, Type.QUERY, name, description, optional, valueType, defaultValue);
 	}
 	
+	private void assertSignatureParts(int i, int j) {
+		assertEquals(i, method.getFixedSignature().size());
+		assertEquals(j, method.getDynamicSignature().size());
+	}
+	
 	private void assertPathElement(int index, Type type, String name, String description, boolean optional,
 			Class<?> valueType, String defaultValue) {
-		PathElement element = method.getSignature()[index];
+		PathElement element = method.getSignature().get(index);
 		
 		assertSame(type, element.getType());
 		assertEquals(name, element.getName());

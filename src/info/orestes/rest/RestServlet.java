@@ -193,6 +193,22 @@ public abstract class RestServlet extends GenericServlet {
 		service((Request) req, (Response) res);
 	}
 	
+	/**
+	 * Will be called for each unexpected exception which was raised by this
+	 * {@link RestServlet} instance
+	 * 
+	 * <p>
+	 * The default behavior is rethrowing the exception
+	 * 
+	 * @param request
+	 *            Than request which was handled and raised the exception
+	 * @param e
+	 *            The unexpected exception
+	 */
+	public void doCatch(Request request, RuntimeException e) throws RestException {
+		throw e;
+	}
+	
 	protected void notSupported(Request request, Response response) throws IOException {
 		String protocol = request.getProtocol();
 		

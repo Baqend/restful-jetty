@@ -3,7 +3,7 @@ package info.orestes.rest.service;
 import java.util.LinkedList;
 
 @SuppressWarnings("serial")
-public class MethodGroup extends LinkedList<Method> {
+public class MethodGroup extends LinkedList<RestMethod> {
 	
 	private final String description;
 	

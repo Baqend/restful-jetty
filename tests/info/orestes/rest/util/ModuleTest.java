@@ -1,10 +1,11 @@
 package info.orestes.rest.util;
 
+import org.junit.Test;
+
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-
-import org.junit.Test;
 
 public class ModuleTest {
 	
@@ -14,6 +15,7 @@ public class ModuleTest {
 	public final void testBind() {
 		Object instance = new Object();
 		
+		assertFalse(module.isBound(Object.class));
 		try {
 			module.moduleInstance(Object.class);
 			fail();
@@ -22,13 +24,19 @@ public class ModuleTest {
 		module.bind(Object.class, instance);
 		
 		assertSame(instance, module.moduleInstance(Object.class));
+		assertTrue(module.isBound(Object.class));
 	}
 	
 	@Test
 	public final void testBindClass() {
+		assertFalse(module.isBound(Object.class));
+		
 		module.bind(Object.class, DefaultConstructorConstr.class);
+		assertTrue(module.isBound(Object.class));
 		
 		Object test = module.moduleInstance(Object.class);
+		
+		assertTrue(module.isBound(Object.class));
 		assertTrue(test instanceof DefaultConstructorConstr);
 		assertSame(test, module.moduleInstance(Object.class));
 	}

@@ -10,20 +10,24 @@ import javax.servlet.AsyncContext;
 public class MyAsyncServlet extends RestServlet {
 	
 	@Override
-	public void doGet(Request request, final Response response) throws RestException, IOException {
-		final AsyncContext context = request.startAsync(request, response);
+	public void doGet(final Request request, final Response response) throws RestException, IOException {
 		
-		context.start(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					Thread.sleep(10000);
-				} catch (InterruptedException e) {}
-				
-				response.setEntity("Text");
-				
-				context.complete();
-			}
-		});
+		String result = (String) request.getAttribute("result");
+		if (result == null) {
+			final AsyncContext context = request.startAsync(request, response);
+			context.start(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						Thread.sleep(10000);
+					} catch (InterruptedException e) {}
+					
+					request.setAttribute("result", "Text");
+					context.dispatch();
+				}
+			});
+		} else {
+			response.setEntity(result);
+		}
 	}
 }

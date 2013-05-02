@@ -1,8 +1,8 @@
 import info.orestes.rest.conversion.ConversionHandler;
 import info.orestes.rest.conversion.ConverterService;
-import info.orestes.rest.service.Method;
 import info.orestes.rest.service.MethodGroup;
 import info.orestes.rest.service.RestErrorHandler;
+import info.orestes.rest.service.RestMethod;
 import info.orestes.rest.service.RestRouter;
 import info.orestes.rest.service.RestServletHandler;
 import info.orestes.rest.service.ServiceDocumentParser;
@@ -41,7 +41,7 @@ public class SimpleServer {
 		// server.addConnector(connector);
 		
 		RestRouter router = new RestRouter(module);
-		for (List<Method> list : lists) {
+		for (List<RestMethod> list : lists) {
 			router.addAll(list);
 		}
 		
@@ -54,13 +54,14 @@ public class SimpleServer {
 		
 		ContextHandler handler = new ContextHandler(context, "/");
 		handler.setHandler(router);
+		handler.setErrorHandler(new RestErrorHandler(converterService));
+		
 		//
 		// // ContextHandler webHandler = new ContextHandler(context, "/");
 		// // handler.setHandler(new ResourceHandler().);
 		//
-		Server server = new Server(80);
+		Server server = new Server(8080);
 		server.setHandler(context);
-		server.addBean(new RestErrorHandler(converterService));
 		
 		server.start();
 		server.join();

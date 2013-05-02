@@ -1,12 +1,5 @@
 package info.orestes.rest.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import info.orestes.rest.service.PathElement.Type;
 import info.orestes.rest.util.Module;
 
@@ -22,9 +15,19 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.http.HttpURI;
+import org.eclipse.jetty.util.MultiMap;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class RestRouterTest {
 	
@@ -41,52 +44,52 @@ public class RestRouterTest {
 	@Before
 	public void setUp() {
 		router = new RestRouter(new Module());
-		for (List<Method> group : groups) {
+		for (List<RestMethod> group : groups) {
 			router.addAll(group);
 		}
 	}
 	
 	@Test
 	public void testAllMethods() {
-		for (Method method : router.getMethods()) {
-			Map<String, String> args = new HashMap<>();
+		for (RestMethod method : router.getMethods()) {
+			Map<String, String[]> params = new HashMap<>();
 			
 			int value = 1;
 			for (PathElement el : method.getSignature()) {
 				if (el.getType() != Type.PATH) {
-					args.put(el.getName(), "value" + value++);
+					params.put(el.getName(), new String[] { "value" + value++ });
 				}
 			}
 			
-			assertMethod(method, method.getAction(), method.createURI(args), args);
+			assertMethod(method, method.getAction(), method.createURI(params), params);
 		}
 	}
 	
 	@Test
 	public void testAllMethodsWithoutOptionalParams() {
-		for (Method method : router.getMethods()) {
-			Map<String, String> args = new HashMap<>();
+		for (RestMethod method : router.getMethods()) {
+			Map<String, String[]> params = new HashMap<>();
 			
 			int value = 1;
 			for (PathElement el : method.getSignature()) {
 				if (el.getType() != Type.PATH && !el.isOptional()) {
-					args.put(el.getName(), "value" + value++);
+					params.put(el.getName(), new String[] { "value" + value++ });
 				}
 			}
 			
-			assertMethod(method, method.getAction(), method.createURI(args), args);
+			assertMethod(method, method.getAction(), method.createURI(params), params);
 		}
 	}
 	
 	@Test
 	public void testURIEncoding() {
-		Method method = groups.get(4).get(0);
+		RestMethod method = groups.get(4).get(0);
 		
-		Map<String, String> args = new HashMap<>();
-		args.put("ns", "käse+=&br%20ot /;g=");
-		args.put("name", "käse+=&br%20ot /;g=");
+		Map<String, String[]> params = new HashMap<>();
+		params.put("ns", new String[] { "käse+=&br%20ot /;g=" });
+		params.put("name", new String[] { "käse+=&br%20ot /;g=" });
 		
-		String uri = method.createURI(args);
+		String uri = method.createURI(params);
 		String ns = uri.substring(4, uri.indexOf("/db_all"));
 		String name = uri.substring(uri.indexOf("?name=") + 6);
 		
@@ -95,14 +98,14 @@ public class RestRouterTest {
 			assertEquals(-1, name.indexOf(seq));
 		}
 		
-		assertMethod(method, method.getAction(), uri, args);
+		assertMethod(method, method.getAction(), uri, params);
 	}
 	
 	@Test
 	public void testGetMethods() {
 		int i = 0;
-		for (List<Method> group : groups) {
-			for (Method method : group) {
+		for (List<RestMethod> group : groups) {
+			for (RestMethod method : group) {
 				assertTrue(router.getMethods().contains(method));
 				i++;
 			}
@@ -115,9 +118,9 @@ public class RestRouterTest {
 	public void testRemove() {
 		int size = router.getMethods().size();
 		
-		Method method = groups.get(0).get(0);
+		RestMethod method = groups.get(0).get(0);
 		
-		assertMethod(method, "GET", "/", Collections.<String, String> emptyMap());
+		assertMethod(method, "GET", "/", Collections.<String, String[]> emptyMap());
 		
 		router.remove(method);
 		
@@ -127,9 +130,9 @@ public class RestRouterTest {
 	
 	@Test
 	public void testRemoveAll() {
-		Method method = groups.get(0).get(0);
+		RestMethod method = groups.get(0).get(0);
 		
-		assertMethod(method, "GET", "/", Collections.<String, String> emptyMap());
+		assertMethod(method, "GET", "/", Collections.<String, String[]> emptyMap());
 		
 		router.removeAll(new ArrayList<>(router.getMethods()));
 		
@@ -146,16 +149,16 @@ public class RestRouterTest {
 		assertMethod(null, "GET", "/", null);
 	}
 	
-	protected void assertMethod(final Method expected, final String action, final String path,
-			final Map<String, String> args) {
+	protected void assertMethod(final RestMethod expected, final String action, final String path,
+			final Map<String, String[]> params) {
 		
 		router.setHandler(new RestHandler() {
 			@Override
 			public void handle(RestRequest request, RestResponse response) throws IOException, ServletException {
 				assertSame(path + " was mismatched", expected, request.getRestMethod());
 				
-				for (Entry<String, String> entry : args.entrySet()) {
-					assertEquals(entry.getValue(), request.getArgument(entry.getKey()));
+				for (Entry<String, String[]> entry : params.entrySet()) {
+					assertEquals(entry.getValue()[0], request.getArgument(entry.getKey()));
 				}
 				
 				response.setStatus(RestResponse.SC_OK);
@@ -166,8 +169,10 @@ public class RestRouterTest {
 		HttpServletResponse res = mock(HttpServletResponse.class);
 		
 		HttpURI uri = new HttpURI(path);
+		MultiMap<String> p = new MultiMap<>();
 		when(req.getUri()).thenReturn(uri);
 		when(req.getMethod()).thenReturn(action);
+		when(req.getParameters()).thenReturn(p);
 		
 		try {
 			router.start();

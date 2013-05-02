@@ -10,10 +10,12 @@ package info.orestes.rest.conversion;
 public class MediaType implements Comparable<MediaType> {
 	
 	public static final String TEXT_PLAIN = "text/plain";
+	public static final String ALL = "*/*";
 	
 	private final String type;
 	private final String subtype;
 	private final float quality;
+	private String mediaType;
 	
 	/**
 	 * Creates a {@link MediaType} from a HTTP string representation
@@ -153,17 +155,21 @@ public class MediaType implements Comparable<MediaType> {
 	
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append(getType());
-		builder.append("/");
-		builder.append(getSubtype());
-		
-		if (getQulity() != 1) {
-			builder.append(";q=");
-			builder.append(getQulity());
+		if (mediaType == null) {
+			StringBuilder builder = new StringBuilder();
+			builder.append(getType());
+			builder.append("/");
+			builder.append(getSubtype());
+			
+			if (getQulity() != 1) {
+				builder.append(";q=");
+				builder.append(getQulity());
+			}
+			
+			mediaType = builder.toString();
 		}
 		
-		return builder.toString();
+		return mediaType;
 	}
 	
 	@Override

@@ -2,9 +2,9 @@ package info.orestes.rest;
 
 import info.orestes.rest.conversion.ConversionHandler;
 import info.orestes.rest.conversion.ReadableContext;
-import info.orestes.rest.service.Method;
+import info.orestes.rest.service.RestMethod;
 import info.orestes.rest.service.RestRouter;
-import info.orestes.rest.service.RestServletHandler;
+import info.orestes.rest.service.RestRouter.Route;
 
 import java.util.Map;
 
@@ -18,23 +18,23 @@ public interface Request extends ReadableContext, HttpServletRequest {
 	 * 
 	 * @return The matched method
 	 */
-	public Method getRestMethod();
+	public RestMethod getRestMethod();
 	
 	/**
-	 * Returns the target {@link RestServlet} which is finally executed by the
-	 * {@link RestServletHandler}
+	 * Returns the route {@link Route} which was selected by the
+	 * {@link RestRouter} to route the request
 	 * 
-	 * @return The {@link RestServlet} which is executed at the end of the chain
+	 * @return The {@link Route} which is used to handle the request
 	 */
-	public RestServlet getTarget();
+	public Route getRoute();
 	
 	/**
-	 * Returns the matched {@link Method} arguments which are declared in the
-	 * route
+	 * Returns the matched {@link RestMethod} arguments which are declared in
+	 * the route
 	 * 
 	 * @return The matched arguments
 	 */
-	public Map<String, Object> getArguments();
+	public Map<String, ?> getArguments();
 	
 	@Override
 	public <T> T getArgument(String name);
