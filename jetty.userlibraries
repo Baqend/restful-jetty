@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<eclipse-userlibraries version="2">
+    <library name="jetty" systemlibrary="false">
+        <archive path="/restful-jetty/lib/jetty-http-9.0.0.RC2.jar" source="/restful-jetty/lib/jetty-http-9.0.0.RC2-sources.jar"/>
+        <archive path="/restful-jetty/lib/jetty-io-9.0.0.RC2.jar" source="/restful-jetty/lib/jetty-io-9.0.0.RC2-sources.jar"/>
+        <archive path="/restful-jetty/lib/jetty-server-9.0.0.RC2.jar" source="/restful-jetty/lib/jetty-server-9.0.0.RC2-sources.jar"/>
+        <archive path="/restful-jetty/lib/jetty-util-9.0.0.RC2.jar" source="/restful-jetty/lib/jetty-util-9.0.0.RC2-sources.jar"/>
+        <archive javadoc="http://docs.oracle.com/javaee/6/api/" path="/restful-jetty/lib/servlet-api-3.0.jar"/>
+        <archive path="/restful-jetty/lib/jetty-client-9.0.0.RC2.jar" source="/restful-jetty/lib/jetty-client-9.0.0.RC2-sources.jar"/>
+    </library>
+</eclipse-userlibraries>
