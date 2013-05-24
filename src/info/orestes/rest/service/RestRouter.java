@@ -60,7 +60,7 @@ public class RestRouter extends HandlerWrapper {
 			
 			for (Route route : getRoutes(pathParts.size())) {
 				String method = request.getMethod();
-				if (method.equals("HEAD")) {
+				if (method.equals("HEAD") || method.equals("OPTIONS")) {
 					method = "GET";
 				}
 				

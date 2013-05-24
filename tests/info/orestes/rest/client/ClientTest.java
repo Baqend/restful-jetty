@@ -63,7 +63,6 @@ public class ClientTest {
 		server.start();
 		
 		ConverterService converterService = module.moduleInstance(ConverterService.class);
-		converterService.initConverters();
 		
 		client = new RestClient("http://localhost:8080/", converterService);
 		client.start();

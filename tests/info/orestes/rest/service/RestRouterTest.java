@@ -66,6 +66,20 @@ public class RestRouterTest {
 	}
 	
 	@Test
+	public void testHeadRoutedAsGet() {
+		RestMethod method = router.getMethods().get(0);
+		
+		assertMethod(method, "HEAD", "/", new HashMap<String, String[]>());
+	}
+	
+	@Test
+	public void testOptionsRoutedAsGet() {
+		RestMethod method = router.getMethods().get(0);
+		
+		assertMethod(method, "OPTIONS", "/", new HashMap<String, String[]>());
+	}
+	
+	@Test
 	public void testAllMethodsWithoutOptionalParams() {
 		for (RestMethod method : router.getMethods()) {
 			Map<String, String[]> params = new HashMap<>();

@@ -1,7 +1,5 @@
 package info.orestes.rest.conversion;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import info.orestes.rest.conversion.format.TestFormat;
 import info.orestes.rest.conversion.testing.LongConverter;
 import info.orestes.rest.util.Module;
@@ -11,6 +9,9 @@ import java.util.Arrays;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class ContentNegotiationTest {
 	
@@ -23,7 +24,7 @@ public class ContentNegotiationTest {
 	@Accept(value = "text/xml")
 	private static class XMLConverter extends LongConverter {}
 	
-	ConverterService cs = new ConverterService(new Module());
+	ConverterService cs = new ConverterService(new Module(), false);
 	
 	@Before
 	public void setUp() throws Exception {
@@ -64,43 +65,43 @@ public class ContentNegotiationTest {
 	@Test
 	public void testAsteriskAsterisk() {
 		assertPrefered(new MediaType("text/html"), new MediaType("text/plain"), new MediaType("image/*"),
-				new MediaType("*/*"));
+			new MediaType("*/*"));
 	}
 	
 	@Test
 	public void testAsteriskWithQuality1() {
 		assertPrefered(new MediaType("text/html"), new MediaType("text/plain"), new MediaType("image/*; q=0.9"),
-				new MediaType("*/*; q=0.8"));
+			new MediaType("*/*; q=0.8"));
 	}
 	
 	@Test
 	public void testAsteriskWithQuality2() {
 		assertPrefered(new MediaType("application/json"), new MediaType("text/plain"), new MediaType(
-				"application/*; q=0.9"), new MediaType("*/*; q=0.8"));
+			"application/*; q=0.9"), new MediaType("*/*; q=0.8"));
 	}
 	
 	@Test
 	public void testAsteriskWithQuality3() {
 		assertPrefered(new MediaType("application/json"), new MediaType("text/html; q=0.5"), new MediaType(
-				"application/*; q=0.9"), new MediaType("*/*; q=0.8"));
+			"application/*; q=0.9"), new MediaType("*/*; q=0.8"));
 	}
 	
 	@Test
 	public void testOrder() {
 		assertPrefered(new MediaType("application/json"), new MediaType("text/plain"),
-				new MediaType("application/json"), new MediaType("*/*"));
+			new MediaType("application/json"), new MediaType("*/*"));
 	}
 	
 	@Test
 	public void testOrderWithQualityAndAsterisk() {
 		assertPrefered(new MediaType("application/json"), new MediaType("application/json; q=0.8"), new MediaType(
-				"text/plain"), new MediaType("*/*; q=0.8"));
+			"text/plain"), new MediaType("*/*; q=0.8"));
 	}
 	
 	@Test
 	public void testAdditionalAttributes() {
 		assertPrefered(new MediaType("application/json"), new MediaType("text/html; eq=4; q=0.2"), new MediaType(
-				"application/json; testing; q=0.8; quality=0.1;"), new MediaType("*/*; attr=34; sdf; q=0.8"));
+			"application/json; testing; q=0.8; quality=0.1;"), new MediaType("*/*; attr=34; sdf; q=0.8"));
 	}
 	
 	@Test

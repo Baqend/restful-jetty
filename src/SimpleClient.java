@@ -12,7 +12,6 @@ public class SimpleClient {
 		Module module = new Module();
 		
 		ConverterService converterService = module.inject(ConverterService.class);
-		converterService.initConverters();
 		
 		RestClient restClient = new RestClient("http://localhost:8080/", converterService);
 		restClient.start();

@@ -91,19 +91,43 @@ public class ConverterService {
 	 * Constructs a new Converter service with a {@link Module} that is being
 	 * used to instantiate loaded {@link Converter}s
 	 * 
+	 * This constructor also auto loads all converters by calling
+	 * {@link #loadConverters()}
+	 * 
 	 * @param module
 	 *            The module used to create loaded converters
 	 */
 	@Inject
 	public ConverterService(Module module) {
+		this(module, true);
+	}
+	
+	/**
+	 * Constructs a new Converter service with a {@link Module} that is being
+	 * used to instantiate loaded {@link Converter}s
+	 * 
+	 * @param module
+	 *            The module used to create loaded converters
+	 * @param loadConverters
+	 *            ste this argument to <code>false</code> to prevent auto
+	 *            loading of the {@link Converter}s. They can be loaded with
+	 *            {@link #loadConverters()} afterwards
+	 * 
+	 */
+	public ConverterService(Module module, boolean loadConverters) {
 		this.module = module;
+		
+		if (loadConverters) {
+			loadConverters();
+		}
 	}
 	
 	/**
 	 * Load all {@link ConverterFormat}s form the {@value #FORMAT_PACKAGE_NAME}
-	 * package and add them to the {@link ConverterService}
+	 * package and add them to the {@link ConverterService
+
 	 */
-	public void initConverters() {
+	public void loadConverters() {
 		for (Class<?> cls : ClassUtil.getPackageClasses(FORMAT_PACKAGE_NAME)) {
 			try {
 				if (!Modifier.isAbstract(cls.getModifiers())) {

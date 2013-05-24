@@ -24,7 +24,6 @@ public class SimpleServer {
 		Module module = new Module();
 		
 		ConverterService converterService = module.inject(ConverterService.class);
-		converterService.initConverters();
 		
 		ServiceDocumentParser parser = new ServiceDocumentParser(converterService.createServiceDocumentTypes());
 		

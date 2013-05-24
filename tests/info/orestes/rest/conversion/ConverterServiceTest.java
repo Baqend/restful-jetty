@@ -1,8 +1,5 @@
 package info.orestes.rest.conversion;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import info.orestes.rest.GenericEntity;
 import info.orestes.rest.conversion.ConverterService.Types;
 import info.orestes.rest.conversion.format.GenericTestFormat;
@@ -23,6 +20,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockitoAnnotations;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 public class ConverterServiceTest {
 	public static final String TEST_TYPE = "application/test.java-object";
 	public static final MediaType TEST_MEDIA_TYPE = new MediaType(TEST_TYPE);
@@ -34,7 +35,7 @@ public class ConverterServiceTest {
 	public void setUp() {
 		MockitoAnnotations.initMocks(this);
 		
-		cs = new ConverterService(new Module());
+		cs = new ConverterService(new Module(), false);
 		called = false;
 	}
 	
@@ -92,16 +93,16 @@ public class ConverterServiceTest {
 	}
 	
 	@Test
-	public void testInit() {
+	public void testLoadConverters() {
 		assertEquals(0, cs.createServiceDocumentTypes().getEntityTypes().size());
 		assertNull(cs.getPreferedMediaType(Arrays.asList(new MediaType("*/*")), Long.class));
 		
-		cs.initConverters();
+		cs.loadConverters();
 		
 		assertEquals(new MediaType(MediaType.TEXT_PLAIN),
-				cs.getPreferedMediaType(Arrays.asList(new MediaType("text/*")), Long.class));
+			cs.getPreferedMediaType(Arrays.asList(new MediaType("text/*")), Long.class));
 		assertEquals(TEST_MEDIA_TYPE,
-				cs.getPreferedMediaType(Arrays.asList(new MediaType("application/*")), Long.class));
+			cs.getPreferedMediaType(Arrays.asList(new MediaType("application/*")), Long.class));
 	}
 	
 	@Test(expected = UnsupportedOperationException.class)
@@ -149,7 +150,7 @@ public class ConverterServiceTest {
 		cs.add(new GenericEntityConverter());
 		
 		EntityType<GenericEntity<Long, Long, Object>> type = new EntityType<>(GenericEntity.class, Long.class,
-				Long.class, Object.class);
+			Long.class, Object.class);
 		
 		GenericEntity<Long, Long, Object> entity = cs.toObject(null, TEST_MEDIA_TYPE, type);
 		assertEquals(34l, (long) entity.getA());
@@ -189,7 +190,7 @@ public class ConverterServiceTest {
 		cs.add(new GenericEntityConverter());
 		
 		EntityType<GenericEntity<Long, Object, Long>> type = new EntityType<>(GenericEntity.class, Long.class,
-				Object.class, Long.class);
+			Object.class, Long.class);
 		
 		GenericEntity<Long, Object, Long> entity = new GenericEntity<Long, Object, Long>(17l, "jhsdfjk", 42l);
 		
@@ -199,8 +200,6 @@ public class ConverterServiceTest {
 	
 	@Test(expected = UnsupportedOperationException.class)
 	public void testNoAcceptAnnotation() throws IOException, RestException {
-		cs.initConverters();
-		
 		cs.toRepresentation(null, String.class, TEST_MEDIA_TYPE, "test");
 	}
 	
@@ -226,8 +225,7 @@ public class ConverterServiceTest {
 	
 	@Test
 	public void testToObjectFromString() throws RestException {
-		cs.initConverters();
-		
+		cs.loadConverters();
 		assertEquals(123l, (long) cs.toObject(null, Long.class, "123"));
 	}
 	
@@ -253,15 +251,13 @@ public class ConverterServiceTest {
 	
 	@Test
 	public void testToString() {
-		cs.initConverters();
-		
+		cs.loadConverters();
 		assertEquals("123", cs.toString(null, Long.class, 123l));
 	}
 	
 	@Test
 	public void testCreateServiceDocumentTypes() {
-		cs.initConverters();
-		
+		cs.loadConverters();
 		Types types = cs.createServiceDocumentTypes();
 		
 		assertEquals(Boolean.class, types.getArgumentClassForName("Boolean"));

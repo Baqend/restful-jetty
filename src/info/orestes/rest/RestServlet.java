@@ -41,7 +41,7 @@ public abstract class RestServlet extends GenericServlet {
 	 * @throws IOException
 	 *             if an I/O error occures
 	 */
-	protected void doDelete(Request request, Response response) throws RestException, IOException {
+	public void doDelete(Request request, Response response) throws RestException, IOException {
 		notSupported(request, response);
 	}
 	
@@ -61,7 +61,7 @@ public abstract class RestServlet extends GenericServlet {
 	 * @throws IOException
 	 *             if an I/O error occures
 	 */
-	protected void doGet(Request request, Response response) throws RestException, IOException {
+	public void doGet(Request request, Response response) throws RestException, IOException {
 		notSupported(request, response);
 	}
 	
@@ -82,7 +82,7 @@ public abstract class RestServlet extends GenericServlet {
 	 * @throws IOException
 	 *             if an I/O error occures
 	 */
-	protected void doHead(Request request, Response response) throws RestException, IOException {
+	public void doHead(Request request, Response response) throws RestException, IOException {
 		doGet(request, response);
 		
 		int length = response.getBufferSize();
@@ -106,8 +106,45 @@ public abstract class RestServlet extends GenericServlet {
 	 * @throws IOException
 	 *             if an I/O error occures
 	 */
-	protected void doOptions(Request request, Response response) throws RestException, IOException {
-		notSupported(request, response);
+	public void doOptions(Request request, Response response) throws RestException, IOException {
+		StringBuffer allow = new StringBuffer();
+		
+		allow.append("OPTIONS");
+		
+		if (isDeclared("doGet")) {
+			allow.append(", GET");
+			allow.append(", HEAD");
+		}
+		
+		if (isDeclared("doPost")) {
+			allow.append(", POST");
+		}
+		
+		if (isDeclared("doPut")) {
+			allow.append(", PUT");
+		}
+		
+		if (isDeclared("doDelete")) {
+			allow.append(", DELETE");
+		}
+		
+		response.setHeader("Allow", allow.toString());
+	}
+	
+	/**
+	 * Indicates if the given Method is overwritten by a child class
+	 * 
+	 * @param methodName
+	 *            The Java method name to check for
+	 * @return <code>true</code> if a child class provides a own implementation
+	 *         of the method
+	 */
+	protected boolean isDeclared(String methodName) throws IOException {
+		try {
+			return getClass().getMethod(methodName).getDeclaringClass() != RestServlet.class;
+		} catch (NoSuchMethodException | SecurityException e) {
+			throw new IOException("Invalid RestServlet class format", e);
+		}
 	}
 	
 	/**
@@ -124,7 +161,7 @@ public abstract class RestServlet extends GenericServlet {
 	 * @throws IOException
 	 *             if an I/O error occures
 	 */
-	protected void doPost(Request request, Response response) throws RestException, IOException {
+	public void doPost(Request request, Response response) throws RestException, IOException {
 		notSupported(request, response);
 	}
 	
@@ -142,7 +179,7 @@ public abstract class RestServlet extends GenericServlet {
 	 * @throws IOException
 	 *             if an I/O error occures
 	 */
-	protected void doPut(Request request, Response response) throws RestException, IOException {
+	public void doPut(Request request, Response response) throws RestException, IOException {
 		notSupported(request, response);
 	}
 	
