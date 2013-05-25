@@ -13,6 +13,8 @@ import javax.servlet.GenericServlet;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
+import org.eclipse.jetty.http.HttpStatus;
+
 /**
  * An {@link RestServlet} represents a resource or a group of resources which is
  * selected by the {@link RestRouter} its entities are converted by the
@@ -128,6 +130,7 @@ public abstract class RestServlet extends GenericServlet {
 			allow.append(", DELETE");
 		}
 		
+		response.setStatus(HttpStatus.NO_CONTENT_204);
 		response.setHeader("Allow", allow.toString());
 	}
 	
@@ -141,7 +144,7 @@ public abstract class RestServlet extends GenericServlet {
 	 */
 	protected boolean isDeclared(String methodName) throws IOException {
 		try {
-			return getClass().getMethod(methodName).getDeclaringClass() != RestServlet.class;
+			return getClass().getMethod(methodName, Request.class, Response.class).getDeclaringClass() != RestServlet.class;
 		} catch (NoSuchMethodException | SecurityException e) {
 			throw new IOException("Invalid RestServlet class format", e);
 		}
