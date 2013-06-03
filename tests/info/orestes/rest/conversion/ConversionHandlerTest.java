@@ -28,7 +28,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Answers;
 import org.mockito.Mock;
@@ -280,7 +279,7 @@ public class ConversionHandlerTest {
 		assertNull(responseEntity);
 	}
 	
-	@Test(expected = IOException.class)
+	@Test
 	public final void testRequestContentExpected() throws Exception {
 		RestMethod method = group.get(2);
 		HashMap<String, Object> args = new HashMap<>();
@@ -288,7 +287,7 @@ public class ConversionHandlerTest {
 		handle(method, args, null, new RestHandler() {
 			@Override
 			public void handle(RestRequest request, RestResponse response) throws IOException, ServletException {
-				fail("no request content was sent.");
+				assertNull(request.getEntity());
 			}
 		});
 	}
@@ -306,13 +305,12 @@ public class ConversionHandlerTest {
 		});
 	}
 	
-	@Ignore
-	@Test(expected = IOException.class)
+	@Test
 	public final void testResponseContentExpected() throws Exception {
 		RestMethod method = group.get(1);
 		HashMap<String, Object> args = new HashMap<>();
 		
-		handle(method, args, null, new RestHandler() {
+		Object responseEntity = handle(method, args, null, new RestHandler() {
 			@Override
 			public void handle(RestRequest request, RestResponse response) throws IOException, ServletException {
 				assertNull(request.getEntity());
@@ -320,6 +318,8 @@ public class ConversionHandlerTest {
 				response.setEntity(null);
 			}
 		});
+		
+		assertNull(responseEntity);
 	}
 	
 	@Test(expected = IOException.class)
@@ -342,6 +342,7 @@ public class ConversionHandlerTest {
 			throws Exception {
 		if (requestEntity != null) {
 			Class<I> cls = (Class<I>) requestEntity.getClass();
+			request.setContentType(MediaType.TEXT_PLAIN);
 			converterService.toRepresentation(request, cls, new MediaType(MediaType.TEXT_PLAIN), requestEntity);
 		}
 		
@@ -379,12 +380,10 @@ public class ConversionHandlerTest {
 		
 		@Override
 		public String getContentType() {
-			init();
 			return contentType;
 		}
 		
 		public void setContentType(String contentType) {
-			init();
 			this.contentType = contentType;
 		}
 		
@@ -403,7 +402,6 @@ public class ConversionHandlerTest {
 		private void init() {
 			if (out == null) {
 				try {
-					contentType = MediaType.TEXT_PLAIN;
 					out = new PipedReader();
 					in = new PipedWriter(out);
 				} catch (IOException e) {

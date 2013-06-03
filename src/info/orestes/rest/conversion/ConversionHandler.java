@@ -61,7 +61,7 @@ public class ConversionHandler extends RestHandler {
 			}
 		}
 		
-		if (request.getEntity() == null) {
+		if (request.getEntity() == null && request.getContentType() != null) {
 			handleRequestEntity(request, response);
 		}
 		

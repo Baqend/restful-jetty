@@ -60,9 +60,6 @@ public class RestRouter extends HandlerWrapper {
 			
 			for (Route route : getRoutes(pathParts.size())) {
 				String method = request.getMethod();
-				if (method.equals("HEAD") || method.equals("OPTIONS")) {
-					method = "GET";
-				}
 				
 				Map<String, String> matches = route.match(method, pathParts, matrix, query);
 				if (matches != null) {
@@ -271,8 +268,15 @@ public class RestRouter extends HandlerWrapper {
 		
 		public Map<String, String> match(String action, List<String> pathParts, Map<String, String> matrix,
 				Map<String, String> query) {
-			if (!getMethod().getAction().equals(action)) {
-				return null;
+			switch (action) {
+				case "OPTIONS":
+					break;
+				case "HEAD":
+					action = "GET";
+				default:
+					if (!getMethod().getAction().equals(action)) {
+						return null;
+					}
 			}
 			
 			Map<String, String> matches = new HashMap<>();
@@ -313,6 +317,10 @@ public class RestRouter extends HandlerWrapper {
 						}
 						break;
 					case QUERY:
+						if (matrixCounter != 0) {
+							return null;
+						}
+						
 						if (query != null && query.containsKey(el.getName())) {
 							matches.put(el.getName(), query.get(el.getName()));
 						} else if (el.isOptional()) {
@@ -322,10 +330,6 @@ public class RestRouter extends HandlerWrapper {
 						}
 						break;
 				}
-			}
-			
-			if (matrixCounter != 0) {
-				return null;
 			}
 			
 			return matches;

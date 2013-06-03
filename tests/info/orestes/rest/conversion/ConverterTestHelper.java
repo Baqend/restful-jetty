@@ -20,7 +20,7 @@ import static org.junit.Assert.assertSame;
 public class ConverterTestHelper {
 	
 	protected static final Module module = new Module();
-	protected static final ConverterService cs = new ConverterService(module);
+	protected static final ConverterService cs = new ConverterService(module, false);
 	
 	private final PipedWriter writer = new PipedWriter();
 	private final PipedReader reader = new PipedReader(50000);

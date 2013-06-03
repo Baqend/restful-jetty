@@ -4,9 +4,15 @@ import info.orestes.rest.error.RestException;
 
 import java.util.Date;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class ConverterStringTest extends ConverterTestHelper {
+	
+	@BeforeClass
+	public static void setUpClass() {
+		cs.loadConverters();
+	}
 	
 	@Test
 	public final void testBoolean() throws RestException {
