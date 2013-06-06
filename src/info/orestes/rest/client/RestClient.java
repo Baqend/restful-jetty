@@ -6,7 +6,6 @@ import info.orestes.rest.conversion.MediaType;
 import java.net.URI;
 
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.api.Request;
 
 public class RestClient extends HttpClient {
 	
@@ -21,7 +20,7 @@ public class RestClient extends HttpClient {
 	}
 	
 	@Override
-	public Request newRequest(String path) {
+	public RestRequest newRequest(String path) {
 		return new RestRequest(this, baseURI, path);
 	}
 	

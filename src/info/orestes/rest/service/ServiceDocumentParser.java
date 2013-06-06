@@ -243,10 +243,16 @@ public class ServiceDocumentParser {
 			EntityType<?> requestType = matcher.group(5) == null ? null : parseEntityType(matcher.group(5));
 			EntityType<?> responseType = matcher.group(7) == null ? null : parseEntityType(matcher.group(7));
 			
-			RestMethod method = new RestMethod(currentName, currentDescription.toArray(new String[currentDescription
-				.size()]),
-				matcher.group(1), pathElements, getClassForTarget(matcher.group(3)), currentResults, requestType,
-				responseType);
+			String action = matcher.group(1);
+			Class<? extends RestServlet> servletClass = getClassForTarget(matcher.group(3));
+			
+			if (!RestServlet.isDeclared(servletClass, action)) {
+				throw new IOException("The RestServlet doesn't declare an action handler for the method " + action);
+			}
+			
+			RestMethod method = new RestMethod(
+				currentName, currentDescription.toArray(new String[currentDescription.size()]),
+				action, pathElements, servletClass, currentResults, requestType, responseType);
 			
 			currentGroup.add(method);
 			

@@ -30,6 +30,30 @@ import org.eclipse.jetty.http.HttpStatus;
 public abstract class RestServlet extends GenericServlet {
 	
 	/**
+	 * Indicates if the given {@link RestServlet} implements the given http
+	 * method handler
+	 * 
+	 * @param restServlet
+	 *            The {@link RestServlet} that implements a resource
+	 * @param methodName
+	 *            The http methodname to test for
+	 * @return <code>true</code> if the given {@link RestServlet} implements a
+	 *         own handler for the given method
+	 * @throws SecurityException
+	 *             if the method can not be accessed
+	 */
+	public static boolean isDeclared(Class<? extends RestServlet> restServlet, String methodName) {
+		methodName = "do" + methodName.substring(0, 1).toUpperCase() + methodName.substring(1).toLowerCase();
+		
+		try {
+			restServlet.getMethod(methodName, Request.class, Response.class);
+			return true;
+		} catch (NoSuchMethodException e) {
+			return false;
+		}
+	}
+	
+	/**
 	 * Handles the DELETE method request for the resource.
 	 * 
 	 * @param request
@@ -43,7 +67,7 @@ public abstract class RestServlet extends GenericServlet {
 	 * @throws IOException
 	 *             if an I/O error occures
 	 */
-	public void doDelete(Request request, Response response) throws RestException, IOException {
+	protected void doDelete(Request request, Response response) throws RestException, IOException {
 		notSupported(request, response);
 	}
 	
@@ -63,7 +87,7 @@ public abstract class RestServlet extends GenericServlet {
 	 * @throws IOException
 	 *             if an I/O error occures
 	 */
-	public void doGet(Request request, Response response) throws RestException, IOException {
+	protected void doGet(Request request, Response response) throws RestException, IOException {
 		notSupported(request, response);
 	}
 	
@@ -113,20 +137,20 @@ public abstract class RestServlet extends GenericServlet {
 		
 		allow.append("OPTIONS");
 		
-		if (isDeclared("doGet")) {
+		if (isDeclared("GET")) {
 			allow.append(", GET");
 			allow.append(", HEAD");
 		}
 		
-		if (isDeclared("doPost")) {
+		if (isDeclared("POST")) {
 			allow.append(", POST");
 		}
 		
-		if (isDeclared("doPut")) {
+		if (isDeclared("PUT")) {
 			allow.append(", PUT");
 		}
 		
-		if (isDeclared("doDelete")) {
+		if (isDeclared("DELETE")) {
 			allow.append(", DELETE");
 		}
 		
@@ -138,16 +162,12 @@ public abstract class RestServlet extends GenericServlet {
 	 * Indicates if the given Method is overwritten by a child class
 	 * 
 	 * @param methodName
-	 *            The Java method name to check for
+	 *            The http method name to test for
 	 * @return <code>true</code> if a child class provides a own implementation
 	 *         of the method
 	 */
-	protected boolean isDeclared(String methodName) throws IOException {
-		try {
-			return getClass().getMethod(methodName, Request.class, Response.class).getDeclaringClass() != RestServlet.class;
-		} catch (NoSuchMethodException | SecurityException e) {
-			throw new IOException("Invalid RestServlet class format", e);
-		}
+	protected boolean isDeclared(String methodName) {
+		return isDeclared(this.getClass(), methodName);
 	}
 	
 	/**
@@ -164,7 +184,7 @@ public abstract class RestServlet extends GenericServlet {
 	 * @throws IOException
 	 *             if an I/O error occures
 	 */
-	public void doPost(Request request, Response response) throws RestException, IOException {
+	protected void doPost(Request request, Response response) throws RestException, IOException {
 		notSupported(request, response);
 	}
 	
@@ -182,7 +202,7 @@ public abstract class RestServlet extends GenericServlet {
 	 * @throws IOException
 	 *             if an I/O error occures
 	 */
-	public void doPut(Request request, Response response) throws RestException, IOException {
+	protected void doPut(Request request, Response response) throws RestException, IOException {
 		notSupported(request, response);
 	}
 	
