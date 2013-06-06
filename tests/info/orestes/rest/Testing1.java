@@ -16,4 +16,9 @@ public class Testing1 extends RestServlet {
 	protected void doPost(Request req, Response resp) throws RestException, IOException {
 		// used protected in negative tests
 	}
+	
+	@Override
+	public void doDelete(Request req, Response resp) throws RestException, IOException {
+		
+	}
 }
