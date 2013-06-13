@@ -28,22 +28,49 @@ public class ClassUtil {
 	 *         declared by forClass
 	 */
 	public static <T> Class<?>[] getGenericArguments(Class<T> forClass, Class<? extends T> subClass) {
-		Class<?>[] genericParamaters = null;
-		Class<?> cls = subClass;
-		do {
-			Type type = cls.getGenericSuperclass();
-			
-			if (type instanceof Class) {
-				cls = (Class<?>) type;
-				genericParamaters = EMPTY_CLASSES;
-			} else {
-				ParameterizedType parameterizedType = (ParameterizedType) type;
-				genericParamaters = resolveGenerics(parameterizedType, cls, genericParamaters);
-				cls = (Class<?>) parameterizedType.getRawType();
-			}
-		} while (!cls.equals(forClass));
+		Class<?>[] params = getGenericArguments(forClass, subClass, EMPTY_CLASSES);
 		
-		return genericParamaters;
+		if (params == null) {
+			throw new IllegalArgumentException(subClass + " doesn't extend the " + forClass);
+		}
+		
+		return params;
+	}
+	
+	private static Class<?>[] getGenericArguments(Class<?> forClass, Class<?> cls, Class<?>[] genericParamaters) {
+		if (forClass.isInterface()) {
+			for (Type type : cls.getGenericInterfaces()) {
+				Class<?>[] params = getGenericArguments(forClass, cls, type, genericParamaters);
+				if (params != null) {
+					return params;
+				}
+			}
+		}
+		
+		Type type = cls.getGenericSuperclass();
+		if (type != null) {
+			return getGenericArguments(forClass, cls, type, genericParamaters);
+		} else {
+			return null;
+		}
+	}
+	
+	private static Class<?>[] getGenericArguments(Class<?> forClass, Class<?> cls, Type type,
+			Class<?>[] genericParamaters) {
+		if (type instanceof Class) {
+			cls = (Class<?>) type;
+			genericParamaters = EMPTY_CLASSES;
+		} else {
+			ParameterizedType parameterizedType = (ParameterizedType) type;
+			genericParamaters = resolveGenerics(parameterizedType, cls, genericParamaters);
+			cls = (Class<?>) parameterizedType.getRawType();
+		}
+		
+		if (cls.equals(forClass)) {
+			return genericParamaters;
+		} else {
+			return getGenericArguments(forClass, cls, genericParamaters);
+		}
 	}
 	
 	public static <T> Class<?>[] getGenericArguments(Field field) {
