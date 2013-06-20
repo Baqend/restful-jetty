@@ -10,10 +10,6 @@
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="lib" path="lib/mockito-all-1.9.5.jar"/>
-	<classpathentry kind="lib" path="lib/jetty-client-9.0.0.RC2.jar"/>
-	<classpathentry kind="lib" path="lib/jetty-http-9.0.0.RC2.jar"/>
-	<classpathentry kind="lib" path="lib/jetty-io-9.0.0.RC2.jar"/>
-	<classpathentry kind="lib" path="lib/jetty-server-9.0.0.RC2.jar"/>
-	<classpathentry kind="lib" path="lib/jetty-util-9.0.0.RC2.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-all-9.0.3.v20130506.jar" sourcepath="lib/jetty-all-9.0.3.v20130506-sources.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
