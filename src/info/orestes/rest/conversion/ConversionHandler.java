@@ -68,7 +68,7 @@ public class ConversionHandler extends RestHandler {
 		super.handle(request, response);
 		
 		if (response.getEntity() != null && !response.isCommitted()) {
-			handelResponseEntity(request, response);
+			handleResponseEntity(request, response);
 		}
 	}
 	
@@ -95,7 +95,7 @@ public class ConversionHandler extends RestHandler {
 	 *            The response object
 	 * @throws IOException
 	 */
-	private void handelResponseEntity(Request request, Response response) throws IOException, RestException {
+	private void handleResponseEntity(Request request, Response response) throws IOException, RestException {
 		EntityType<?> responseType = request.getRestMethod().getResponseType();
 		
 		if (responseType != null) {
