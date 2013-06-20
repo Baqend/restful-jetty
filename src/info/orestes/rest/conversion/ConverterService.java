@@ -162,10 +162,17 @@ public class ConverterService {
 	 * @param formatType
 	 *            The format type
 	 * @return All available converters that can handle the specified format
+	 * @throws UnsupportedOperationException
 	 */
 	@SuppressWarnings("unchecked")
 	public <F> ConverterFormat<F> getFormat(Class<F> formatType) {
-		return (ConverterFormat<F>) formats.get(formatType);
+		ConverterFormat<F> format = (ConverterFormat<F>) formats.get(formatType);
+		
+		if (format == null) {
+			throw new UnsupportedOperationException("The format " + formatType + " is not supported.");
+		}
+		
+		return format;
 	}
 	
 	/**
@@ -405,17 +412,23 @@ public class ConverterService {
 	}
 	
 	public <T, F> F toRepresentation(Class<T> sourceType, Class<F> targetType, T source) {
-		return toRepresentation(targetType, new EntityType<>(sourceType), source);
+		return toRepresentation(new EntityType<>(sourceType), targetType, source);
 	}
 	
-	public <T, F> F toRepresentation(Class<F> targetType, EntityType<T> sourceType, T source) {
+	public <T, F> F toRepresentation(EntityType<T> sourceType, Class<F> targetType, T source) {
+		return toRepresentation(null, sourceType, targetType, source);
+	}
+	
+	public <T, F> F toRepresentation(Context context, EntityType<T> sourceType, Class<F> targetType, T source) {
 		Converter<T, F> converter = getFormat(targetType).get(sourceType.getRawType(),
 			sourceType.getActualTypeArguments());
 		
 		try {
-			return converter.toFormat(null, source, sourceType.getActualTypeArguments());
-		} catch (RestException e) {
-			throw new RuntimeException(e);
+			return converter.toFormat(context, source, sourceType.getActualTypeArguments());
+		} catch (UnsupportedOperationException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new UnsupportedOperationException(e);
 		}
 	}
 	
@@ -424,13 +437,19 @@ public class ConverterService {
 	}
 	
 	public <T, F> T toObject(Class<F> sourceType, EntityType<T> targetType, F source) {
+		return toObject(null, sourceType, targetType, source);
+	}
+	
+	public <T, F> T toObject(Context context, Class<F> sourceType, EntityType<T> targetType, F source) {
 		Converter<T, F> converter = getFormat(sourceType).get(targetType.getRawType(),
 			targetType.getActualTypeArguments());
 		
 		try {
-			return converter.toObject(null, source, targetType.getActualTypeArguments());
-		} catch (RestException e) {
-			throw new RuntimeException(e);
+			return converter.toObject(context, source, targetType.getActualTypeArguments());
+		} catch (UnsupportedOperationException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new UnsupportedOperationException(e);
 		}
 	}
 	
@@ -450,15 +469,7 @@ public class ConverterService {
 	 *             if the conversion can not be performed
 	 */
 	public <T> T toObject(Context context, Class<T> type, String source) {
-		try {
-			Converter<T, String> converter = getConverter(ARGUMENT_MEDIA_TYPE, type, EntityType.EMPTY_GENERIC_ARRAY);
-			
-			return converter.toObject(context, source, EntityType.EMPTY_GENERIC_ARRAY);
-		} catch (UnsupportedOperationException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new UnsupportedOperationException(e);
-		}
+		return toObject(null, String.class, new EntityType<>(type), source);
 	}
 	
 	/**
@@ -477,15 +488,7 @@ public class ConverterService {
 	 *             if the conversion can not be performed
 	 */
 	public <T> String toString(Context context, Class<T> type, T source) {
-		try {
-			Converter<T, String> converter = getConverter(ARGUMENT_MEDIA_TYPE, type, EntityType.EMPTY_GENERIC_ARRAY);
-			
-			return converter.toFormat(context, source, EntityType.EMPTY_GENERIC_ARRAY);
-		} catch (UnsupportedOperationException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new UnsupportedOperationException(e);
-		}
+		return toRepresentation(context, new EntityType<>(type), String.class, source);
 	}
 	
 	/**

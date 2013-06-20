@@ -205,7 +205,7 @@ public class ConverterServiceTest {
 	
 	@Test(expected = UnsupportedOperationException.class)
 	public void testToObjectFromUnknownFormat() throws RestException {
-		cs.toObject(null, Long.class, "123");
+		cs.toObject((Context) null, Long.class, "123");
 	}
 	
 	@Test(expected = UnsupportedOperationException.class)
@@ -220,13 +220,13 @@ public class ConverterServiceTest {
 			}
 		});
 		
-		cs.toObject(null, Long.class, "123");
+		cs.toObject((Context) null, Long.class, "123");
 	}
 	
 	@Test
 	public void testToObjectFromString() throws RestException {
 		cs.loadConverters();
-		assertEquals(123l, (long) cs.toObject(null, Long.class, "123"));
+		assertEquals(123l, (long) cs.toObject((Context) null, Long.class, "123"));
 	}
 	
 	@Test(expected = UnsupportedOperationException.class)

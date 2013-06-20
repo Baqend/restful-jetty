@@ -45,6 +45,7 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
 		arguments.put(name, value);
 	}
 	
+	@Override
 	public void sendError(RestException error) throws IOException {
 		Request request = HttpChannel.getCurrentHttpChannel().getRequest();
 		
@@ -52,6 +53,6 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
 			request.setAttribute("javax.servlet.error.exception", error);
 		}
 		
-		sendError(error.getStatusCode(), error.getMessage());
+		sendError(error.getStatusCode());
 	}
 }
