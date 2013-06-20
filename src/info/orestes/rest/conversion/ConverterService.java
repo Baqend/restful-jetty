@@ -125,7 +125,6 @@ public class ConverterService {
 	/**
 	 * Load all {@link ConverterFormat}s form the {@value #FORMAT_PACKAGE_NAME}
 	 * package and add them to the {@link ConverterService
-
 	 */
 	public void loadConverters() {
 		for (Class<?> cls : ClassUtil.getPackageClasses(FORMAT_PACKAGE_NAME)) {
@@ -155,6 +154,18 @@ public class ConverterService {
 		if (pkgName != null) {
 			loadConverterPackage(pkgName);
 		}
+	}
+	
+	/**
+	 * Get all available converters for a given format
+	 * 
+	 * @param formatType
+	 *            The format type
+	 * @return All available converters that can handle the specified format
+	 */
+	@SuppressWarnings("unchecked")
+	public <F> ConverterFormat<F> getFormat(Class<F> formatType) {
+		return (ConverterFormat<F>) formats.get(formatType);
 	}
 	
 	/**
@@ -393,19 +404,31 @@ public class ConverterService {
 		}
 	}
 	
-	public <T, F> F toRepresentation(Class<T> sourceType, MediaType targetType, T source) {
-		Converter<T, F> converter = getConverter(targetType, sourceType, EntityType.EMPTY_GENERIC_ARRAY);
+	public <T, F> F toRepresentation(Class<T> sourceType, Class<F> targetType, T source) {
+		return toRepresentation(targetType, new EntityType<>(sourceType), source);
+	}
+	
+	public <T, F> F toRepresentation(Class<F> targetType, EntityType<T> sourceType, T source) {
+		Converter<T, F> converter = getFormat(targetType).get(sourceType.getRawType(),
+			sourceType.getActualTypeArguments());
+		
 		try {
-			return converter.toFormat(null, source, EntityType.EMPTY_GENERIC_ARRAY);
+			return converter.toFormat(null, source, sourceType.getActualTypeArguments());
 		} catch (RestException e) {
 			throw new RuntimeException(e);
 		}
 	}
 	
-	public <T, F> T toObject(Class<F> sourcType, Class<T> targetType, F source) {
-		Converter<T, F> converter = getConverter(sourceType, targetType, EntityType.EMPTY_GENERIC_ARRAY);
+	public <T, F> T toObject(Class<F> sourceType, Class<T> targetType, F source) {
+		return toObject(sourceType, new EntityType<>(targetType), source);
+	}
+	
+	public <T, F> T toObject(Class<F> sourceType, EntityType<T> targetType, F source) {
+		Converter<T, F> converter = getFormat(sourceType).get(targetType.getRawType(),
+			targetType.getActualTypeArguments());
+		
 		try {
-			return converter.toObject(null, source, EntityType.EMPTY_GENERIC_ARRAY);
+			return converter.toObject(null, source, targetType.getActualTypeArguments());
 		} catch (RestException e) {
 			throw new RuntimeException(e);
 		}
@@ -464,7 +487,6 @@ public class ConverterService {
 			throw new UnsupportedOperationException(e);
 		}
 	}
-	
 	
 	/**
 	 * Load all none abstract {@link Converter}s form the specified package
