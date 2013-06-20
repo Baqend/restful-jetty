@@ -54,7 +54,7 @@ public class RestErrorHandler extends ErrorHandler {
 			throws IOException {
 		
 		Throwable throwable = (Throwable) request.getAttribute("javax.servlet.error.exception");
-		
+		throwable.printStackTrace();
 		RestException e;
 		if (throwable instanceof RestException) {
 			e = (RestException) throwable;
