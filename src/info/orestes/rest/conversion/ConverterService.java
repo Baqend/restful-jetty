@@ -393,6 +393,24 @@ public class ConverterService {
 		}
 	}
 	
+	public <T, F> F toRepresentation(Class<T> sourceType, MediaType targetType, T source) {
+		Converter<T, F> converter = getConverter(targetType, sourceType, EntityType.EMPTY_GENERIC_ARRAY);
+		try {
+			return converter.toFormat(null, source, EntityType.EMPTY_GENERIC_ARRAY);
+		} catch (RestException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	public <T, F> T toObject(Class<F> sourcType, Class<T> targetType, F source) {
+		Converter<T, F> converter = getConverter(sourceType, targetType, EntityType.EMPTY_GENERIC_ARRAY);
+		try {
+			return converter.toObject(null, source, EntityType.EMPTY_GENERIC_ARRAY);
+		} catch (RestException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
 	/**
 	 * Decodes the given java type from the string
 	 * 
@@ -446,6 +464,7 @@ public class ConverterService {
 			throw new UnsupportedOperationException(e);
 		}
 	}
+	
 	
 	/**
 	 * Load all none abstract {@link Converter}s form the specified package
