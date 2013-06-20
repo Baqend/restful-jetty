@@ -19,6 +19,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.http.HttpURI;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.HandlerWrapper;
@@ -71,6 +72,12 @@ public class RestRouter extends HandlerWrapper {
 						params.putAllValues(matches);
 					}
 					
+					if (route.getMethod().getResponseType() != null) {
+						res.setStatus(HttpStatus.OK_200);
+					} else {
+						res.setStatus(HttpStatus.NO_CONTENT_204);
+					}
+					
 					r = new RestRequest(request, req, route, matches);
 					break;
 				}
@@ -78,7 +85,6 @@ public class RestRouter extends HandlerWrapper {
 		}
 		
 		if (r != null) {
-			res.setStatus(200);
 			res = new RestResponse(res, r.getArguments());
 			super.handle(path, request, r, res);
 			request.setHandled(true);

@@ -174,8 +174,6 @@ public class RestRouterTest {
 				for (Entry<String, String[]> entry : params.entrySet()) {
 					assertEquals(entry.getValue()[0], request.getArgument(entry.getKey()));
 				}
-				
-				response.setStatus(RestResponse.SC_OK);
 			}
 		});
 		
@@ -197,8 +195,13 @@ public class RestRouterTest {
 		}
 		
 		if (expected != null) {
-			verify(res).setStatus(RestResponse.SC_OK);
+			if (expected.getResponseType() != null) {
+				verify(res).setStatus(RestResponse.SC_OK);
+			} else {
+				verify(res).setStatus(RestResponse.SC_NO_CONTENT);
+			}
 		} else {
+			verify(res, never()).setStatus(RestResponse.SC_NO_CONTENT);
 			verify(res, never()).setStatus(RestResponse.SC_OK);
 		}
 	}
