@@ -121,7 +121,7 @@ public class ClientTest {
 	
 	@Test
 	public void testEmptyResponse() throws InterruptedException {
-		setupStringHandler("");
+		setupStringHandler(null);
 		final CountDownLatch countDownLatch = new CountDownLatch(1);
 		
 		Request request = client.newRequest("/");
@@ -297,9 +297,11 @@ public class ClientTest {
 			@Override
 			public void handle(String path, HttpServletRequest request, HttpServletResponse response)
 					throws IOException {
-				response.setContentType(mediaType);
-				
-				response.getWriter().print(str);
+				if (str != null) {
+					response.setContentType(mediaType);
+					
+					response.getWriter().print(str);
+				}
 			}
 		};
 	}

@@ -15,7 +15,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
-import org.eclipse.jetty.server.Utf8HttpWriter;
 import org.eclipse.jetty.server.handler.ErrorHandler;
 
 public class RestErrorHandler extends ErrorHandler {
@@ -43,11 +42,8 @@ public class RestErrorHandler extends ErrorHandler {
 		
 		res.setHeader(HttpHeader.CONTENT_TYPE, mediaType.toString());
 		
-		Utf8HttpWriter writer = new Utf8HttpWriter(res.getHttpOutput());
-		ErrorContext context = new ErrorContext(new PrintWriter(writer), mediaType);
+		ErrorContext context = new ErrorContext(res.getWriter(), mediaType);
 		handleError(request, context, response.getStatus(), res.getReason());
-		writer.flush();
-		writer.close();
 	}
 	
 	protected void handleError(HttpServletRequest request, ErrorContext context, int code, String message)

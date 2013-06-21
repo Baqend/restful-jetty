@@ -63,10 +63,6 @@ public abstract class EntityResponseListener<E> extends Empty {
 		
 		HttpFields headers = response.getHeaders();
 		long length = headers.getLongField(HttpHeader.CONTENT_LENGTH.asString());
-		if (length < 0) {
-			length = 0;
-		}
-		
 		if (length > 0) {
 			String cType = response.getHeaders().get(HttpHeader.CONTENT_TYPE);
 			if (cType != null) {
