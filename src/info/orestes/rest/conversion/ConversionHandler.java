@@ -39,6 +39,26 @@ public class ConversionHandler extends RestHandler {
 	private static final List<MediaType> ANY = Arrays.asList(new MediaType(MediaType.ALL));
 	private final ConverterService converterService;
 	
+	/**
+	 * Parse the Accept header and extract the contained list of media types
+	 * 
+	 * @param acceptHeader
+	 *            the value of the Accept header
+	 * @return a list of all declared media types as they occurred
+	 */
+	public static List<MediaType> parseMediaTypes(String acceptHeader) {
+		if (acceptHeader != null) {
+			List<MediaType> mediaTypes = new ArrayList<>();
+			for (String part : acceptHeader.split(",")) {
+				mediaTypes.add(new MediaType(part));
+			}
+			
+			return mediaTypes;
+		} else {
+			return ANY;
+		}
+	}
+	
 	@Inject
 	public ConversionHandler(ConverterService converterService) {
 		this.converterService = converterService;
@@ -113,26 +133,6 @@ public class ConversionHandler extends RestHandler {
 			} else {
 				throw new NotAcceptable("The requested response media types are not supported.");
 			}
-		}
-	}
-	
-	/**
-	 * Parse the Accept header and extract the contained list of media types
-	 * 
-	 * @param acceptHeader
-	 *            the value of the Accept header
-	 * @return a list of all declared media types as they occurred
-	 */
-	protected List<MediaType> parseMediaTypes(String acceptHeader) {
-		if (acceptHeader != null) {
-			List<MediaType> mediaTypes = new ArrayList<>();
-			for (String part : acceptHeader.split(",")) {
-				mediaTypes.add(new MediaType(part));
-			}
-			
-			return mediaTypes;
-		} else {
-			return ANY;
 		}
 	}
 }

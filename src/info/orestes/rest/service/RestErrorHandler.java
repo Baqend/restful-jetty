@@ -1,5 +1,6 @@
 package info.orestes.rest.service;
 
+import info.orestes.rest.conversion.ConversionHandler;
 import info.orestes.rest.conversion.ConverterService;
 import info.orestes.rest.conversion.MediaType;
 import info.orestes.rest.conversion.WriteableContext;
@@ -36,12 +37,11 @@ public class RestErrorHandler extends ErrorHandler {
 			return;
 		}
 		
-		MediaType mediaType;
-		if (res.getContentType() != null) {
-			mediaType = new MediaType(res.getContentType());
-		} else {
-			mediaType = new MediaType(MediaType.TEXT_PLAIN);
-		}
+		String accept = request.getHeader(HttpHeader.ACCEPT.asString());
+		MediaType mediaType = converterService.getPreferedMediaType(ConversionHandler.parseMediaTypes(accept),
+			RestException.class);
+		
+		res.setHeader(HttpHeader.CONTENT_TYPE, mediaType.toString());
 		
 		Utf8HttpWriter writer = new Utf8HttpWriter(res.getHttpOutput());
 		ErrorContext context = new ErrorContext(new PrintWriter(writer), mediaType);
@@ -55,6 +55,7 @@ public class RestErrorHandler extends ErrorHandler {
 		
 		Throwable throwable = (Throwable) request.getAttribute("javax.servlet.error.exception");
 		throwable.printStackTrace();
+		
 		RestException e;
 		if (throwable instanceof RestException) {
 			e = (RestException) throwable;

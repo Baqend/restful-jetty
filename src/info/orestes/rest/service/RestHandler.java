@@ -1,5 +1,6 @@
 package info.orestes.rest.service;
 
+import info.orestes.rest.error.InternalServerError;
 import info.orestes.rest.error.RestException;
 
 import java.io.IOException;
@@ -20,6 +21,8 @@ public abstract class RestHandler extends HandlerWrapper {
 			handle((RestRequest) request, (RestResponse) response);
 		} catch (RestException e) {
 			((RestResponse) response).sendError(e);
+		} catch (Exception e) {
+			((RestResponse) response).sendError(new InternalServerError(e));
 		}
 	}
 	
