@@ -1,2 +1,4 @@
-/.settings
-/bin
+.settings/
+bin/
+build/
+doc/
