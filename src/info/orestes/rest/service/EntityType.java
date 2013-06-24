@@ -1,9 +1,10 @@
 package info.orestes.rest.service;
 
+import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
-public class EntityType<T> implements ParameterizedType {
+public class EntityType<T> implements ParameterizedType, Serializable {
 	public static final Class<?>[] EMPTY_GENERIC_ARRAY = new Class[0];
 	
 	private final Class<T> rawType;
