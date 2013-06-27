@@ -10,6 +10,7 @@ import info.orestes.rest.util.Module;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -24,7 +25,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.client.api.Request;
-import org.eclipse.jetty.client.api.Result;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AbstractHandler;
@@ -90,9 +90,9 @@ public class ClientTest {
 		request.content(new EntityContent<>(String.class, "testing..."));
 		request.send(new EntityResponseListener<String>(String.class) {
 			@Override
-			public void onComplete(Result result) {
+			public void onComplete(EntityResult<String> result) {
 				assertTrue(result.isSucceeded());
-				assertEquals("testing...", getEntity());
+				assertEquals("testing...", result.getEntity());
 				
 				countDownLatch.countDown();
 			}
@@ -109,9 +109,9 @@ public class ClientTest {
 		Request request = client.newRequest("/");
 		request.send(new EntityResponseListener<String>(String.class) {
 			@Override
-			public void onComplete(Result result) {
+			public void onComplete(EntityResult<String> result) {
 				assertTrue(result.isSucceeded());
-				assertEquals("Test string.", getEntity());
+				assertEquals("Test string.", result.getEntity());
 				countDownLatch.countDown();
 			}
 		});
@@ -127,9 +127,9 @@ public class ClientTest {
 		Request request = client.newRequest("/");
 		request.send(new EntityResponseListener<Void>(Void.class) {
 			@Override
-			public void onComplete(Result result) {
+			public void onComplete(EntityResult<Void> result) {
 				assertTrue(result.isSucceeded());
-				assertNull(getEntity());
+				assertNull(result.getEntity());
 				
 				countDownLatch.countDown();
 			}
@@ -147,7 +147,7 @@ public class ClientTest {
 		request.content(new EntityContent<>(Iterator.class, Collections.emptyIterator()));
 		request.send(new EntityResponseListener<String>(String.class) {
 			@Override
-			public void onComplete(Result result) {
+			public void onComplete(EntityResult<String> result) {
 				assertTrue(result.isFailed());
 				assertTrue(result.getFailure() instanceof UnsupportedOperationException);
 				
@@ -166,7 +166,7 @@ public class ClientTest {
 		Request request = client.newRequest("/");
 		request.send(new EntityResponseListener<String>(String.class) {
 			@Override
-			public void onComplete(Result result) {
+			public void onComplete(EntityResult<String> result) {
 				assertTrue(result.isFailed());
 				assertTrue(result.getFailure() instanceof UnsupportedOperationException);
 				
@@ -185,7 +185,7 @@ public class ClientTest {
 		Request request = client.newRequest("/");
 		request.send(new EntityResponseListener<String>(String.class) {
 			@Override
-			public void onComplete(Result result) {
+			public void onComplete(EntityResult<String> result) {
 				assertTrue(result.isFailed());
 				assertTrue(result.getFailure() instanceof NotFound);
 				
@@ -263,6 +263,53 @@ public class ClientTest {
 				assertTrue(e.getCause() instanceof NotFound);
 			}
 		}
+	}
+	
+	@Test
+	public void testLargeRequest() throws InterruptedException {
+		char[] chars = new char[100000];
+		Arrays.fill(chars, 'a');
+		final String str = new String(chars);
+		
+		setupStringHandler(null);
+		final CountDownLatch countDownLatch = new CountDownLatch(1);
+		
+		Request request = client.newRequest("/");
+		request.content(new EntityContent<>(String.class, str));
+		request.send(new EntityResponseListener<Void>(Void.class) {
+			@Override
+			public void onComplete(EntityResult<Void> result) {
+				assertTrue(result.isSucceeded());
+				assertNull(result.getEntity());
+				
+				countDownLatch.countDown();
+			}
+		});
+		
+		assertTrue(countDownLatch.await(5, TimeUnit.SECONDS));
+	}
+	
+	@Test
+	public void testLargeResponse() throws InterruptedException {
+		char[] chars = new char[100000];
+		Arrays.fill(chars, 'a');
+		final String str = String.copyValueOf(chars);
+		
+		setupStringHandler(str);
+		final CountDownLatch countDownLatch = new CountDownLatch(1);
+		
+		Request request = client.newRequest("/");
+		request.send(new EntityResponseListener<String>(String.class) {
+			@Override
+			public void onComplete(EntityResult<String> result) {
+				assertTrue(result.isSucceeded());
+				assertEquals(str, result.getEntity());
+				
+				countDownLatch.countDown();
+			}
+		});
+		
+		assertTrue(countDownLatch.await(5, TimeUnit.SECONDS));
 	}
 	
 	@AfterClass

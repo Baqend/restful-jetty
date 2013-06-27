@@ -23,7 +23,6 @@ public abstract class EntityResponseListener<E> extends Empty {
 	
 	private final EntityType<E> entityType;
 	private MediaType contentType;
-	private E entity;
 	private RestRequest request;
 	
 	private byte[] buffer = new byte[0];
@@ -45,10 +44,6 @@ public abstract class EntityResponseListener<E> extends Empty {
 		return contentType;
 	}
 	
-	public E getEntity() {
-		return entity;
-	}
-	
 	public RestRequest getRequest() {
 		return request;
 	}
@@ -62,35 +57,59 @@ public abstract class EntityResponseListener<E> extends Empty {
 		super.onHeaders(response);
 		
 		HttpFields headers = response.getHeaders();
+		
+		boolean isChunked = false;
+		
 		long length = headers.getLongField(HttpHeader.CONTENT_LENGTH.asString());
 		if (length > 0) {
-			String cType = response.getHeaders().get(HttpHeader.CONTENT_TYPE);
+			buffer = new byte[(int) length];
+		} else {
+			String encoding = headers.get(HttpHeader.TRANSFER_ENCODING);
+			if (encoding != null && encoding.equals("chunked")) {
+				isChunked = true;
+			}
+		}
+		
+		if (length > 0 || isChunked) {
+			String cType = headers.get(HttpHeader.CONTENT_TYPE);
 			if (cType != null) {
 				contentType = new MediaType(cType);
 			} else {
 				response.abort(new IllegalArgumentException("No content type is provided in the response."));
 			}
-			
-			buffer = new byte[(int) length];
 		}
 	}
 	
 	@Override
 	public void onContent(Response response, ByteBuffer content) {
-		int newBufferOffset = content.remaining();
+		int newBufferOffset = bufferOffset + content.remaining();
+		
 		if (newBufferOffset > buffer.length) {
-			throw new IllegalArgumentException("Buffer size excided.");
+			byte[] newBuffer = new byte[newBufferOffset];
+			System.arraycopy(buffer, 0, newBuffer, 0, bufferOffset);
+			buffer = newBuffer;
 		}
 		
 		content.get(buffer, bufferOffset, content.remaining());
 		bufferOffset = newBufferOffset;
-		
-		if (bufferOffset == buffer.length) {
-			readEntity(response);
+	}
+	
+	@Override
+	public final void onComplete(Result result) {
+		if (result.isSucceeded()) {
+			try {
+				E entity = readEntity(result.getResponse());
+				onComplete(new EntityResult<E>(result.getRequest(), result.getResponse(), entity));
+			} catch (Exception e) {
+				onComplete(new EntityResult<E>(result.getRequest(), result.getResponse(), e));
+			}
+		} else {
+			onComplete(new EntityResult<E>(result.getRequest(), result.getRequestFailure(), result.getResponse(),
+				result.getResponseFailure()));
 		}
 	}
 	
-	private void readEntity(Response response) {
+	private E readEntity(Response response) throws Exception {
 		if (response.getStatus() >= 400) {
 			RestException exception = null;
 			Exception suppressed = null;
@@ -111,23 +130,22 @@ public abstract class EntityResponseListener<E> extends Empty {
 				exception.addSuppressed(suppressed);
 			}
 			
-			response.abort(exception);
+			throw exception;
 		} else if (response.getStatus() >= 200 && response.getStatus() < 300) {
 			if (buffer.length > 0) {
 				try {
 					EntityReader reader = new EntityReader();
-					entity = reader.read(getEntityType(), getContentType(), buffer);
+					return reader.read(getEntityType(), getContentType(), buffer);
 				} catch (Exception e) {
-					response.abort(e);
+					throw e;
 				}
-			} else {
-				entity = null;
 			}
 		}
+		
+		return null;
 	}
 	
-	@Override
-	public abstract void onComplete(Result result);
+	public abstract void onComplete(EntityResult<E> result);
 	
 	public class EntityReader implements ReadableContext {
 		private BufferedReader reader;

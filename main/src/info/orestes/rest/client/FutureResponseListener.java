@@ -65,9 +65,9 @@ public class FutureResponseListener<T> extends EntityResponseListener<T> impleme
 	}
 	
 	@Override
-	public void onComplete(Result result)
+	public void onComplete(EntityResult<T> result)
 	{
-		response = new HttpEntityResponse<T>(result.getResponse(), getEntityType(), getEntity());
+		response = new HttpEntityResponse<T>(result.getResponse(), getEntityType(), result.getEntity());
 		failure = result.getFailure();
 		latch.countDown();
 	}
