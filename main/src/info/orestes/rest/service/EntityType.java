@@ -34,4 +34,18 @@ public class EntityType<T> implements ParameterizedType {
 	public Type getOwnerType() {
 		return null;
 	}
+	
+	@Override
+	public String toString() {
+		String generics = "";
+		for (Class<?> cls : getActualTypeArguments()) {
+			if (!generics.isEmpty()) {
+				generics += ", ";
+			}
+			
+			generics += cls;
+		}
+		
+		return "EntityType: " + getRawType() + (generics.isEmpty() ? "" : "<" + generics + ">");
+	}
 }
