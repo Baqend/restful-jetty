@@ -9,13 +9,14 @@ import info.orestes.rest.util.Module;
 
 import java.io.IOException;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.TreeMap;
 
 /**
  * <p>
@@ -206,10 +207,20 @@ public class ConverterService {
 				
 				Map<MediaType, Converter<?, ?>> acceptTypes = accept.get(converter.getTargetClass());
 				if (acceptTypes == null) {
-					accept.put(converter.getTargetClass(), acceptTypes = new TreeMap<>());
+					acceptTypes = new LinkedHashMap<>();
 				}
 				
 				acceptTypes.put(mediaType, converter);
+				
+				List<MediaType> mediaTypes = new ArrayList<>(acceptTypes.keySet());
+				Collections.sort(mediaTypes);
+				
+				Map<MediaType, Converter<?, ?>> sortedAcceptTypes = new LinkedHashMap<>(mediaTypes.size());
+				for (MediaType mType : mediaTypes) {
+					sortedAcceptTypes.put(mType, acceptTypes.get(mType));
+				}
+				
+				accept.put(converter.getTargetClass(), sortedAcceptTypes);
 			}
 		}
 		

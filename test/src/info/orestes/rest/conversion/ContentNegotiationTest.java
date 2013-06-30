@@ -64,13 +64,13 @@ public class ContentNegotiationTest {
 	
 	@Test
 	public void testAsteriskAsterisk() {
-		assertPrefered(new MediaType("text/html"), new MediaType("text/plain"), new MediaType("image/*"),
+		assertPrefered(new MediaType("application/json"), new MediaType("text/plain"), new MediaType("image/*"),
 			new MediaType("*/*"));
 	}
 	
 	@Test
 	public void testAsteriskWithQuality1() {
-		assertPrefered(new MediaType("text/html"), new MediaType("text/plain"), new MediaType("image/*; q=0.9"),
+		assertPrefered(new MediaType("application/json"), new MediaType("text/plain"), new MediaType("image/*; q=0.9"),
 			new MediaType("*/*; q=0.8"));
 	}
 	
