@@ -1,6 +1,7 @@
 package info.orestes.rest.client;
 
 import info.orestes.rest.conversion.MediaType;
+import info.orestes.rest.error.RestException;
 import info.orestes.rest.service.EntityType;
 
 import java.net.URI;
@@ -84,10 +85,16 @@ public class RestRequest extends HttpRequest {
 			EntityResponseListener<?> responseListener = ((EntityResponseListener<?>) listener);
 			
 			responseListener.setRequest(this);
+			Class<?> entityType = responseListener.getEntityType().getRawType();
+			
+			// if no response entity type is expected use preferred exception
+			// media type
+			if (entityType.equals(Void.class)) {
+				entityType = RestException.class;
+			}
 			
 			StringBuilder accepted = new StringBuilder();
-			for (MediaType mediaType : getClient().getConverterService().getAcceptableMediaTypes(
-				responseListener.getEntityType().getRawType())) {
+			for (MediaType mediaType : getClient().getConverterService().getAcceptableMediaTypes(entityType)) {
 				if (accepted.length() > 0) {
 					accepted.append(",");
 				}

@@ -28,7 +28,7 @@ public class ContentNegotiationTest {
 	
 	@Before
 	public void setUp() throws Exception {
-		cs.addFormat(new TestFormat());
+		cs.addFormat(new TestFormat(), false);
 		cs.add(new HTMLConverter());
 		cs.add(new JSONConverter());
 		cs.add(new XMLConverter());

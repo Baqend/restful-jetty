@@ -9,7 +9,7 @@ package info.orestes.rest.conversion;
  */
 public class MediaType implements Comparable<MediaType> {
 	
-	public static final String TEXT_PLAIN = "text/plain";
+	public static final String TEXT_PLAIN = "text/plain;q=0.5";
 	public static final String ALL = "*/*";
 	
 	private final String type;
@@ -98,7 +98,7 @@ public class MediaType implements Comparable<MediaType> {
 	 * 
 	 * @return the quality
 	 */
-	public float getQulity() {
+	public float getQuality() {
 		return quality;
 	}
 	
@@ -113,10 +113,6 @@ public class MediaType implements Comparable<MediaType> {
 	 *         given one, otherwise <code>false</code>
 	 */
 	public boolean isCompatible(MediaType o) {
-		if (equals(o)) {
-			return true;
-		}
-		
 		if (getType().equals("*") || o.getType().equals("*")) {
 			return true;
 		} else if (getType().equals(o.getType())) {
@@ -132,25 +128,29 @@ public class MediaType implements Comparable<MediaType> {
 	
 	@Override
 	public int compareTo(MediaType o) {
-		if (getQulity() > o.getQulity()) {
+		if (getQuality() > o.getQuality()) {
 			return -1;
-		} else if (getQulity() < o.getQulity()) {
+		} else if (getQuality() < o.getQuality()) {
 			return 1;
-		} else if (!getSubtype().equals(o.getSubtype())) {
-			if (getSubtype().equals("*")) {
-				return 1;
-			} else if (o.getSubtype().equals("*")) {
-				return -1;
-			}
 		} else if (!getType().equals(o.getType())) {
 			if (getType().equals("*")) {
 				return 1;
 			} else if (o.getType().equals("*")) {
 				return -1;
+			} else {
+				return getType().compareTo(o.getType());
 			}
+		} else if (!getSubtype().equals(o.getSubtype())) {
+			if (getSubtype().equals("*")) {
+				return 1;
+			} else if (o.getSubtype().equals("*")) {
+				return -1;
+			} else {
+				return getSubtype().compareTo(o.getSubtype());
+			}
+		} else {			
+			return 0;
 		}
-		
-		return 0;
 	}
 	
 	@Override
@@ -161,9 +161,9 @@ public class MediaType implements Comparable<MediaType> {
 			builder.append("/");
 			builder.append(getSubtype());
 			
-			if (getQulity() != 1) {
+			if (getQuality() != 1) {
 				builder.append(";q=");
-				builder.append(getQulity());
+				builder.append(getQuality());
 			}
 			
 			mediaType = builder.toString();
@@ -176,7 +176,6 @@ public class MediaType implements Comparable<MediaType> {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + Float.floatToIntBits(quality);
 		result = prime * result + ((subtype == null) ? 0 : subtype.hashCode());
 		result = prime * result + ((type == null) ? 0 : type.hashCode());
 		return result;
@@ -194,9 +193,6 @@ public class MediaType implements Comparable<MediaType> {
 			return false;
 		}
 		MediaType other = (MediaType) obj;
-		if (Float.floatToIntBits(quality) != Float.floatToIntBits(other.quality)) {
-			return false;
-		}
 		if (subtype == null) {
 			if (other.subtype != null) {
 				return false;

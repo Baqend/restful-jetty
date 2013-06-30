@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * <p>
@@ -148,11 +149,17 @@ public class ConverterService {
 	 *            The format which will be registered
 	 */
 	public void addFormat(ConverterFormat<?> format) {
+		addFormat(format, true);
+	}
+	
+	public void addFormat(ConverterFormat<?> format, boolean loadConverters) {
 		formats.put(format.getFormatType(), format);
 		
-		String pkgName = format.getConverterPackageName();
-		if (pkgName != null) {
-			loadConverterPackage(pkgName);
+		if (loadConverters) {
+			String pkgName = format.getConverterPackageName();
+			if (pkgName != null) {
+				loadConverterPackage(pkgName);
+			}
 		}
 	}
 	
@@ -199,7 +206,7 @@ public class ConverterService {
 				
 				Map<MediaType, Converter<?, ?>> acceptTypes = accept.get(converter.getTargetClass());
 				if (acceptTypes == null) {
-					accept.put(converter.getTargetClass(), acceptTypes = new HashMap<>());
+					accept.put(converter.getTargetClass(), acceptTypes = new TreeMap<>());
 				}
 				
 				acceptTypes.put(mediaType, converter);
@@ -546,8 +553,10 @@ public class ConverterService {
 	public MediaType getPreferedMediaType(List<MediaType> acceptedMediaTypes, Class<?> type) {
 		Collections.sort(acceptedMediaTypes);
 		
+		Set<MediaType> supportedMediaTypes = getAcceptableMediaTypes(type);
+		
 		for (MediaType mediaType : acceptedMediaTypes) {
-			for (MediaType supportedType : getAcceptableMediaTypes(type)) {
+			for (MediaType supportedType : supportedMediaTypes) {
 				if (supportedType.isCompatible(mediaType)) {
 					return supportedType;
 				}
