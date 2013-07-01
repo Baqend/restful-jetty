@@ -36,7 +36,7 @@ import org.eclipse.jetty.http.HttpHeader;
  */
 public class ConversionHandler extends RestHandler {
 	
-	private static final List<MediaType> ANY = Arrays.asList(new MediaType(MediaType.ALL));
+	private static final List<MediaType> ANY = Arrays.asList(MediaType.parse(MediaType.ALL));
 	private final ConverterService converterService;
 	
 	/**
@@ -50,7 +50,7 @@ public class ConversionHandler extends RestHandler {
 		if (acceptHeader != null) {
 			List<MediaType> mediaTypes = new ArrayList<>();
 			for (String part : acceptHeader.split(",")) {
-				mediaTypes.add(new MediaType(part));
+				mediaTypes.add(MediaType.parse(part));
 			}
 			
 			return mediaTypes;
@@ -96,7 +96,7 @@ public class ConversionHandler extends RestHandler {
 		EntityType<?> requestType = request.getRestMethod().getRequestType();
 		
 		if (requestType != null) {
-			MediaType mediaType = new MediaType(request.getContentType());
+			MediaType mediaType = MediaType.parse(request.getContentType());
 			try {
 				Object entity = converterService.toObject(request, mediaType, requestType);
 				request.setEntity(entity);

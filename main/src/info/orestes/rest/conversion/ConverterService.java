@@ -48,7 +48,7 @@ public class ConverterService {
 	
 	public static final String FORMAT_PACKAGE_NAME = "info.orestes.rest.conversion.format";
 	
-	private static final MediaType ARGUMENT_MEDIA_TYPE = new MediaType(MediaType.TEXT_PLAIN);
+	private static final MediaType ARGUMENT_MEDIA_TYPE = MediaType.parse(MediaType.TEXT_PLAIN);
 	
 	private final Module module;
 	private final Map<Class<?>, Map<MediaType, Converter<?, ?>>> accept = new HashMap<>();
@@ -203,7 +203,7 @@ public class ConverterService {
 		if (converter.getClass().isAnnotationPresent(Accept.class)) {
 			Accept accepted = converter.getClass().getAnnotation(Accept.class);
 			for (String mediaTypeString : accepted.value()) {
-				MediaType mediaType = new MediaType(mediaTypeString);
+				MediaType mediaType = MediaType.parse(mediaTypeString);
 				
 				Map<MediaType, Converter<?, ?>> acceptTypes = accept.get(converter.getTargetClass());
 				if (acceptTypes == null) {
@@ -212,15 +212,19 @@ public class ConverterService {
 				
 				acceptTypes.put(mediaType, converter);
 				
-				List<MediaType> mediaTypes = new ArrayList<>(acceptTypes.keySet());
-				Collections.sort(mediaTypes);
-				
-				Map<MediaType, Converter<?, ?>> sortedAcceptTypes = new LinkedHashMap<>(mediaTypes.size());
-				for (MediaType mType : mediaTypes) {
-					sortedAcceptTypes.put(mType, acceptTypes.get(mType));
+				if (acceptTypes.size() > 1) {
+					List<MediaType> mediaTypes = new ArrayList<>(acceptTypes.keySet());
+					Collections.sort(mediaTypes);
+					
+					Map<MediaType, Converter<?, ?>> sortedAcceptTypes = new LinkedHashMap<>(mediaTypes.size());
+					for (MediaType mType : mediaTypes) {
+						sortedAcceptTypes.put(mType, acceptTypes.get(mType));
+					}
+					
+					acceptTypes = sortedAcceptTypes;
 				}
 				
-				accept.put(converter.getTargetClass(), sortedAcceptTypes);
+				accept.put(converter.getTargetClass(), acceptTypes);
 			}
 		}
 		

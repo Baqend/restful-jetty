@@ -73,7 +73,7 @@ public abstract class EntityResponseListener<E> extends Empty {
 		if (length > 0 || isChunked) {
 			String cType = headers.get(HttpHeader.CONTENT_TYPE);
 			if (cType != null) {
-				contentType = new MediaType(cType);
+				contentType = MediaType.parse(cType);
 			} else {
 				response.abort(new IllegalArgumentException("No content type is provided in the response."));
 			}

@@ -9,7 +9,7 @@ import org.eclipse.jetty.client.HttpClient;
 
 public class RestClient extends HttpClient {
 	
-	public static final MediaType ALL = new MediaType(MediaType.ALL);
+	public static final MediaType ALL = MediaType.parse(MediaType.ALL);
 	
 	private final ConverterService converterService;
 	private final URI baseURI;

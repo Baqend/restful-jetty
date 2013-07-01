@@ -39,74 +39,70 @@ public class ContentNegotiationTest {
 	
 	@Test
 	public void testIncompatibleType() {
-		assertNull(cs.getPreferedMediaType(Arrays.asList(new MediaType("text/html")), String.class));
+		assertNull(cs.getPreferedMediaType(Arrays.asList(MediaType.parse("text/html")), String.class));
 	}
 	
 	@Test
 	public void testCompatible() {
-		assertPrefered(new MediaType("text/html"), new MediaType("text/uri-list"), new MediaType("text/html"));
+		assertPrefered(MediaType.parse("text/html"), MediaType.parse("text/uri-list"), MediaType.parse("text/html"));
 	}
 	
 	@Test
 	public void testQuality() {
-		assertPrefered(new MediaType("text/html"), new MediaType("text/html; q=0.8"), new MediaType("text/plain"));
+		assertPrefered(MediaType.parse("text/html"), MediaType.parse("text/html; q=0.8"), MediaType.parse("text/plain"));
 	}
 	
 	@Test
 	public void testBestQuality() {
-		assertPrefered(new MediaType("text/xml"), new MediaType("text/html; q=0.8"), new MediaType("text/xml; q=0.9"));
+		assertPrefered(MediaType.parse("text/xml"), MediaType.parse("text/html; q=0.8"), MediaType.parse("text/xml; q=0.9"));
 	}
 	
 	@Test
 	public void testAsterisk() {
-		assertPrefered(new MediaType("text/html"), new MediaType("text/plain"), new MediaType("text/*"));
+		assertPrefered(MediaType.parse("text/html"), MediaType.parse("text/plain"), MediaType.parse("text/*"));
 	}
 	
 	@Test
 	public void testAsteriskAsterisk() {
-		assertPrefered(new MediaType("application/json"), new MediaType("text/plain"), new MediaType("image/*"),
-			new MediaType("*/*"));
+		assertPrefered(MediaType.parse("application/json"), MediaType.parse("text/plain"), MediaType.parse("image/*"),
+			MediaType.parse("*/*"));
 	}
 	
 	@Test
 	public void testAsteriskWithQuality1() {
-		assertPrefered(new MediaType("application/json"), new MediaType("text/plain"), new MediaType("image/*; q=0.9"),
-			new MediaType("*/*; q=0.8"));
+		assertPrefered(MediaType.parse("application/json"), MediaType.parse("text/plain"), MediaType.parse("image/*; q=0.9"),
+			MediaType.parse("*/*; q=0.8"));
 	}
 	
 	@Test
 	public void testAsteriskWithQuality2() {
-		assertPrefered(new MediaType("application/json"), new MediaType("text/plain"), new MediaType(
-			"application/*; q=0.9"), new MediaType("*/*; q=0.8"));
+		assertPrefered(MediaType.parse("application/json"), MediaType.parse("text/plain"), MediaType.parse("application/*; q=0.9"), MediaType.parse("*/*; q=0.8"));
 	}
 	
 	@Test
 	public void testAsteriskWithQuality3() {
-		assertPrefered(new MediaType("application/json"), new MediaType("text/html; q=0.5"), new MediaType(
-			"application/*; q=0.9"), new MediaType("*/*; q=0.8"));
+		assertPrefered(MediaType.parse("application/json"), MediaType.parse("text/html; q=0.5"), MediaType.parse("application/*; q=0.9"), MediaType.parse("*/*; q=0.8"));
 	}
 	
 	@Test
 	public void testOrder() {
-		assertPrefered(new MediaType("application/json"), new MediaType("text/plain"),
-			new MediaType("application/json"), new MediaType("*/*"));
+		assertPrefered(MediaType.parse("application/json"), MediaType.parse("text/plain"),
+			MediaType.parse("application/json"), MediaType.parse("*/*"));
 	}
 	
 	@Test
 	public void testOrderWithQualityAndAsterisk() {
-		assertPrefered(new MediaType("application/json"), new MediaType("application/json; q=0.8"), new MediaType(
-			"text/plain"), new MediaType("*/*; q=0.8"));
+		assertPrefered(MediaType.parse("application/json"), MediaType.parse("application/json; q=0.8"), MediaType.parse("text/plain"), MediaType.parse("*/*; q=0.8"));
 	}
 	
 	@Test
 	public void testAdditionalAttributes() {
-		assertPrefered(new MediaType("application/json"), new MediaType("text/html; eq=4; q=0.2"), new MediaType(
-			"application/json; testing; q=0.8; quality=0.1;"), new MediaType("*/*; attr=34; sdf; q=0.8"));
+		assertPrefered(MediaType.parse("application/json"), MediaType.parse("text/html; eq=4; q=0.2"), MediaType.parse("application/json; testing; q=0.8; quality=0.1;"), MediaType.parse("*/*; attr=34; sdf; q=0.8"));
 	}
 	
 	@Test
 	public void testNotCompatible() {
-		assertPrefered(null, new MediaType("text/uri-list"), new MediaType("text/plain"));
+		assertPrefered(null, MediaType.parse("text/uri-list"), MediaType.parse("text/plain"));
 	}
 	
 	private void assertPrefered(MediaType expected, MediaType... mediaTypes) {
