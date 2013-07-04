@@ -1,5 +1,7 @@
 package info.orestes.rest.conversion;
 
+import java.util.Objects;
+
 /**
  * This class represents a HTTP media type which can be prioritized by a quality
  * factor q
@@ -12,24 +14,26 @@ public class MediaType implements Comparable<MediaType> {
 	public static final String TEXT_PLAIN = "text/plain;q=0.5";
 	public static final String ALL = "*/*";
 	
-	private final String type;
-	private final String subtype;
-	private final float quality;
-	private String mediaType;
-	
 	/**
-	 * Creates a {@link MediaType} from a HTTP string representation
+	 * Parse a HTTP {@link MediaType} string representation
 	 * 
 	 * @param mediaType
 	 *            the media type string
+	 * @return The parsed media type
+	 * @throws IllegalArgumentException
+	 *             if the media type is invalid formatted
 	 */
-	public MediaType(String mediaType) {
+	public static MediaType parse(String mediaType) {
 		String[] parts = mediaType.split(";");
 		
 		mediaType = parts[0].trim();
 		int typeIndex = mediaType.indexOf('/');
-		type = mediaType.substring(0, typeIndex);
-		subtype = mediaType.substring(typeIndex + 1);
+		if (typeIndex == -1) {
+			throw new IllegalArgumentException("The media type string " + mediaType + " has not the right format");
+		}
+		
+		String type = mediaType.substring(0, typeIndex);
+		String subtype = mediaType.substring(typeIndex + 1);
 		
 		float q = 1;
 		for (int i = 1; i < parts.length; i++) {
@@ -44,8 +48,13 @@ public class MediaType implements Comparable<MediaType> {
 			}
 		}
 		
-		quality = q;
+		return new MediaType(type, subtype, q);
 	}
+	
+	private final String type;
+	private final String subtype;
+	private final float quality;
+	private String mediaType;
 	
 	/**
 	 * Creates a media type programmatically with the default quality of 1
@@ -54,6 +63,8 @@ public class MediaType implements Comparable<MediaType> {
 	 *            the main type
 	 * @param subtype
 	 *            the sub type
+	 * @throws IllegalArgumentException
+	 *             if the type or subtype contains a /
 	 */
 	public MediaType(String type, String subtype) {
 		this(type, subtype, 1);
@@ -68,8 +79,23 @@ public class MediaType implements Comparable<MediaType> {
 	 *            the sub type
 	 * @param quality
 	 *            the quality factor
+	 * @throws IllegalArgumentException
+	 *             if the type or subtype contains a / or if the quality is not
+	 *             between 0 and 1
 	 */
 	public MediaType(String type, String subtype, float quality) {
+		if (type.contains("/")) {
+			throw new IllegalArgumentException("The media type " + type + " contains a /");
+		}
+		
+		if (subtype.contains("/")) {
+			throw new IllegalArgumentException("The media subtype " + subtype + " contains a /");
+		}
+		
+		if (quality < 0 || quality > 1) {
+			throw new IllegalArgumentException("The quality must be between 0 and 1");
+		}
+		
 		this.type = type;
 		this.subtype = subtype;
 		this.quality = quality;
@@ -148,7 +174,7 @@ public class MediaType implements Comparable<MediaType> {
 			} else {
 				return getSubtype().compareTo(o.getSubtype());
 			}
-		} else {			
+		} else {
 			return 0;
 		}
 	}
@@ -174,11 +200,7 @@ public class MediaType implements Comparable<MediaType> {
 	
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((subtype == null) ? 0 : subtype.hashCode());
-		result = prime * result + ((type == null) ? 0 : type.hashCode());
-		return result;
+		return Objects.hash(type, subtype);
 	}
 	
 	@Override

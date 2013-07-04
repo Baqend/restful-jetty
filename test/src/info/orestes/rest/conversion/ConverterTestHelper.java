@@ -125,10 +125,10 @@ public class ConverterTestHelper {
 	
 	protected <T> T doConvert(EntityType<T> type, String mediaType, T entity) throws RestException {
 		try {
-			cs.toRepresentation(out, type, new MediaType(mediaType), entity);
+			cs.toRepresentation(out, type, MediaType.parse(mediaType), entity);
 			out.getWriter().close();
 			
-			return cs.toObject(in, new MediaType(mediaType), type);
+			return cs.toObject(in, MediaType.parse(mediaType), type);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}

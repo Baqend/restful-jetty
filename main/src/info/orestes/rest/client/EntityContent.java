@@ -20,7 +20,7 @@ import org.eclipse.jetty.client.api.ContentProvider;
  * convert an entity to a representation and provide the converted content
  */
 public class EntityContent<E> implements ContentProvider {
-	private static final List<MediaType> ALL = Arrays.asList(new MediaType(MediaType.ALL));
+	private static final List<MediaType> ALL = Arrays.asList(MediaType.parse(MediaType.ALL));
 	
 	private final E entity;
 	private final EntityType<E> entityType;

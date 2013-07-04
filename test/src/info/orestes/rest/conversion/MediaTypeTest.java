@@ -11,24 +11,24 @@ import static org.junit.Assert.assertTrue;
 
 public class MediaTypeTest {
 	private static final MediaType[] mediaTypes = new MediaType[] {
-		new MediaType("*/*; q=0.1"),
-		new MediaType("text/plain"),
-		new MediaType("text/plain; q=0.3"),
-		new MediaType("text/uri-list; q=0.7"),
-		new MediaType("text/html"),
-		new MediaType("text/html; q=0.7"),
-		new MediaType("text/*; q=0.1"),
-		new MediaType("application/*"),
-		new MediaType("application/json"),
-		new MediaType("application/json+schema; q=0.7"),
+		MediaType.parse("*/*; q=0.1"),
+		MediaType.parse("text/plain"),
+		MediaType.parse("text/plain; q=0.3"),
+		MediaType.parse("text/uri-list; q=0.7"),
+		MediaType.parse("text/html"),
+		MediaType.parse("text/html; q=0.7"),
+		MediaType.parse("text/*; q=0.1"),
+		MediaType.parse("application/*"),
+		MediaType.parse("application/json"),
+		MediaType.parse("application/json+schema; q=0.7"),
 	};
 	
 	@Test
 	public final void testMediaTypeString() {
-		MediaType t1 = new MediaType("text/plain");
-		MediaType t2 = new MediaType("text/plain; q=1");
-		MediaType t3 = new MediaType("text/plain+test; t=zer; q=0.4");
-		MediaType t4 = new MediaType(" text/plain;  zet=34;  q=0.34;idf=3");
+		MediaType t1 = MediaType.parse("text/plain");
+		MediaType t2 = MediaType.parse("text/plain; q=1");
+		MediaType t3 = MediaType.parse("text/plain+test; t=zer; q=0.4");
+		MediaType t4 = MediaType.parse(" text/plain;  zet=34;  q=0.34;idf=3");
 		
 		assertEquals("text", t1.getType());
 		assertEquals("plain", t1.getSubtype());
@@ -96,16 +96,16 @@ public class MediaTypeTest {
 		Arrays.sort(mTypes);
 		
 		assertArrayEquals(new MediaType[] {
-			new MediaType("application/json"),
-			new MediaType("application/*"),
-			new MediaType("text/html"),
-			new MediaType("text/plain"),
-			new MediaType("application/json+schema; q=0.7"),
-			new MediaType("text/html; q=0.7"),
-			new MediaType("text/uri-list; q=0.7"),
-			new MediaType("text/plain; q=0.3"),
-			new MediaType("text/*; q=0.1"),
-			new MediaType("*/*; q=0.1"),
+			MediaType.parse("application/json"),
+			MediaType.parse("application/*"),
+			MediaType.parse("text/html"),
+			MediaType.parse("text/plain"),
+			MediaType.parse("application/json+schema; q=0.7"),
+			MediaType.parse("text/html; q=0.7"),
+			MediaType.parse("text/uri-list; q=0.7"),
+			MediaType.parse("text/plain; q=0.3"),
+			MediaType.parse("text/*; q=0.1"),
+			MediaType.parse("*/*; q=0.1"),
 		}, mTypes);
 	}
 }

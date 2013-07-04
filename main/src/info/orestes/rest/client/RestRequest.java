@@ -33,7 +33,7 @@ public class RestRequest extends HttpRequest {
 			entityContent.setRequest(this);
 			
 			if (contentType != null) {
-				entityContent.setContentType(new MediaType(contentType));
+				entityContent.setContentType(MediaType.parse(contentType));
 			} else {
 				MediaType type = entityContent.getContentType();
 				if (type != null) {

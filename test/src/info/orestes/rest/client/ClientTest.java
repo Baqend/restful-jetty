@@ -375,7 +375,7 @@ public class ClientTest {
 					public PrintWriter getWriter() throws IOException {
 						return response.getWriter();
 					}
-				}, RestException.class, new MediaType("text/plain"), exception);
+				}, RestException.class, MediaType.parse("text/plain"), exception);
 				
 				response.setStatus(exception.getStatusCode());
 			}

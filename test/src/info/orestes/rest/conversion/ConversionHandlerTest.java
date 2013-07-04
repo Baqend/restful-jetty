@@ -343,7 +343,7 @@ public class ConversionHandlerTest {
 		if (requestEntity != null) {
 			Class<I> cls = (Class<I>) requestEntity.getClass();
 			request.setContentType(MediaType.TEXT_PLAIN);
-			converterService.toRepresentation(request, cls, new MediaType(MediaType.TEXT_PLAIN), requestEntity);
+			converterService.toRepresentation(request, cls, MediaType.parse(MediaType.TEXT_PLAIN), requestEntity);
 		}
 		
 		request.getWriter().close();
@@ -364,7 +364,7 @@ public class ConversionHandlerTest {
 		if (response.getReader().ready()) {
 			assertEquals(MediaType.TEXT_PLAIN, response.getContentType());
 			Class<O> cls = (Class<O>) method.getResponseType().getRawType();
-			return (O) converterService.toObject(response, new MediaType(MediaType.TEXT_PLAIN), cls != null ? cls
+			return (O) converterService.toObject(response, MediaType.parse(MediaType.TEXT_PLAIN), cls != null ? cls
 					: String.class);
 		} else {
 			assertNull(response.getContentType());
