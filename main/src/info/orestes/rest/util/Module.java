@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Module {
+	private static final Object NULL = new Object();
+	
 	private final Map<Class<?>, Constructor<?>> constructors = new HashMap<>();
 	private final Map<Class<?>, Object> instances = new HashMap<>();
 	
@@ -21,8 +23,8 @@ public class Module {
 		constructors.put(interf, getInjectableConstructor(binding));
 	}
 	
-	public <T> void bind(Class<T> interf, T binding) {
-		instances.put(interf, binding);
+	public <T> void bindInstance(Class<T> interf, T binding) {
+		instances.put(interf, binding == null ? NULL : binding);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -47,7 +49,7 @@ public class Module {
 			instances.put(cls, instance);
 		}
 		
-		return instance;
+		return instance == NULL ? null : instance;
 	}
 	
 	public <T> T inject(Class<T> cls) {

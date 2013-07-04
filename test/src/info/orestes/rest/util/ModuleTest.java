@@ -3,6 +3,7 @@ package info.orestes.rest.util;
 import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -21,9 +22,23 @@ public class ModuleTest {
 			fail();
 		} catch (RuntimeException e) {}
 		
-		module.bind(Object.class, instance);
+		module.bindInstance(Object.class, instance);
 		
 		assertSame(instance, module.moduleInstance(Object.class));
+		assertTrue(module.isBound(Object.class));
+	}
+	
+	@Test
+	public final void testBindNull() {
+		assertFalse(module.isBound(Object.class));
+		try {
+			module.moduleInstance(Object.class);
+			fail();
+		} catch (RuntimeException e) {}
+		
+		module.bindInstance(Object.class, null);
+		
+		assertNull(module.moduleInstance(Object.class));
 		assertTrue(module.isBound(Object.class));
 	}
 	
@@ -44,7 +59,7 @@ public class ModuleTest {
 	@Test
 	public final void testInjectClass() {
 		Object obj = new Object();
-		module.bind(Object.class, obj);
+		module.bindInstance(Object.class, obj);
 		
 		InjectableConstr test = module.inject(InjectableConstr.class);
 		assertTrue(test instanceof InjectableConstr);
@@ -59,7 +74,7 @@ public class ModuleTest {
 	@Test(expected = IllegalArgumentException.class)
 	public final void testInjectInvalidClass1() {
 		Object obj = new Object();
-		module.bind(Object.class, obj);
+		module.bindInstance(Object.class, obj);
 		
 		module.inject(NotInjectableConstr.class);
 	}
