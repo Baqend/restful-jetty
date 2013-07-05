@@ -20,7 +20,7 @@ public class Module {
 	}
 	
 	public <T> void bind(Class<T> interf, Class<? extends T> binding) {
-		constructors.put(interf, getInjectableConstructor(binding));
+		constructors.put(interf, binding == null ? null : getInjectableConstructor(binding));
 	}
 	
 	public <T> void bindInstance(Class<T> interf, T binding) {
@@ -32,21 +32,23 @@ public class Module {
 		T instance = (T) instances.get(cls);
 		
 		if (instance == null) {
-			Constructor<? extends T> constr = (Constructor<? extends T>) constructors.get(cls);
-			
-			if (constr == null) {
-				throw new RuntimeException("No binding defined for class " + cls);
+			if (!constructors.containsKey(cls)) {
+				throw new RuntimeException("No binding defined for " + cls);
 			}
 			
 			if (instances.containsKey(cls)) {
 				throw new RuntimeException("Cycle dependency detected. Can not initialize " + cls);
 			}
 			
+			Constructor<? extends T> constr = (Constructor<? extends T>) constructors.get(cls);
+			
 			instances.put(cls, null);
 			
-			instance = inject(constr);
+			if (constr != null) {
+				instance = inject(constr);
+			}
 			
-			instances.put(cls, instance);
+			bindInstance(cls, instance);
 		}
 		
 		return instance == NULL ? null : instance;

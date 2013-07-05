@@ -57,6 +57,20 @@ public class ModuleTest {
 	}
 	
 	@Test
+	public final void testBindNullClass() {
+		assertFalse(module.isBound(Object.class));
+		
+		module.bind(Object.class, null);
+		assertTrue(module.isBound(Object.class));
+		
+		Object test = module.moduleInstance(Object.class);
+		
+		assertTrue(module.isBound(Object.class));
+		assertNull(test);
+		assertNull(module.moduleInstance(Object.class));
+	}
+	
+	@Test
 	public final void testInjectClass() {
 		Object obj = new Object();
 		module.bindInstance(Object.class, obj);
