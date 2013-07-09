@@ -16,8 +16,12 @@ import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.server.handler.ErrorHandler;
+import org.eclipse.jetty.util.log.Log;
+import org.eclipse.jetty.util.log.Logger;
 
 public class RestErrorHandler extends ErrorHandler {
+	
+	private final Logger LOG = Log.getLogger(ErrorHandler.class);
 	
 	private final ConverterService converterService;
 	
@@ -50,17 +54,19 @@ public class RestErrorHandler extends ErrorHandler {
 			throws IOException {
 		
 		Throwable throwable = (Throwable) request.getAttribute("javax.servlet.error.exception");
-		throwable.printStackTrace();
 		
 		RestException e;
 		if (throwable instanceof RestException) {
 			e = (RestException) throwable;
+			
+			LOG.debug(e);
 		} else {
 			if (message == null) {
 				message = "An unexpected error occurred.";
 			}
 			
 			e = RestException.create(code, message, throwable);
+			LOG.warn(e);
 		}
 		
 		try {
@@ -68,6 +74,7 @@ public class RestErrorHandler extends ErrorHandler {
 		} catch (RestException ex) {
 			IOException re = new IOException("An error occurred while encoding the exception.", ex);
 			re.addSuppressed(e);
+			LOG.warn(re);
 			throw re;
 		}
 	}

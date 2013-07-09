@@ -3,6 +3,7 @@ package info.orestes.rest.util;
 import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
@@ -28,18 +29,11 @@ public class ModuleTest {
 		assertTrue(module.isBound(Object.class));
 	}
 	
-	@Test
-	public final void testBindNull() {
+	@Test(expected = NullPointerException.class)
+	public final void testNull() {
 		assertFalse(module.isBound(Object.class));
-		try {
-			module.moduleInstance(Object.class);
-			fail();
-		} catch (RuntimeException e) {}
 		
 		module.bindInstance(Object.class, null);
-		
-		assertNull(module.moduleInstance(Object.class));
-		assertTrue(module.isBound(Object.class));
 	}
 	
 	@Test
@@ -57,17 +51,23 @@ public class ModuleTest {
 	}
 	
 	@Test
+	public final void testBindSharedClass() {
+		assertFalse(module.isBound(Object.class));
+		
+		module.bind(Object.class, DefaultConstructorConstr.class);
+		module.bind(DefaultConstructorConstr.class, DefaultConstructorConstr.class);
+		
+		Object o1 = module.moduleInstance(Object.class);
+		Object o2 = module.moduleInstance(DefaultConstructorConstr.class);
+		
+		assertSame(o1, o2);
+	}
+	
+	@Test(expected = NullPointerException.class)
 	public final void testBindNullClass() {
 		assertFalse(module.isBound(Object.class));
 		
 		module.bind(Object.class, null);
-		assertTrue(module.isBound(Object.class));
-		
-		Object test = module.moduleInstance(Object.class);
-		
-		assertTrue(module.isBound(Object.class));
-		assertNull(test);
-		assertNull(module.moduleInstance(Object.class));
 	}
 	
 	@Test
@@ -78,6 +78,19 @@ public class ModuleTest {
 		InjectableConstr test = module.inject(InjectableConstr.class);
 		assertTrue(test instanceof InjectableConstr);
 		assertSame(obj, test.getObject());
+	}
+	
+	@Test
+	public final void testInjectNull() {
+		assertFalse(module.isBound(Object.class));
+		
+		NullableConstructorConstr n = module.inject(NullableConstructorConstr.class);
+		assertNull(n.param);
+		
+		module.bindInstance(Object.class, new Object());
+		
+		n = module.inject(NullableConstructorConstr.class);
+		assertNotNull(n.param);
 	}
 	
 	@Test(expected = RuntimeException.class)
@@ -116,6 +129,15 @@ public class ModuleTest {
 		
 		public Object getObject() {
 			return object;
+		}
+	}
+	
+	public static class NullableConstructorConstr {
+		public final Object param;
+		
+		@Inject
+		public NullableConstructorConstr(@Nullable Object obj) {
+			param = obj;
 		}
 	}
 	

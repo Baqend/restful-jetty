@@ -1,13 +1,14 @@
 package info.orestes.rest.util;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
 
 public class Module {
-	private static final Object NULL = new Object();
-	
 	private final Map<Class<?>, Constructor<?>> constructors = new HashMap<>();
 	private final Map<Class<?>, Object> instances = new HashMap<>();
 	
@@ -20,11 +21,12 @@ public class Module {
 	}
 	
 	public <T> void bind(Class<T> interf, Class<? extends T> binding) {
-		constructors.put(interf, binding == null ? null : getInjectableConstructor(binding));
+		constructors.put(interf, getInjectableConstructor(binding));
 	}
 	
 	public <T> void bindInstance(Class<T> interf, T binding) {
-		instances.put(interf, binding == null ? NULL : binding);
+		Objects.requireNonNull(binding);
+		instances.put(interf, binding);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -32,26 +34,38 @@ public class Module {
 		T instance = (T) instances.get(cls);
 		
 		if (instance == null) {
-			if (!constructors.containsKey(cls)) {
-				throw new RuntimeException("No binding defined for " + cls);
+			Constructor<? extends T> constr = (Constructor<? extends T>) constructors.get(cls);
+			
+			if (constr == null) {
+				throw new RuntimeException("No binding defined for class " + cls);
 			}
 			
 			if (instances.containsKey(cls)) {
 				throw new RuntimeException("Cycle dependency detected. Can not initialize " + cls);
 			}
 			
-			Constructor<? extends T> constr = (Constructor<? extends T>) constructors.get(cls);
-			
-			instances.put(cls, null);
-			
-			if (constr != null) {
-				instance = inject(constr);
-			}
-			
-			bindInstance(cls, instance);
+			instance = create(constr);
 		}
 		
-		return instance == NULL ? null : instance;
+		return instance;
+	}
+	
+	private <I> I create(Constructor<I> constructor) {
+		resolve(constructor, null);
+		I instance = inject(constructor);
+		resolve(constructor, instance);
+		
+		return instance;
+	}
+	
+	private <T> void resolve(Constructor<T> constructor, T instance) {
+		for (Entry<Class<?>, Constructor<?>> entry : constructors.entrySet()) {
+			if (entry.getValue().equals(constructor)) {
+				if (instances.get(entry.getKey()) == null) {
+					instances.put(entry.getKey(), instance);
+				}
+			}
+		}
 	}
 	
 	public <T> T inject(Class<T> cls) {
@@ -60,8 +74,23 @@ public class Module {
 	
 	public <T> T inject(Constructor<T> constructor) {
 		Class<?>[] types = constructor.getParameterTypes();
+		Annotation[][] paramsAnnotations = null;
+		
 		Object[] params = new Object[types.length];
-		for (int i = 0; i < params.length; ++i) {
+		paramLoop: for (int i = 0; i < params.length; ++i) {
+			if (!isBound(types[i])) {
+				if (paramsAnnotations == null) {
+					paramsAnnotations = constructor.getParameterAnnotations();
+				}
+				
+				for (Annotation annotation : paramsAnnotations[i]) {
+					if (annotation instanceof Nullable) {
+						params[i] = null;
+						continue paramLoop;
+					}
+				}
+			}
+			
 			params[i] = moduleInstance(types[i]);
 		}
 		

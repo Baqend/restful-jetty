@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
+@SuppressWarnings("serial")
 public class EntityType<T> implements ParameterizedType, Serializable {
 	public static final Class<?>[] EMPTY_GENERIC_ARRAY = new Class[0];
 	

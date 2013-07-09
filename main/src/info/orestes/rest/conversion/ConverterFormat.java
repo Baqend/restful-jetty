@@ -65,6 +65,16 @@ public abstract class ConverterFormat<F> {
 	}
 	
 	/**
+	 * Get a map of all registered convertible types with the associated
+	 * converter
+	 * 
+	 * @return The mapping between converter and type
+	 */
+	protected HashMap<Class<?>, Converter<?, F>> getConverters() {
+		return converters;
+	}
+	
+	/**
 	 * Add a compatible {@link Converter} as a helper for other
 	 * {@link Converter}s
 	 * 
