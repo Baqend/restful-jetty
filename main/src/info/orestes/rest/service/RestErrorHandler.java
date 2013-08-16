@@ -4,6 +4,7 @@ import info.orestes.rest.conversion.ConversionHandler;
 import info.orestes.rest.conversion.ConverterService;
 import info.orestes.rest.conversion.MediaType;
 import info.orestes.rest.conversion.WriteableContext;
+import info.orestes.rest.error.InternalServerError;
 import info.orestes.rest.error.RestException;
 
 import java.io.IOException;
@@ -58,15 +59,18 @@ public class RestErrorHandler extends ErrorHandler {
 		RestException e;
 		if (throwable instanceof RestException) {
 			e = (RestException) throwable;
-			
-			LOG.debug(e);
 		} else {
 			if (message == null) {
 				message = "An unexpected error occurred.";
 			}
 			
 			e = RestException.create(code, message, throwable);
+		}
+		
+		if (e instanceof InternalServerError) {
 			LOG.warn(e);
+		} else {
+			LOG.debug(e);
 		}
 		
 		try {

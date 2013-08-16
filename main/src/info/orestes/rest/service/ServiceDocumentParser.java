@@ -36,7 +36,7 @@ public class ServiceDocumentParser {
 	
 	private State state;
 	private MethodGroup currentGroup;
-	private List<MethodGroup> groups;
+	private Spec spec;
 	private String currentName;
 	private List<String> currentDescription;
 	private Map<String, ArgumentDefinition> currentArguments;
@@ -94,21 +94,21 @@ public class ServiceDocumentParser {
 		return cls;
 	}
 	
-	public List<MethodGroup> parse(String fileName) {
+	public Spec parse(String fileName) {
 		return parse(getClass().getResourceAsStream(fileName));
 	}
 	
-	public List<MethodGroup> parse(InputStream stream) {
+	public Spec parse(InputStream stream) {
 		return parse(new InputStreamReader(stream));
 	}
 	
-	public List<MethodGroup> parse(Reader reader) {
+	public Spec parse(Reader reader) {
 		String line = null;
 		int lineNumber = 0;
 		
 		try (BufferedReader lines = new BufferedReader(reader)) {
 			state = State.GROUP;
-			groups = new LinkedList<MethodGroup>();
+			spec = new Spec();
 			
 			while ((line = lines.readLine()) != null) {
 				lineNumber++;
@@ -118,7 +118,7 @@ public class ServiceDocumentParser {
 				}
 			}
 			
-			return groups;
+			return spec;
 		} catch (Exception e) {
 			if (line != null) {
 				throw new ServiceDocumentParserException(e, lineNumber, line);
@@ -174,7 +174,7 @@ public class ServiceDocumentParser {
 	private boolean parseGroup(String line) {
 		if (line.length() > 1 && line.startsWith("#") && line.charAt(1) != '#') {
 			currentGroup = new MethodGroup(line.substring(1).trim());
-			groups.add(currentGroup);
+			spec.add(currentGroup);
 			return true;
 		} else {
 			return false;

@@ -124,6 +124,7 @@ public class ConversionHandler extends RestHandler {
 			MediaType mediaType = converterService.getPreferedMediaType(mediaTypes, responseType.getRawType());
 			if (mediaType != null) {
 				response.setContentType(mediaType.toString());
+				response.setCharacterEncoding("utf-8");
 				
 				try {
 					converterService.toRepresentation(response, responseType, mediaType, response.getEntity());
