@@ -171,9 +171,15 @@ public class ServiceDocumentParser {
 		}
 	}
 	
-	private boolean parseGroup(String line) {
+	private boolean parseGroup(String line) throws IOException {
 		if (line.length() > 1 && line.startsWith("#") && line.charAt(1) != '#') {
-			currentGroup = new MethodGroup(line.substring(1).trim());
+			int nameIndex = line.indexOf(":");
+			
+			if (nameIndex == -1) {
+				throw new IOException("The method group has no name.");
+			}
+			
+			currentGroup = new MethodGroup(line.substring(1, nameIndex).trim(), line.substring(nameIndex + 1).trim());
 			spec.add(currentGroup);
 			return true;
 		} else {

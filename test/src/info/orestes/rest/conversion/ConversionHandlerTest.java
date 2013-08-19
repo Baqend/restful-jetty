@@ -292,7 +292,7 @@ public class ConversionHandlerTest {
 		});
 	}
 	
-	@Test(expected = IOException.class)
+	@Test(expected = BadRequest.class)
 	public final void testInvalidRequestContent() throws Exception {
 		RestMethod method = group.get(2);
 		HashMap<String, Object> args = new HashMap<>();
@@ -363,6 +363,7 @@ public class ConversionHandlerTest {
 		
 		if (response.getReader().ready()) {
 			assertEquals(MediaType.TEXT_PLAIN, response.getContentType());
+			assertEquals("utf-8", response.getCharacterEncoding());
 			Class<O> cls = (Class<O>) method.getResponseType().getRawType();
 			return (O) converterService.toObject(response, MediaType.parse(MediaType.TEXT_PLAIN), cls != null ? cls
 					: String.class);
@@ -416,10 +417,21 @@ public class ConversionHandlerTest {
 		private PipedReader out;
 		private PipedWriter in;
 		private String contentType;
+		private String characterEncoding;
 		
 		@Override
 		public String getContentType() {
 			return contentType;
+		}
+		
+		@Override
+		public String getCharacterEncoding() {
+			return characterEncoding;
+		}
+		
+		@Override
+		public void setCharacterEncoding(String charset) {
+			characterEncoding = charset;
 		}
 		
 		@Override

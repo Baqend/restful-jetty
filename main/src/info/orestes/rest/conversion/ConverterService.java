@@ -1,5 +1,6 @@
 package info.orestes.rest.conversion;
 
+import info.orestes.rest.error.BadRequest;
 import info.orestes.rest.error.RestException;
 import info.orestes.rest.service.EntityType;
 import info.orestes.rest.service.ServiceDocumentTypes;
@@ -343,7 +344,7 @@ public class ConverterService {
 		} catch (UnsupportedOperationException e) {
 			throw e;
 		} catch (RuntimeException e) {
-			throw new IOException("The body can't be processed", e);
+			throw new BadRequest("The body can't be processed", e);
 		}
 	}
 	

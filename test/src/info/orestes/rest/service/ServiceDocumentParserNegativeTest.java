@@ -14,7 +14,7 @@ public class ServiceDocumentParserNegativeTest {
 	@Test
 	public final void testInlineParsing() {
 		List<MethodGroup> groups = parse(
-			"#Test",
+			"#test : Test",
 			"##Test method",
 			"GET / info.orestes.rest.Testing1(String)");
 		
@@ -25,13 +25,14 @@ public class ServiceDocumentParserNegativeTest {
 	@Test(expected = ServiceDocumentParserException.class)
 	public final void testMissingMethodName() {
 		parse(
-			"#Test",
+			"#test : Test",
 			"GET / info.orestes.rest.Testing1(String)");
 	}
 	
 	@Test(expected = ServiceDocumentParserException.class)
 	public final void testMissingGroupName() {
 		parse(
+			"#Test",
 			"##Test method",
 			"GET / info.orestes.rest.Testing1(String)");
 	}
@@ -39,7 +40,7 @@ public class ServiceDocumentParserNegativeTest {
 	@Test(expected = ServiceDocumentParserException.class)
 	public final void testResourceNotAvailable() {
 		parse(
-			"#Test",
+			"#test : Test",
 			"##Test method",
 			"GET / info.orestes.rest.Testing55(String)");
 	}
@@ -47,7 +48,7 @@ public class ServiceDocumentParserNegativeTest {
 	@Test(expected = ServiceDocumentParserException.class)
 	public final void testInvalidArgument() {
 		parse(
-			"#Test",
+			"#test : Test",
 			"##Test method",
 			"GET / info.orestes.rest.Testing1(Long)");
 	}
@@ -55,7 +56,7 @@ public class ServiceDocumentParserNegativeTest {
 	@Test(expected = ServiceDocumentParserException.class)
 	public final void testInvalidReturnValue() {
 		parse(
-			"#Test",
+			"#test : Test",
 			"##Test method",
 			"GET / info.orestes.rest.Testing1 : Long");
 	}
@@ -63,7 +64,7 @@ public class ServiceDocumentParserNegativeTest {
 	@Test(expected = ServiceDocumentParserException.class)
 	public final void testMethodNotDeclared() {
 		parse(
-			"#Test",
+			"#test : Test",
 			"##Test method",
 			"POST / info.orestes.rest.Testing1(String)");
 	}
@@ -71,7 +72,7 @@ public class ServiceDocumentParserNegativeTest {
 	@Test(expected = ServiceDocumentParserException.class)
 	public final void testMethodNotPublic() {
 		parse(
-			"#Test",
+			"#test : Test",
 			"##Test method",
 			"PUT / info.orestes.rest.Testing1(String)");
 	}

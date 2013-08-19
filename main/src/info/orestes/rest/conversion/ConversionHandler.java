@@ -102,6 +102,8 @@ public class ConversionHandler extends RestHandler {
 				request.setEntity(entity);
 			} catch (UnsupportedOperationException e) {
 				throw new UnsupportedMediaType("The request media type is not supported.", e);
+			} catch (IOException e) {
+				throw new BadRequest("The requested entity is not valid.", e);
 			}
 		}
 	}

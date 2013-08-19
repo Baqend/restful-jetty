@@ -65,7 +65,8 @@ public class ServiceDocumentParserTest {
 	public void testGroups() {
 		assertSame(5, groups.size());
 		
-		assertEquals("Group A", groups.get(0).getName());
+		assertEquals("group-a", groups.get(0).getName());
+		assertEquals("Group A", groups.get(0).getDescription());
 	}
 	
 	@Test

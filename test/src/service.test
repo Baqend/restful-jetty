@@ -1,4 +1,4 @@
-#Group A
+#group-a : Group A
 
 ##Method A.1
 
@@ -30,7 +30,7 @@ PUT   /a/b/c      info.orestes.rest.Testing3(  Object  )
 
 DELETE /a/b/c info.orestes.rest.Testing1    : Integer
 
-#Group B
+#group-b : Group B
 
 ##Method B.1
 
@@ -65,7 +65,7 @@ Test Method B.4
 
 PUT   /:a/:b/:c/:d      info.orestes.rest.Testing3   ( Object )
 
-#Group C
+#group-c : Group C
 
 ##Method C.1
 
@@ -95,7 +95,7 @@ POST /?test=&id=33&name info.orestes.rest.Testing3
 
 PUT   /test?a=&b&c=44      info.orestes.rest.Testing3(Object)
 
-#Group D
+#group-d : Group D
 
 ##Method D.1
 
@@ -125,7 +125,7 @@ POST /;test=;id=33;name info.orestes.rest.Testing3
 
 PUT   /test;a=;b;c=44      info.orestes.rest.Testing3(Object)
 
-#Group E
+#group-e : Group E
 
 ##Method E.1
 
