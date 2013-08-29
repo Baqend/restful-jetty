@@ -3,6 +3,7 @@ package info.orestes.rest.service;
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Arrays;
 
 @SuppressWarnings("serial")
 public class EntityType<T> implements ParameterizedType, Serializable {
@@ -35,6 +36,40 @@ public class EntityType<T> implements ParameterizedType, Serializable {
 	@Override
 	public Type getOwnerType() {
 		return null;
+	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + Arrays.hashCode(actualTypeArguments);
+		result = prime * result + ((rawType == null) ? 0 : rawType.hashCode());
+		return result;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (!(obj instanceof EntityType)) {
+			return false;
+		}
+		EntityType<?> other = (EntityType<?>) obj;
+		if (!Arrays.equals(actualTypeArguments, other.actualTypeArguments)) {
+			return false;
+		}
+		if (rawType == null) {
+			if (other.rawType != null) {
+				return false;
+			}
+		} else if (!rawType.equals(other.rawType)) {
+			return false;
+		}
+		return true;
 	}
 	
 	@Override
