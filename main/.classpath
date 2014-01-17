@@ -2,11 +2,13 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
-	<classpathentry exported="true" kind="lib" path="lib/servlet-api-3.0.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="http://docs.oracle.com/javaee/6/api/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry exported="true" kind="lib" path="lib/jetty-all-9.0.3.v20130506.jar" sourcepath="lib/jetty-all-9.0.3.v20130506-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/servlet-api-3.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/org.eclipse.jetty.client_9.1.1.v20140108.jar" sourcepath="lib/org.eclipse.jetty.client.source_9.1.1.v20140108.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/org.eclipse.jetty.http_9.1.1.v20140108.jar" sourcepath="lib/org.eclipse.jetty.http.source_9.1.1.v20140108.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/org.eclipse.jetty.io_9.1.1.v20140108.jar" sourcepath="lib/org.eclipse.jetty.io.source_9.1.1.v20140108.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/org.eclipse.jetty.server_9.1.1.v20140108.jar" sourcepath="lib/org.eclipse.jetty.server.source_9.1.1.v20140108.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/org.eclipse.jetty.util_9.1.1.v20140108.jar" sourcepath="lib/org.eclipse.jetty.util.source_9.1.1.v20140108.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/org.eclipse.jetty.servlet_9.1.1.v20140108.jar" sourcepath="lib/org.eclipse.jetty.servlet.source_9.1.1.v20140108.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/org.eclipse.jetty.rewrite_9.1.1.v20140108.jar" sourcepath="lib/org.eclipse.jetty.rewrite.source_9.1.1.v20140108.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -12,12 +12,12 @@ import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 
 import org.eclipse.jetty.client.api.Response;
-import org.eclipse.jetty.client.api.Response.Listener.Empty;
+import org.eclipse.jetty.client.api.Response.Listener.Adapter;
 import org.eclipse.jetty.client.api.Result;
 import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.http.HttpHeader;
 
-public abstract class EntityResponseListener<E> extends Empty {
+public abstract class EntityResponseListener<E> extends Adapter {
 	
 	private static final EntityType<RestException> errorType = new EntityType<>(RestException.class);
 	

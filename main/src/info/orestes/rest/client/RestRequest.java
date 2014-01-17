@@ -9,6 +9,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.eclipse.jetty.client.HttpConversation;
 import org.eclipse.jetty.client.HttpRequest;
 import org.eclipse.jetty.client.api.ContentProvider;
 import org.eclipse.jetty.client.api.Request;
@@ -18,11 +19,9 @@ import org.eclipse.jetty.http.HttpHeader;
 public class RestRequest extends HttpRequest {
 	private final RestClient client;
 	
-	public RestRequest(RestClient client, URI uri, String path) {
-		super(client, uri);
+	public RestRequest(RestClient client, HttpConversation conversation, URI uri) {
+		super(client, conversation, uri);
 		this.client = client;
-		
-		path(path);
 	}
 	
 	@Override
