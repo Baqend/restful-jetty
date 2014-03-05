@@ -1,0 +1,174 @@
+#group-a : Group A
+
+##Method A.1
+
+Calls Method A.1
+
+GET / info.orestes.rest.Testing1  (String  ) :  Object
+
+##Method A.2
+
+
+
+Calls Method A.2, with
+
+multi line comment.
+
+>200 ok
+
+>404 not found
+GET /test info.orestes.rest.Testing2() : Object
+##Method A.3
+
+POST /test/33 info.orestes.rest.Testing3
+
+##Method A.4
+
+PUT   /a/b/c      info.orestes.rest.Testing3(  Object  )
+
+##Method A.5
+
+DELETE /a/b/c info.orestes.rest.Testing1    : Integer
+
+#group-b : Group B
+
+##Method B.1
+
+@id:Integer The id arg
+
+GET /:id   info.orestes.rest.Testing1 ( String ) : Object
+
+##Method B.2
+
+@test:String The test arg
+
+GET /test/:test info.orestes.rest.Testing2(  ) : Object
+
+##Method B.3
+
+@id:String The id arg
+@test:Boolean The test arg
+
+POST /:test/33/:id info.orestes.rest.Testing3
+
+##Method B.4
+
+Test Method B.4
+
+@a :String The a arg
+@c: Integer The c arg
+@b : Boolean The b arg
+@d  :   String The d arg
+
+>200 ok
+> 404 not found
+
+PUT   /:a/:b/:c/:d      info.orestes.rest.Testing3   ( Object )
+
+#group-c : Group C
+
+##Method C.1
+
+@id:Integer The id arg
+
+GET /?id   info.orestes.rest.Testing1   (   String   )   :   Object
+
+##Method C.2
+
+@test:String The test arg
+
+GET /test/?test= info.orestes.rest.Testing2(    )   :  Object
+
+##Method C.3
+
+@test : String The test arg
+@id : Integer The id arg
+@name : Integer The name arg
+
+POST /?test=&id=33&name info.orestes.rest.Testing3
+
+##Method C.4
+
+@a : String The a arg
+@c : Integer The c arg
+@b : Integer The b arg
+
+PUT   /test?a=&b&c=44      info.orestes.rest.Testing3(Object)
+
+#group-d : Group D
+
+##Method D.1
+
+@id:Integer The id arg
+
+GET /;id   info.orestes.rest.Testing1(String):Object
+
+##Method D.2
+
+@test:String The test arg
+
+GET /testing/;test= info.orestes.rest.Testing2():Object
+
+##Method D.3
+
+@test : String The test arg
+@id : Integer The id arg
+@name : Integer The name arg
+
+POST /;test=;id=33;name info.orestes.rest.Testing3
+
+##Method D.4
+
+@a : String The a arg
+@c : Integer The c arg
+@b : Integer The b arg
+
+PUT   /test;a=;b;c=44      info.orestes.rest.Testing3(Object)
+
+#group-e : Group E
+
+##Method E.1
+
+A very tricky method
+
+@ns : String The name of the class
+@name : String The name of the person
+@limit : Integer Hit counts
+@from : Integer Offset of results
+
+>   200 All seems to be ok
+>       302 No changes at all
+>404 Are you stupid guy? I have never heard about that
+>       400 Bad boy
+
+GET  /db/:ns/db_all;from=0;limit=?name=Franz+Kafka  info.orestes.rest.Testing1(String):Object
+
+##Method E.2
+
+A really complex method.
+Which hopefully nobody understand and therefore never been used
+
+@a : String The a arg
+@b : String The b arg
+@c : String The c arg
+@d : String The d arg
+@e : String The e arg
+@f : String The f arg
+@g : String The g arg
+@h : String The h arg
+@i : String The i arg
+@j : String The j arg
+@k : String The k arg
+@l : String The l arg
+
+GET  /db/:a/t/:b/:c;d=12;e=;f;g=Test+String?h&i=1&j=At_Home&k&l= info.orestes.rest.Testing3(Object):Object
+
+##Method F.1
+
+GET /generics   info.orestes.rest.Testing1(Map[String, Integer]): List[Integer]
+
+##Method F.2
+
+@id:Integer The id arg
+
+GET /generics/;id   info.orestes.rest.Testing2(  Map [  String   , Object   ] )
