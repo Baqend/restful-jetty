@@ -38,8 +38,10 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class ClientTest {
-	
-	private static Server server = new Server(8080);
+
+    public static final int TEST_PORT = 1234;
+
+	private static Server server = new Server(TEST_PORT);
 	private static Module module = new Module();
 	private volatile static Handler handler;
 	private static RestClient client;
@@ -64,7 +66,7 @@ public class ClientTest {
 		
 		ConverterService converterService = module.moduleInstance(ConverterService.class);
 		
-		client = new RestClient("http://localhost:8080/", converterService);
+		client = new RestClient("http://localhost:" + TEST_PORT + "/", converterService);
 		client.start();
 	}
 	

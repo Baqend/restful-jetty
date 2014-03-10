@@ -525,7 +525,7 @@ public class ConverterService {
 		List<Class<?>> classes = ClassUtil.getPackageClasses(pkgName);
 		
 		for (Class<?> cls : classes) {
-			if (!Modifier.isAbstract(cls.getModifiers())) {
+			if (!Modifier.isAbstract(cls.getModifiers()) && Converter.class.isAssignableFrom(cls)) {
 				try {
 					Converter<?, ?> conv = module.inject(cls.asSubclass(Converter.class));
 					add(conv);

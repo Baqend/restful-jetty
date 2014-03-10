@@ -2,3 +2,8 @@
 bin/
 build/
 doc/
+/main/nbproject/private/
+/test/nbproject/private/
+/main/dist/
+/nbproject/private/
+/dist/

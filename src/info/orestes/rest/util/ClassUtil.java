@@ -6,11 +6,17 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.net.URL;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.jar.JarFile;
 
 public class ClassUtil {
 	private static final Class<?>[] EMPTY_CLASSES = new Class<?>[0];
@@ -121,20 +127,24 @@ public class ClassUtil {
 	public static List<Class<?>> getPackageClasses(String pkgName) {
 		try {
 			ClassLoader classLoader = ClassUtil.class.getClassLoader();
-			String path = pkgName.replace('.', '/');
+			String pkgPath = pkgName.replace('.', '/');
 			
-			List<File> folders = new ArrayList<>();
-			for (Enumeration<URL> iter = classLoader.getResources(path); iter.hasMoreElements();) {
+			List<Path> paths = new ArrayList<>();
+            
+			for (Enumeration<URL> iter = classLoader.getResources(pkgPath); iter.hasMoreElements();) {
 				URL url = iter.nextElement();
 				
-				folders.add(new File(url.getFile()));
+                Path path = Paths.get(url.toURI());
+                paths.add(path);
 			}
 			
 			List<Class<?>> classes = new LinkedList<>();
-			for (File folder : folders) {
-				for (File file : folder.listFiles()) {
-					if (file.isFile() && file.exists() && file.getName().endsWith(".class")) {
-						String className = pkgName + '.' + file.getName().substring(0, file.getName().length() - 6);
+			for (Path path : paths) {
+                
+				for (Path file: Files.newDirectoryStream(path, "*.class")) {
+                    if (Files.isRegularFile(file)) {    
+                        String fileName = file.getFileName().toString();
+						String className = pkgName + '.' + fileName.substring(0, fileName.length() - 6);
 						classes.add(classLoader.loadClass(className));
 					}
 				}

@@ -97,7 +97,7 @@ public class Module {
 		try {
 			return constructor.newInstance(params);
 		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-			throw new RuntimeException("Initialization failed of class " + constructor.getDeclaringClass(), e);
+			throw new RuntimeException("Initialization failed of " + constructor.getDeclaringClass(), e);
 		}
 	}
 	
