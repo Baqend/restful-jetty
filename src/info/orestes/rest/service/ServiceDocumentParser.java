@@ -212,7 +212,7 @@ public class ServiceDocumentParser {
 				ArgumentDefinition arg = new ArgumentDefinition(matcher.group(1), type, matcher.group(3));
 				
 				if (currentArguments.containsKey(arg.name)) {
-					throw new IOException("Dublicated argument definition found for argument " + arg.name);
+					throw new IOException("Duplicated argument definition found for argument " + arg.name);
 				}
 				
 				currentArguments.put(arg.name, arg);

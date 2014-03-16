@@ -108,7 +108,7 @@ public abstract class Converter<T, F> {
 	 * @param context
 	 *            The {@link Context} used by some {@link Converter}s to perform
 	 *            the conversion
-	 * @param generictype
+	 * @param genericType
 	 *            The java type with generic parameters of the decoded value
 	 * @param source
 	 *            The value to encode
@@ -118,10 +118,10 @@ public abstract class Converter<T, F> {
 	 * @throws RestException
 	 *             if an exception occurred while encoding the value
 	 */
-	protected <E> F toFormat(Context context, EntityType<E> generictype, Object source) throws RestException {
-		Class<E> type = generictype.getRawType();
-		Converter<E, F> converter = getFormat().get(type, generictype.getActualTypeArguments());
-		return converter.toFormat(context, type.cast(source), generictype.getActualTypeArguments());
+	protected <E> F toFormat(Context context, EntityType<E> genericType, Object source) throws RestException {
+		Class<E> type = genericType.getRawType();
+		Converter<E, F> converter = getFormat().get(type, genericType.getActualTypeArguments());
+		return converter.toFormat(context, type.cast(source), genericType.getActualTypeArguments());
 	}
 	
 	/**
