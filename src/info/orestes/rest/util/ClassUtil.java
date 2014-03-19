@@ -5,17 +5,14 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.jar.JarFile;
 
 public class ClassUtil {
@@ -130,17 +127,33 @@ public class ClassUtil {
 			String pkgPath = pkgName.replace('.', '/');
 			
 			List<Path> paths = new ArrayList<>();
-            
-			for (Enumeration<URL> iter = classLoader.getResources(pkgPath); iter.hasMoreElements();) {
-				URL url = iter.nextElement();
-				
-                Path path = Paths.get(url.toURI());
+
+            FileSystem fileSystem = null;
+            for (Enumeration<URL> iter = classLoader.getResources(pkgPath); iter.hasMoreElements();) {
+				URI uri = iter.nextElement().toURI();
+
+                Path path;
+                String spec = uri.getRawSchemeSpecificPart();
+                int sep = spec.indexOf("!/");
+                String file = spec;
+                // handle classes in jar file
+                if (sep != -1) {
+                    file = file.substring(0, sep);
+
+                    if (fileSystem == null) {
+                        fileSystem = FileSystems.newFileSystem(new URI("jar", file, null), Collections.<String, String>emptyMap());
+                    }
+
+                    path = fileSystem.getPath(spec.substring(sep + 1));
+                } else {
+                    path = Paths.get(uri);
+                }
+//
                 paths.add(path);
 			}
 			
 			List<Class<?>> classes = new LinkedList<>();
 			for (Path path : paths) {
-                
 				for (Path file: Files.newDirectoryStream(path, "*.class")) {
                     if (Files.isRegularFile(file)) {    
                         String fileName = file.getFileName().toString();
@@ -149,6 +162,10 @@ public class ClassUtil {
 					}
 				}
 			}
+
+            if (fileSystem != null)
+                fileSystem.close();
+
 			return classes;
 		} catch (Exception e) {
 			throw new RuntimeException("The package " + pkgName + " can't be loaded.", e);
