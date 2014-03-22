@@ -10,7 +10,7 @@ import java.io.PrintWriter;
  * @author Florian
  * 
  */
-public interface WriteableContext extends Context {
+public interface WritableContext extends Context {
 	
 	/**
 	 * Returns a writer where the content can be written to

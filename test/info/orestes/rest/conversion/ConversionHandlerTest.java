@@ -80,7 +80,7 @@ public class ConversionHandlerTest {
 		args.put("b", Boolean.toString(false));
 		args.put("c", Byte.toString((byte) 111));
 		args.put("d", Long.toString(98739459209345l));
-		args.put("e", converterService.toString(null, Date.class, new Date(123456789)));
+		args.put("e", null);
 		args.put("f", Character.toString('c'));
 		args.put("g", "Testing... does it work?");
 		args.put("h", Long.toString(-927394678234983l));
@@ -97,7 +97,7 @@ public class ConversionHandlerTest {
 				assertEquals(false, request.getArgument("b"));
 				assertEquals((byte) 111, request.getArgument("c"));
 				assertEquals(98739459209345l, request.getArgument("d"));
-				assertEquals(new Date(123456789), request.getArgument("e"));
+				assertEquals(null, request.getArgument("e"));
 				assertEquals('c', request.getArgument("f"));
 				assertEquals("Testing... does it work?", request.getArgument("g"));
 				assertEquals(-927394678234983l, request.getArgument("h"));
@@ -373,7 +373,7 @@ public class ConversionHandlerTest {
 		}
 	}
 	
-	public abstract class TestRequest implements WriteableContext, HttpServletRequest {
+	public abstract class TestRequest implements WritableContext, HttpServletRequest {
 		// do not init here will never called
 		private PipedReader out;
 		private PipedWriter in;

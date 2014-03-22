@@ -7,7 +7,7 @@ import java.util.HashMap;
 
 /**
  * A {@link ConverterFormat} is used to read a format from a
- * {@link ReadableContext} and write a format to a {@link WriteableContext}. The
+ * {@link ReadableContext} and write a format to a {@link WritableContext}. The
  * format is themself is generated form {@link Converter}s before it is written
  * and processd by {@link Converter}s after it is read.
  * 
@@ -26,6 +26,7 @@ public abstract class ConverterFormat<F> {
 	private final Class<F> formatType;
 	private final String converterPackageName;
 	private final HashMap<Class<?>, Converter<?, F>> converters = new HashMap<>();
+    private ConverterService converterService;
 	
 	/**
 	 * Creates a new {@link ConverterFormat} which {@link Converter}s are
@@ -43,8 +44,24 @@ public abstract class ConverterFormat<F> {
 		Class<?>[] generics = ClassUtil.getGenericArguments(ConverterFormat.class, getClass());
 		formatType = (Class<F>) generics[0];
 	}
-	
-	/**
+
+    /**
+     * Initialize this ConverterFormat with the owning ConverterService instance
+     * @param converterService The owning ConverterService
+     */
+    void init(ConverterService converterService) {
+        this.converterService = converterService;
+    }
+
+    /**
+     * Returns the owning ConverterService of this ConverterFormat
+     * @return The owning ConverterService
+     */
+    public ConverterService getConverterService() {
+        return converterService;
+    }
+
+    /**
 	 * Returns the format type that this {@link ConverterFormat} proceed. It is
 	 * extracted form the actual class signature
 	 * 
@@ -115,10 +132,10 @@ public abstract class ConverterFormat<F> {
 	}
 	
 	/**
-	 * Writes the java type content to the {@link WriteableContext}
+	 * Writes the java type content to the {@link WritableContext}
 	 * 
 	 * @param context
-	 *            The {@link WriteableContext} where the writer is used to write
+	 *            The {@link WritableContext} where the writer is used to write
 	 *            the content
 	 * @param formatedContent
 	 *            The formated content which will be written
@@ -126,7 +143,7 @@ public abstract class ConverterFormat<F> {
 	 * @throws IOException
 	 *             if an error occurred while writing the content
 	 */
-	public abstract void write(WriteableContext context, F formatedContent) throws IOException;
+	public abstract void write(WritableContext context, F formatedContent) throws IOException;
 	
 	/**
 	 * Reads a java type content from a {@link ReadableContext}

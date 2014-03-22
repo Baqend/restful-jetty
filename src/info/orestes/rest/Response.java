@@ -1,7 +1,7 @@
 package info.orestes.rest;
 
 import info.orestes.rest.conversion.ConversionHandler;
-import info.orestes.rest.conversion.WriteableContext;
+import info.orestes.rest.conversion.WritableContext;
 import info.orestes.rest.error.RestException;
 
 import java.io.IOException;
@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 /*
  * {@inheritDoc}
  */
-public interface Response extends WriteableContext, HttpServletResponse {
+public interface Response extends WritableContext, HttpServletResponse {
 	
 	/**
 	 * Returns the response entity which will be processed by the

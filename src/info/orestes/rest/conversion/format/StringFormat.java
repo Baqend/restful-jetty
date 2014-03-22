@@ -2,7 +2,7 @@ package info.orestes.rest.conversion.format;
 
 import info.orestes.rest.conversion.ConverterFormat;
 import info.orestes.rest.conversion.ReadableContext;
-import info.orestes.rest.conversion.WriteableContext;
+import info.orestes.rest.conversion.WritableContext;
 
 import java.io.IOException;
 
@@ -13,7 +13,7 @@ public class StringFormat extends ConverterFormat<String> {
 	}
 	
 	@Override
-	public void write(WriteableContext context, String formatedContent) throws IOException {
+	public void write(WritableContext context, String formatedContent) throws IOException {
 		context.getWriter().append(formatedContent);
 	}
 	

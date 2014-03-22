@@ -36,7 +36,7 @@ public class ConverterTestHelper {
 		}
 	}
 	
-	protected WriteableContext out = new WriteableContext() {
+	protected WritableContext out = new WritableContext() {
 		private final PrintWriter printWriter = new PrintWriter(writer);
 		
 		@Override
@@ -86,14 +86,16 @@ public class ConverterTestHelper {
 	}
 	
 	protected void assertEntityEquals(Object expected, Object actual) {
-		assertEquals(expected.getClass(), actual.getClass());
-		if (expected.getClass().isArray()) {
-			assertArrayEquals((Object[]) expected, (Object[]) actual);
-		} else {
-			assertEquals(expected, actual);
-		}
-		
-		assertEquals(outArguments, inArguments);
+        if (expected != actual) {
+            assertEquals(expected.getClass(), actual.getClass());
+            if (expected.getClass().isArray()) {
+                assertArrayEquals((Object[]) expected, (Object[]) actual);
+            } else {
+                assertEquals(expected, actual);
+            }
+        }
+
+        assertEquals(outArguments, inArguments);
 	}
 	
 	protected void assertConvertExceptionEquals(String mediaType, RestException entity)

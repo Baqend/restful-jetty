@@ -9,7 +9,7 @@ Which hopefully nobody understand and therefore never been used
 @b : Boolean The b arg
 @c : Byte The c arg
 @d : Long The d arg
-@e : Date The e arg
+@e : String The e arg
 @f : Character The f arg
 @g : String The g arg
 @h : Long The h arg

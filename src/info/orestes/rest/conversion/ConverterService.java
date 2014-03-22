@@ -151,6 +151,8 @@ public class ConverterService {
 	 *            The format which will be registered
 	 */
 	public void addFormat(ConverterFormat<?> format) {
+        format.init(this);
+
 		addFormat(format, true);
 	}
 	
@@ -349,10 +351,10 @@ public class ConverterService {
 	}
 	
 	/**
-	 * Writes the given encoded value to the {@link WriteableContext}
+	 * Writes the given encoded value to the {@link WritableContext}
 	 * 
 	 * @param context
-	 *            The {@link WriteableContext} to write to
+	 *            The {@link WritableContext} to write to
 	 * @param source
 	 *            The java type of the decoded value
 	 * @param target
@@ -367,16 +369,16 @@ public class ConverterService {
 	 *             if an unexpected exception occurred while writing or encoding
 	 *             the value
 	 */
-	public <T> void toRepresentation(WriteableContext context, Class<T> source, MediaType target, Object entity)
+	public <T> void toRepresentation(WritableContext context, Class<T> source, MediaType target, Object entity)
 			throws IOException, RestException {
 		toRepresentation(context, entity, source, EntityType.EMPTY_GENERIC_ARRAY, target);
 	}
 	
 	/**
-	 * Writes the given encoded value to the {@link WriteableContext}
+	 * Writes the given encoded value to the {@link WritableContext}
 	 * 
 	 * @param context
-	 *            The {@link WriteableContext} to write to
+	 *            The {@link WritableContext} to write to
 	 * @param entity
 	 *            The value which will be encoded and written
 	 * @param source
@@ -394,16 +396,16 @@ public class ConverterService {
 	 *             if an unexpected exception occurred while writing or encoding
 	 *             the value
 	 */
-	public <T> void toRepresentation(WriteableContext context, EntityType<T> source, MediaType target, Object entity)
+	public <T> void toRepresentation(WritableContext context, EntityType<T> source, MediaType target, Object entity)
 			throws IOException, RestException {
 		toRepresentation(context, entity, source.getRawType(), source.getActualTypeArguments(), target);
 	}
 	
 	/**
-	 * Writes the given encoded value to the {@link WriteableContext}
+	 * Writes the given encoded value to the {@link WritableContext}
 	 * 
 	 * @param context
-	 *            The {@link WriteableContext} to write to
+	 *            The {@link WritableContext} to write to
 	 * @param entity
 	 *            The value which will be encoded and written
 	 * @param source
@@ -421,7 +423,7 @@ public class ConverterService {
 	 *             if an unexpected exception occurred while writing or encoding
 	 *             the value
 	 */
-	private <T, F> void toRepresentation(WriteableContext context, Object entity, Class<T> source,
+	private <T, F> void toRepresentation(WritableContext context, Object entity, Class<T> source,
 			Class<?>[] genericParams, MediaType target) throws IOException, RestException {
 		try {
 			Converter<T, F> converter = getConverter(target, source, genericParams);
@@ -492,7 +494,7 @@ public class ConverterService {
 	 *             if the conversion can not be performed
 	 */
 	public <T> T toObject(Context context, Class<T> type, String source) {
-		return toObject(null, String.class, new EntityType<>(type), source);
+		return toObject(context, String.class, new EntityType<>(type), source);
 	}
 	
 	/**

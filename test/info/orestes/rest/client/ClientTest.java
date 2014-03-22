@@ -2,7 +2,7 @@ package info.orestes.rest.client;
 
 import info.orestes.rest.conversion.ConverterService;
 import info.orestes.rest.conversion.MediaType;
-import info.orestes.rest.conversion.WriteableContext;
+import info.orestes.rest.conversion.WritableContext;
 import info.orestes.rest.error.NotFound;
 import info.orestes.rest.error.RestException;
 import info.orestes.rest.util.Module;
@@ -364,7 +364,7 @@ public class ClientTest {
 					throws IOException, ServletException {
 				response.setContentType("text/plain");
 				
-				converterService.toRepresentation(new WriteableContext() {
+				converterService.toRepresentation(new WritableContext() {
 					@Override
 					public void setArgument(String name, Object value) {}
 					

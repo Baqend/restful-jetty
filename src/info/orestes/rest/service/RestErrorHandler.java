@@ -3,7 +3,7 @@ package info.orestes.rest.service;
 import info.orestes.rest.conversion.ConversionHandler;
 import info.orestes.rest.conversion.ConverterService;
 import info.orestes.rest.conversion.MediaType;
-import info.orestes.rest.conversion.WriteableContext;
+import info.orestes.rest.conversion.WritableContext;
 import info.orestes.rest.error.InternalServerError;
 import info.orestes.rest.error.RestException;
 
@@ -83,7 +83,7 @@ public class RestErrorHandler extends ErrorHandler {
 		}
 	}
 	
-	private static class ErrorContext implements WriteableContext {
+	private static class ErrorContext implements WritableContext {
 		
 		private final PrintWriter writer;
 		private final MediaType mediaType;

@@ -136,7 +136,8 @@ public class ClassUtil {
                 String spec = uri.getRawSchemeSpecificPart();
                 int sep = spec.indexOf("!/");
                 String file = spec;
-                // handle classes in jar file
+                //TODO: May be removed in Java 8
+                //handle classes in jar file
                 if (sep != -1) {
                     file = file.substring(0, sep);
 

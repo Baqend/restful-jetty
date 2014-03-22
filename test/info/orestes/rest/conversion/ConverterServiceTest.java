@@ -162,7 +162,7 @@ public class ConverterServiceTest {
 	public void testToRepresentation() throws IOException, RestException {
 		TestFormat format = new TestFormat() {
 			@Override
-			public void write(WriteableContext context, Object formatedContent) throws IOException {
+			public void write(WritableContext context, Object formatedContent) throws IOException {
 				assertEquals(123l, formatedContent);
 				called = true;
 			}
@@ -179,7 +179,7 @@ public class ConverterServiceTest {
 	public void testGenericObjectToRepresentation() throws IOException, RestException {
 		TestFormat format = new TestFormat() {
 			@Override
-			public void write(WriteableContext context, Object formatedContent) throws IOException {
+			public void write(WritableContext context, Object formatedContent) throws IOException {
 				assertEquals("[17, jhsdfjk, 42]", formatedContent);
 				called = true;
 			}
@@ -212,7 +212,7 @@ public class ConverterServiceTest {
 	public void testToObjectUnknownConverter() throws RestException {
 		cs.addFormat(new ConverterFormat<String>(null) {
 			@Override
-			public void write(WriteableContext context, String formatedContent) throws IOException {}
+			public void write(WritableContext context, String formatedContent) throws IOException {}
 			
 			@Override
 			public String read(ReadableContext context) throws IOException {
@@ -238,7 +238,7 @@ public class ConverterServiceTest {
 	public void testToStringUnknownConverter() {
 		cs.addFormat(new ConverterFormat<String>(null) {
 			@Override
-			public void write(WriteableContext context, String formatedContent) throws IOException {}
+			public void write(WritableContext context, String formatedContent) throws IOException {}
 			
 			@Override
 			public String read(ReadableContext context) throws IOException {
@@ -263,7 +263,6 @@ public class ConverterServiceTest {
 		assertEquals(Boolean.class, types.getArgumentClassForName("Boolean"));
 		assertEquals(Byte.class, types.getArgumentClassForName("Byte"));
 		assertEquals(Character.class, types.getArgumentClassForName("Character"));
-		assertEquals(Date.class, types.getArgumentClassForName("Date"));
 		assertEquals(Double.class, types.getArgumentClassForName("Double"));
 		assertEquals(Float.class, types.getArgumentClassForName("Float"));
 		assertEquals(Integer.class, types.getArgumentClassForName("Integer"));
@@ -278,7 +277,6 @@ public class ConverterServiceTest {
 		assertEquals(Boolean.class, types.getEntityClassForName("Boolean"));
 		assertEquals(Byte.class, types.getEntityClassForName("Byte"));
 		assertEquals(Character.class, types.getEntityClassForName("Character"));
-		assertEquals(Date.class, types.getEntityClassForName("Date"));
 		assertEquals(Double.class, types.getEntityClassForName("Double"));
 		assertEquals(Float.class, types.getEntityClassForName("Float"));
 		assertEquals(Integer.class, types.getEntityClassForName("Integer"));
@@ -289,8 +287,8 @@ public class ConverterServiceTest {
 		assertEquals(Object.class, types.getEntityClassForName("Object"));
 		assertEquals(GenericEntity.class, types.getEntityClassForName("GenericEntity"));
 		
-		assertEquals(11, types.getArgumentTypes().size());
-		assertEquals(13, types.getEntityTypes().size());
+		assertEquals(10, types.getArgumentTypes().size());
+		assertEquals(12, types.getEntityTypes().size());
 	}
 	
 }

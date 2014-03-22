@@ -2,7 +2,7 @@ package info.orestes.rest.client;
 
 import info.orestes.rest.conversion.ConverterService;
 import info.orestes.rest.conversion.MediaType;
-import info.orestes.rest.conversion.WriteableContext;
+import info.orestes.rest.conversion.WritableContext;
 import info.orestes.rest.service.EntityType;
 
 import java.io.ByteArrayOutputStream;
@@ -151,7 +151,7 @@ public class EntityContent<E> implements ContentProvider {
 		};
 	}
 	
-	public class EntityWriter implements WriteableContext {
+	public class EntityWriter implements WritableContext {
 		private PrintWriter writer;
 		
 		public ByteBuffer write(EntityType<?> entityType, MediaType contentType, Object entity) {
