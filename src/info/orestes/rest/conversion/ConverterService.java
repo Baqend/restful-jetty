@@ -385,9 +385,6 @@ public class ConverterService {
 	 *            The java type with generic parameters of the decoded value
 	 * @param target
 	 *            The media type of the encoded value
-	 * @param genericParams
-	 *            The used java types of the generic parameters if the java type
-	 *            is generic otherwise the array must be empty
 	 * @throws UnsupportedOperationException
 	 *             if no converter is available to handle the conversion
 	 * @throws RestException
@@ -458,7 +455,7 @@ public class ConverterService {
 	}
 	
 	public <T, F> T toObject(Class<F> sourceType, Class<T> targetType, F source) {
-		return toObject(sourceType, new EntityType<>(targetType), source);
+		return toObject(sourceType, new EntityType<T>(targetType), source);
 	}
 	
 	public <T, F> T toObject(Class<F> sourceType, EntityType<T> targetType, F source) {
@@ -494,7 +491,7 @@ public class ConverterService {
 	 *             if the conversion can not be performed
 	 */
 	public <T> T toObject(Context context, Class<T> type, String source) {
-		return toObject(context, String.class, new EntityType<>(type), source);
+		return toObject(context, String.class, new EntityType<T>(type), source);
 	}
 	
 	/**
