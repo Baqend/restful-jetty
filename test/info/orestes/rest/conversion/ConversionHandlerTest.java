@@ -93,20 +93,20 @@ public class ConversionHandlerTest {
 			@Override
 			public void handle(RestRequest request, RestResponse response) throws IOException, ServletException {
 				
-				assertEquals(42.42f, request.getArgument("a"));
+				assertEquals(42.42f, request.getArgument("a"), 0.01f);
 				assertEquals(false, request.getArgument("b"));
-				assertEquals((byte) 111, request.getArgument("c"));
-				assertEquals(98739459209345l, request.getArgument("d"));
-				assertEquals(null, request.getArgument("e"));
-				assertEquals('c', request.getArgument("f"));
+				assertEquals((byte) 111, (byte) request.getArgument("c"));
+				assertEquals(98739459209345l, (long) request.getArgument("d"));
+				assertEquals(null, request.<String> getArgument("e"));
+				assertEquals('c', (char) request.getArgument("f"));
 				assertEquals("Testing... does it work?", request.getArgument("g"));
-				assertEquals(-927394678234983l, request.getArgument("h"));
-				assertEquals(982347283, request.getArgument("i"));
+				assertEquals(-927394678234983l, (long) request.getArgument("h"));
+				assertEquals(982347283, (int) request.getArgument("i"));
 				assertEquals("42", request.getArgument("j"));
-				assertEquals(98238479923.782973499, request.getArgument("k"));
-				assertEquals((short) 8347, request.getArgument("l"));
+				assertEquals(98238479923.782973499, request.getArgument("k"), 0.0000000001);
+				assertEquals((short) 8347, (short) request.getArgument("l"));
 				
-				assertEquals(123l, request.getEntity());
+				assertEquals(123l, (long) request.getEntity());
 				
 				response.setEntity(true);
 			}
@@ -136,20 +136,20 @@ public class ConversionHandlerTest {
 			@Override
 			public void handle(RestRequest request, RestResponse response) throws IOException, ServletException {
 				
-				assertEquals(42.42f, request.getArgument("a"));
+				assertEquals(42.42f, (float) request.getArgument("a"), 0.001f);
 				assertEquals(false, request.getArgument("b"));
-				assertEquals((byte) 111, request.getArgument("c"));
-				assertEquals(98739459209345l, request.getArgument("d"));
+				assertEquals((byte) 111, (byte) request.getArgument("c"));
+				assertEquals(98739459209345l, (long) request.getArgument("d"));
 				assertNull(request.getArgument("e"));
-				assertEquals('c', request.getArgument("f"));
+				assertEquals('c', (char) request.getArgument("f"));
 				assertEquals("Testing... does it work?", request.getArgument("g"));
-				assertEquals(-927394678234983l, request.getArgument("h"));
-				assertEquals(982347283, request.getArgument("i"));
+				assertEquals(-927394678234983l, (long) request.getArgument("h"));
+				assertEquals(982347283, (int) request.getArgument("i"));
 				assertEquals("42", request.getArgument("j"));
-				assertEquals(98238479923.782973499, request.getArgument("k"));
+				assertEquals(98238479923.782973499, request.getArgument("k"), 0.0000000001);
 				assertNull(request.getArgument("l"));
 				
-				assertEquals(123l, request.getEntity());
+				assertEquals(123l, (long) request.getEntity());
 				
 				response.setEntity(true);
 			}
@@ -238,7 +238,7 @@ public class ConversionHandlerTest {
 		Object responseEntity = handle(method, args, 3132l, new RestHandler() {
 			@Override
 			public void handle(RestRequest request, RestResponse response) throws IOException, ServletException {
-				assertEquals(3132l, request.getEntity());
+				assertEquals(3132l, (long) request.getEntity());
 				
 				response.setEntity(null);
 			}
@@ -364,9 +364,12 @@ public class ConversionHandlerTest {
 		if (response.getReader().ready()) {
 			assertEquals(MediaType.TEXT_PLAIN, response.getContentType());
 			assertEquals("utf-8", response.getCharacterEncoding());
-			Class<O> cls = (Class<O>) method.getResponseType().getRawType();
-			return (O) converterService.toObject(response, MediaType.parse(MediaType.TEXT_PLAIN), cls != null ? cls
-					: String.class);
+
+            Class<O> cls = (Class<O>) method.getResponseType().getRawType();
+            if (cls == null)
+                cls = (Class<O>) String.class;
+
+			return (O) converterService.toObject(response, MediaType.parse(MediaType.TEXT_PLAIN), cls);
 		} else {
 			assertNull(response.getContentType());
 			return null;
