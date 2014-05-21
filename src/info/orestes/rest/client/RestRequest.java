@@ -3,18 +3,17 @@ package info.orestes.rest.client;
 import info.orestes.rest.conversion.MediaType;
 import info.orestes.rest.error.RestException;
 import info.orestes.rest.service.EntityType;
-
-import java.net.URI;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
 import org.eclipse.jetty.client.HttpConversation;
 import org.eclipse.jetty.client.HttpRequest;
 import org.eclipse.jetty.client.api.ContentProvider;
 import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.api.Response.CompleteListener;
 import org.eclipse.jetty.http.HttpHeader;
+
+import java.net.URI;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class RestRequest extends HttpRequest {
 	private final RestClient client;

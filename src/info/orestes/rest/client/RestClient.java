@@ -2,23 +2,29 @@ package info.orestes.rest.client;
 
 import info.orestes.rest.conversion.ConverterService;
 import info.orestes.rest.conversion.MediaType;
-
-import java.net.URI;
-
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.HttpConversation;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
+
+import java.net.URI;
 
 public class RestClient extends HttpClient {
 	
 	public static final MediaType ALL = MediaType.parse(MediaType.ALL);
-	
+
 	private final ConverterService converterService;
 	private final URI baseURI;
 	
 	public RestClient(String baseURI, ConverterService converterService) {
-		this.baseURI = URI.create(baseURI);
-		this.converterService = converterService;
+        this(baseURI, converterService, null);
 	}
+
+    public RestClient(String baseURI, ConverterService converterService, String trustStorePath) {
+        super(new SslContextFactory(trustStorePath));
+
+        this.baseURI = URI.create(baseURI);
+        this.converterService = converterService;
+    }
 	
 	@Override
 	protected RestRequest newHttpRequest(HttpConversation conversation, URI uri) {
