@@ -37,7 +37,7 @@ public class Module {
 			Constructor<? extends T> constr = (Constructor<? extends T>) constructors.get(cls);
 			
 			if (constr == null) {
-				throw new RuntimeException("No binding defined for class " + cls);
+				throw new RuntimeException("No binding defined for " + cls);
 			}
 			
 			if (instances.containsKey(cls)) {
