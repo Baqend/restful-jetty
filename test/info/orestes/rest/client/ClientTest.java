@@ -5,25 +5,8 @@ import info.orestes.rest.conversion.MediaType;
 import info.orestes.rest.conversion.WritableContext;
 import info.orestes.rest.error.NotFound;
 import info.orestes.rest.error.RestException;
+import info.orestes.rest.error.UnsupportedMediaType;
 import info.orestes.rest.util.Module;
-
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.server.Server;
@@ -32,10 +15,15 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.*;
+import java.util.concurrent.*;
+
+import static org.junit.Assert.*;
 
 public class ClientTest {
 
@@ -151,7 +139,7 @@ public class ClientTest {
 			@Override
 			public void onComplete(EntityResult<String> result) {
 				assertTrue(result.isFailed());
-				assertTrue(result.getFailure() instanceof UnsupportedOperationException);
+				assertTrue(result.getFailure() instanceof UnsupportedMediaType);
 				
 				countDownLatch.countDown();
 			}
@@ -170,7 +158,7 @@ public class ClientTest {
 			@Override
 			public void onComplete(EntityResult<String> result) {
 				assertTrue(result.isFailed());
-				assertTrue(result.getFailure() instanceof UnsupportedOperationException);
+				assertTrue(result.getFailure() instanceof UnsupportedMediaType);
 				
 				countDownLatch.countDown();
 			}
@@ -236,9 +224,9 @@ public class ClientTest {
 		for (Future<EntityResponse<String>> future : results) {
 			try {
 				future.get();
-				fail("UnsupportedOperationException expected.");
+				fail("UnsupportedMediaType expected.");
 			} catch (ExecutionException e) {
-				assertTrue(e.getCause() instanceof UnsupportedOperationException);
+				assertTrue(e.getCause() instanceof UnsupportedMediaType);
 			}
 		}
 	}

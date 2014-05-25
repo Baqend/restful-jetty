@@ -9,20 +9,17 @@ import info.orestes.rest.conversion.testing.GenericLongConverter;
 import info.orestes.rest.conversion.testing.LongConverter;
 import info.orestes.rest.conversion.testing.ObjectConverter;
 import info.orestes.rest.error.RestException;
+import info.orestes.rest.error.UnsupportedMediaType;
 import info.orestes.rest.service.EntityType;
 import info.orestes.rest.util.Module;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Date;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockitoAnnotations;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import java.io.IOException;
+import java.util.Arrays;
+
+import static org.junit.Assert.*;
 
 public class ConverterServiceTest {
 	public static final String TEST_TYPE = "application/test.java-object";
@@ -105,12 +102,12 @@ public class ConverterServiceTest {
 			cs.getPreferedMediaType(Arrays.asList(MediaType.parse("application/*")), Long.class));
 	}
 	
-	@Test(expected = UnsupportedOperationException.class)
+	@Test(expected = UnsupportedMediaType.class)
 	public void testToObjectFromContextUnknownFormat() throws IOException, RestException {
 		cs.toObject(null, TEST_MEDIA_TYPE, Long.class);
 	}
 	
-	@Test(expected = UnsupportedOperationException.class)
+	@Test(expected = UnsupportedMediaType.class)
 	public void testToObjectFromContextUnknownConverter() throws IOException, RestException {
 		cs.addFormat(new TestFormat() {
 			@Override
@@ -198,7 +195,7 @@ public class ConverterServiceTest {
 		assertTrue(called);
 	}
 	
-	@Test(expected = UnsupportedOperationException.class)
+	@Test(expected = UnsupportedMediaType.class)
 	public void testNoAcceptAnnotation() throws IOException, RestException {
 		cs.toRepresentation(null, String.class, TEST_MEDIA_TYPE, "test");
 	}

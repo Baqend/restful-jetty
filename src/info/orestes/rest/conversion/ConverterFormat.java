@@ -1,5 +1,6 @@
 package info.orestes.rest.conversion;
 
+import info.orestes.rest.error.UnsupportedMediaType;
 import info.orestes.rest.util.ClassUtil;
 
 import java.io.IOException;
@@ -123,7 +124,7 @@ public abstract class ConverterFormat<F> {
 	 *             generics count declared by the java type
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> Converter<T, F> get(Class<T> type, Class<?>[] genericParams) {
+	public <T> Converter<T, F> get(Class<T> type, Class<?>[] genericParams) throws UnsupportedMediaType {
 		Converter<T, F> converter = (Converter<T, F>) converters.get(type);
 		
 		ConverterService.check(converter, type, genericParams);

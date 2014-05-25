@@ -2,6 +2,7 @@ package info.orestes.rest.conversion;
 
 import info.orestes.rest.error.BadRequest;
 import info.orestes.rest.error.RestException;
+import info.orestes.rest.error.UnsupportedMediaType;
 import info.orestes.rest.service.EntityType;
 import info.orestes.rest.service.ServiceDocumentTypes;
 import info.orestes.rest.util.ClassUtil;
@@ -73,13 +74,13 @@ public class ConverterService {
 	 *             if the genericParams count does not match the expected
 	 *             generics count declared by the java type
 	 */
-	public static void check(Converter<?, ?> converter, Class<?> type, Class<?>[] genericParams) {
+	public static void check(Converter<?, ?> converter, Class<?> type, Class<?>[] genericParams) throws UnsupportedMediaType {
 		if (converter == null) {
-			throw new UnsupportedOperationException("The media type is not supported for the " + type);
+			throw new UnsupportedMediaType("The media type is not supported for the " + type);
 		}
 		
 		if (!converter.getTargetClass().equals(type)) {
-			throw new UnsupportedOperationException("The " + type + " is not supported by the converter "
+			throw new UnsupportedMediaType("The " + type + " is not supported by the converter "
 					+ converter.getClass().getName());
 		}
 		
@@ -255,7 +256,7 @@ public class ConverterService {
 	 *             generics count declared by the java type
 	 */
 	@SuppressWarnings("unchecked")
-	private <T, F> Converter<T, F> getConverter(MediaType mediaType, Class<?> type, Class<?>[] genericParams) {
+	private <T, F> Converter<T, F> getConverter(MediaType mediaType, Class<?> type, Class<?>[] genericParams) throws UnsupportedMediaType {
 		Converter<?, ?> converter = null;
 		
 		Map<MediaType, Converter<?, ?>> acceptTypes = accept.get(type);
@@ -343,8 +344,6 @@ public class ConverterService {
 			Converter<T, F> converter = getConverter(source, target, genericParams);
 			
 			return converter.toObject(context, converter.getFormat().read(context), genericParams);
-		} catch (UnsupportedOperationException e) {
-			throw e;
 		} catch (RuntimeException e) {
 			throw new BadRequest("The body can't be processed", e);
 		}
@@ -426,8 +425,6 @@ public class ConverterService {
 			Converter<T, F> converter = getConverter(target, source, genericParams);
 			
 			converter.getFormat().write(context, converter.toFormat(context, source.cast(entity), genericParams));
-		} catch (UnsupportedOperationException e) {
-			throw e;
 		} catch (RuntimeException e) {
 			throw new IOException("The body can't be processed", e);
 		}
@@ -442,14 +439,12 @@ public class ConverterService {
 	}
 	
 	public <T, F> F toRepresentation(Context context, EntityType<T> sourceType, Class<F> targetType, T source) {
-		Converter<T, F> converter = getFormat(targetType).get(sourceType.getRawType(),
-			sourceType.getActualTypeArguments());
-		
-		try {
+        try {
+            Converter<T, F> converter = getFormat(targetType).get(sourceType.getRawType(),
+                sourceType.getActualTypeArguments());
+
 			return converter.toFormat(context, source, sourceType.getActualTypeArguments());
-		} catch (UnsupportedOperationException e) {
-			throw e;
-		} catch (Exception e) {
+		} catch (RuntimeException | RestException e) {
 			throw new UnsupportedOperationException(e);
 		}
 	}
@@ -463,14 +458,12 @@ public class ConverterService {
 	}
 	
 	public <T, F> T toObject(Context context, Class<F> sourceType, EntityType<T> targetType, F source) {
-		Converter<T, F> converter = getFormat(sourceType).get(targetType.getRawType(),
-			targetType.getActualTypeArguments());
-		
-		try {
+        try {
+            Converter<T, F> converter = getFormat(sourceType).get(targetType.getRawType(),
+                targetType.getActualTypeArguments());
+
 			return converter.toObject(context, source, targetType.getActualTypeArguments());
-		} catch (UnsupportedOperationException e) {
-			throw e;
-		} catch (Exception e) {
+		} catch (RuntimeException | RestException e) {
 			throw new UnsupportedOperationException(e);
 		}
 	}

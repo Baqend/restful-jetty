@@ -5,23 +5,16 @@ import info.orestes.rest.Response;
 import info.orestes.rest.error.BadRequest;
 import info.orestes.rest.error.NotAcceptable;
 import info.orestes.rest.error.RestException;
-import info.orestes.rest.error.UnsupportedMediaType;
-import info.orestes.rest.service.EntityType;
-import info.orestes.rest.service.RestHandler;
-import info.orestes.rest.service.RestMethod;
-import info.orestes.rest.service.RestRequest;
-import info.orestes.rest.service.RestResponse;
+import info.orestes.rest.service.*;
 import info.orestes.rest.util.Inject;
+import org.eclipse.jetty.http.HttpHeader;
 
+import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
-
-import javax.servlet.ServletException;
-
-import org.eclipse.jetty.http.HttpHeader;
 
 /**
  * The {@link ConversionHandler} use the {@link ConverterService} to process the
@@ -100,8 +93,6 @@ public class ConversionHandler extends RestHandler {
 			try {
 				Object entity = converterService.toObject(request, mediaType, requestType);
 				request.setEntity(entity);
-			} catch (UnsupportedOperationException e) {
-				throw new UnsupportedMediaType("The request media type is not supported.", e);
 			} catch (IOException e) {
 				throw new BadRequest("The requested entity is not valid.", e);
 			}
@@ -127,12 +118,8 @@ public class ConversionHandler extends RestHandler {
 			if (mediaType != null) {
 				response.setContentType(mediaType.toString());
 				response.setCharacterEncoding("utf-8");
-				
-				try {
-					converterService.toRepresentation(response, responseType, mediaType, response.getEntity());
-				} catch (UnsupportedOperationException e) {
-					throw new IOException("The response body can not be handled.", e);
-				}
+
+			    converterService.toRepresentation(response, responseType, mediaType, response.getEntity());
 			} else {
 				throw new NotAcceptable("The requested response media types are not supported.");
 			}
