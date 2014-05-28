@@ -1,6 +1,7 @@
 package info.orestes.rest.service;
 
 import info.orestes.rest.RestServlet;
+import org.eclipse.jetty.util.UrlEncoded;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,8 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.eclipse.jetty.util.UrlEncoded;
 
 public class ServiceDocumentParser {
 	
@@ -78,7 +77,7 @@ public class ServiceDocumentParser {
 		Class<?> cls = getTypes().getEntityClassForName(type);
 		
 		if (cls == null) {
-			throw new IOException("There is no class for the type " + type + " available");
+			throw new IOException("There is no class for the type " + type + " available. Ensure the converter has an @Accept annotation.");
 		}
 		
 		return cls;
@@ -253,7 +252,7 @@ public class ServiceDocumentParser {
 			Class<? extends RestServlet> servletClass = getClassForTarget(matcher.group(3));
 			
 			if (!RestServlet.isDeclared(servletClass, action)) {
-				throw new IOException("The RestServlet doesn't declare an action handler for the method " + action);
+				throw new IOException("The RestServlet doesn't declare an action handler for the method " + action + ". Ensure the action handler is public.");
 			}
 			
 			RestMethod method = new RestMethod(
