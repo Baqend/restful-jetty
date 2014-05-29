@@ -486,6 +486,22 @@ public class ConverterService {
 	public <T> T toObject(Context context, Class<T> type, String source) {
 		return toObject(context, String.class, new EntityType<T>(type), source);
 	}
+
+    /**
+	 * Decodes the given java type from the string
+	 *
+	 * @param type
+	 *            The java type of the value which is encoded
+	 * @param source
+	 *            The encoded value
+	 * @return The decoded value if the conversion succeed
+	 *
+	 * @throws UnsupportedOperationException
+	 *             if the conversion can not be performed
+	 */
+	public <T> T toObject(Class<T> type, String source) {
+		return toObject(String.class, new EntityType<T>(type), source);
+	}
 	
 	/**
 	 * Encodes the given java type to a string
@@ -504,6 +520,22 @@ public class ConverterService {
 	 */
 	public <T> String toString(Context context, Class<T> type, T source) {
 		return toRepresentation(context, new EntityType<>(type), String.class, source);
+	}
+
+	/**
+	 * Encodes the given java type to a string
+	 *
+	 * @param type
+	 *            The java type of the value decoded value
+	 * @param source
+	 *            The decoded value
+	 * @return The encoded value if the conversion succeed
+	 *
+	 * @throws UnsupportedOperationException
+	 *             if the conversion can not be performed
+	 */
+	public <T> String toString(Class<T> type, T source) {
+		return toRepresentation(new EntityType<>(type), String.class, source);
 	}
 	
 	/**
