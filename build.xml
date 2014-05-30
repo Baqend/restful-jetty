@@ -45,7 +45,7 @@
                 <pathelement location="${build.test}"/>
             </classpath>
 
-            <formatter type="plain" usefile="false"/>
+            <formatter type="xml"/>
 
             <batchtest fork="yes">
                 <fileset dir="${src.test}" includes="**/*Test.java" />
@@ -81,6 +81,7 @@
 
         <!-- Delete the ${build} and ${dist} directory trees -->
         <delete dir="${build}"/>
+        <delete dir="${build.test}"/>
         <delete dir="${dist}"/>
     </target>
 </project>
