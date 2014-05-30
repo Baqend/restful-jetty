@@ -33,7 +33,11 @@
         <javac srcdir="${src}" destdir="${build}" classpathref="project.classpath" includeantruntime="false"/>
         <javac srcdir="${src.test}" destdir="${build.test}" classpathref="project.classpath" includeantruntime="false"/>
 
-        <copy todir="${build.test}">
+        <copy todir="${build}" failonerror="false">
+            <fileset dir="${res}"/>
+        </copy>
+
+        <copy todir="${build.test}" failonerror="false">
             <fileset dir="${res.test}"/>
         </copy>
     </target>
@@ -47,7 +51,7 @@
 
             <formatter type="xml"/>
 
-            <batchtest fork="yes">
+            <batchtest fork="yes" todir="${build.test}">
                 <fileset dir="${src.test}" includes="**/*Test.java" />
             </batchtest>
         </junit>
