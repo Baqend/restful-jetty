@@ -2,12 +2,11 @@ package info.orestes.rest.error;
 
 import info.orestes.rest.util.ClassUtil;
 
+import javax.servlet.ServletException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.servlet.ServletException;
 
 @SuppressWarnings("serial")
 public class RestException extends ServletException {

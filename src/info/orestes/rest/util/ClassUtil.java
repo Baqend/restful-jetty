@@ -1,19 +1,13 @@
 package info.orestes.rest.util;
 
-import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.net.URI;
 import java.net.URL;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.*;
-import java.util.jar.JarFile;
 
 public class ClassUtil {
 	private static final Class<?>[] EMPTY_CLASSES = new Class<?>[0];
@@ -125,10 +119,8 @@ public class ClassUtil {
 		try {
 			ClassLoader classLoader = ClassUtil.class.getClassLoader();
 			String pkgPath = pkgName.replace('.', '/');
-			
-			List<Path> paths = new ArrayList<>();
 
-            FileSystem fileSystem = null;
+            List<Class<?>> classes = new LinkedList<>();
             for (Enumeration<URL> iter = classLoader.getResources(pkgPath); iter.hasMoreElements();) {
 				URI uri = iter.nextElement().toURI();
 
@@ -138,34 +130,29 @@ public class ClassUtil {
                 String file = spec;
                 //TODO: May be removed in Java 8
                 //handle classes in jar file
+
+                FileSystem fileSystem = null;
                 if (sep != -1) {
                     file = file.substring(0, sep);
 
-                    if (fileSystem == null) {
-                        fileSystem = FileSystems.newFileSystem(new URI("jar", file, null), Collections.<String, String>emptyMap());
-                    }
+                    fileSystem = FileSystems.newFileSystem(new URI("jar", file, null), Collections.<String, String>emptyMap());
 
                     path = fileSystem.getPath(spec.substring(sep + 1));
                 } else {
                     path = Paths.get(uri);
                 }
 //
-                paths.add(path);
-			}
-			
-			List<Class<?>> classes = new LinkedList<>();
-			for (Path path : paths) {
-				for (Path file: Files.newDirectoryStream(path, "*.class")) {
-                    if (Files.isRegularFile(file)) {    
-                        String fileName = file.getFileName().toString();
-						String className = pkgName + '.' + fileName.substring(0, fileName.length() - 6);
-						classes.add(classLoader.loadClass(className));
-					}
-				}
-			}
+                for (Path filePath: Files.newDirectoryStream(path, "*.class")) {
+                    if (Files.isRegularFile(filePath)) {
+                        String fileName = filePath.getFileName().toString();
+                        String className = pkgName + '.' + fileName.substring(0, fileName.length() - 6);
+                        classes.add(classLoader.loadClass(className));
+                    }
+                }
 
-            if (fileSystem != null)
-                fileSystem.close();
+                if (fileSystem != null)
+                    fileSystem.close();
+			}
 
 			return classes;
 		} catch (Exception e) {

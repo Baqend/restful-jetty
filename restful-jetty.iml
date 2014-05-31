@@ -11,8 +11,8 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" exported="" name="Jetty" level="project" />
-    <orderEntry type="library" scope="TEST" name="JUnit 4.11" level="project" />
-    <orderEntry type="library" scope="TEST" name="Mockito" level="project" />
+    <orderEntry type="library" exported="" scope="TEST" name="JUnit 4.11" level="project" />
+    <orderEntry type="library" exported="" scope="TEST" name="Mockito" level="project" />
   </component>
 </module>
 
