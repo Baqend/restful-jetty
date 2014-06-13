@@ -4,27 +4,18 @@ import info.orestes.rest.RestServlet;
 import info.orestes.rest.service.PathElement.Type;
 import info.orestes.rest.util.Inject;
 import info.orestes.rest.util.Module;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.http.HttpURI;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.HandlerWrapper;
 import org.eclipse.jetty.util.MultiMap;
 import org.eclipse.jetty.util.UrlEncoded;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.*;
 
 public class RestRouter extends HandlerWrapper {
 	
@@ -65,9 +56,9 @@ public class RestRouter extends HandlerWrapper {
 				Map<String, String> matches = route.match(method, pathParts, matrix, query);
 				if (matches != null) {
 					if (!matches.isEmpty()) {
-						MultiMap<String> params = request.getParameters();
+						MultiMap<String> params = request.getQueryParameters();
 						if (params == null) {
-							request.setParameters(params = new MultiMap<>());
+							request.setQueryParameters(params = new MultiMap<>());
 						}
 						params.putAllValues(matches);
 					}

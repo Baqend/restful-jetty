@@ -4,13 +4,28 @@ import info.orestes.rest.conversion.ConverterService;
 import info.orestes.rest.conversion.MediaType;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.HttpConversation;
-import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 import java.net.URI;
 
 public class RestClient extends HttpClient {
 	
 	public static final MediaType ALL = MediaType.parse(MediaType.ALL);
+
+//  SPDY CODE:
+//    public static final QueuedThreadPool executor;
+//    public static final SPDYClient.Factory factory;
+//
+//    static {
+//        executor = new QueuedThreadPool();
+//        executor.setName(executor.getName() + "-client");
+//
+//        factory = new SPDYClient.Factory(executor);
+//        try {
+//            factory.start();
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 
 	private final ConverterService converterService;
 	private final URI baseURI;
@@ -20,13 +35,14 @@ public class RestClient extends HttpClient {
 	}
 
     public RestClient(String baseURI, ConverterService converterService, String trustStorePath) {
-        super(new SslContextFactory(trustStorePath));
-
+        //super(new HttpClientTransportOverSPDY(factory.newSPDYClient(SPDY.V3)), null);
         this.baseURI = URI.create(baseURI);
         this.converterService = converterService;
+
+        //setExecutor(executor);
     }
-	
-	@Override
+
+    @Override
 	protected RestRequest newHttpRequest(HttpConversation conversation, URI uri) {
 		return new RestRequest(this, conversation, uri);
 	}

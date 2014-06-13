@@ -4,18 +4,17 @@ import info.orestes.rest.conversion.MediaType;
 import info.orestes.rest.conversion.ReadableContext;
 import info.orestes.rest.error.RestException;
 import info.orestes.rest.service.EntityType;
+import org.eclipse.jetty.client.api.Response;
+import org.eclipse.jetty.client.api.Response.Listener.Adapter;
+import org.eclipse.jetty.client.api.Result;
+import org.eclipse.jetty.http.HttpFields;
+import org.eclipse.jetty.http.HttpHeader;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
-
-import org.eclipse.jetty.client.api.Response;
-import org.eclipse.jetty.client.api.Response.Listener.Adapter;
-import org.eclipse.jetty.client.api.Result;
-import org.eclipse.jetty.http.HttpFields;
-import org.eclipse.jetty.http.HttpHeader;
 
 public abstract class EntityResponseListener<E> extends Adapter {
 	
@@ -69,15 +68,13 @@ public abstract class EntityResponseListener<E> extends Adapter {
 				isChunked = true;
 			}
 		}
-		
-		if (length > 0 || isChunked) {
-			String cType = headers.get(HttpHeader.CONTENT_TYPE);
-			if (cType != null) {
-				contentType = MediaType.parse(cType);
-			} else {
-				response.abort(new IllegalArgumentException("No content type is provided in the response."));
-			}
-		}
+
+        String cType = headers.get(HttpHeader.CONTENT_TYPE);
+        if (cType != null) {
+            contentType = MediaType.parse(cType);
+        } else if (length > 0 || isChunked) {
+            response.abort(new IllegalArgumentException("No content type is provided in the response."));
+        }
 	}
 	
 	@Override

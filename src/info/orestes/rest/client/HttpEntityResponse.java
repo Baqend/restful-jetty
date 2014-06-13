@@ -11,7 +11,7 @@ public class HttpEntityResponse<T> extends HttpContentResponse implements Entity
 	private final EntityType<T> entityType;
 	
 	public HttpEntityResponse(Response response, EntityType<T> entityType, T entity) {
-		super(response, null, null);
+		super(response, null, null, null);
 		
 		this.entityType = entityType;
 		this.entity = entity;
