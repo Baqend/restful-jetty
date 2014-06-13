@@ -4,6 +4,7 @@ import info.orestes.rest.conversion.ConverterService;
 import info.orestes.rest.conversion.MediaType;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.HttpConversation;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 import java.net.URI;
 
@@ -36,6 +37,8 @@ public class RestClient extends HttpClient {
 
     public RestClient(String baseURI, ConverterService converterService, String trustStorePath) {
         //super(new HttpClientTransportOverSPDY(factory.newSPDYClient(SPDY.V3)), null);
+        super(new SslContextFactory(trustStorePath));
+
         this.baseURI = URI.create(baseURI);
         this.converterService = converterService;
 

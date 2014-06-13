@@ -206,29 +206,22 @@ public class RestRouter extends HandlerWrapper {
 	public class Route implements Comparable<Route> {
 		
 		private final RestMethod method;
-		private RestServlet servlet;
-		
+		private final RestServlet servlet;
+
 		public Route(RestMethod method) {
 			this.method = method;
+            this.servlet = module.inject(method.getTarget());
 		}
 		
 		public RestMethod getMethod() {
 			return method;
 		}
-		
-		public RestServlet getServlet() {
-			if (servlet == null) {
-				synchronized (this) {
-					if (servlet == null) {
-						servlet = module.inject(method.getTarget());
-					}
-				}
-			}
-			
-			return servlet;
-		}
-		
-		public RestRouter getRouter() {
+
+        public RestServlet getServlet() {
+            return servlet;
+        }
+
+        public RestRouter getRouter() {
 			return RestRouter.this;
 		}
 		
