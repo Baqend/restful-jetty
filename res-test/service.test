@@ -175,12 +175,12 @@ GET /generics/;id   info.orestes.rest.Testing2(  Map [  String   , Object   ] )
 
 ##Method G.1
 
-SPOST /test/33 info.orestes.rest.Testing3
+SPOST /test/secure info.orestes.rest.Testing3
 
 ##Method G.2
 
-SGET /test/33 info.orestes.rest.Testing3
+SGET /test/secure info.orestes.rest.Testing3
 
 ##Method G.3
 
-SPUT /test/33 info.orestes.rest.Testing3
+SPUT /test/secure info.orestes.rest.Testing3
