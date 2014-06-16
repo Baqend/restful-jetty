@@ -2,19 +2,19 @@ package info.orestes.rest.service;
 
 import info.orestes.rest.RestServlet;
 import info.orestes.rest.service.PathElement.Type;
+import org.eclipse.jetty.util.UrlEncoded;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.jetty.util.UrlEncoded;
-
 public class RestMethod {
 	
 	private final String name;
 	private final String[] description;
 	private final String action;
+    private final boolean forceSSL;
 	
 	private final List<PathElement> signature;
 	private final int dynamicSignatureIndex;
@@ -29,7 +29,7 @@ public class RestMethod {
 	
 	public RestMethod(String name, String[] description, String action, List<PathElement> signature,
 		Class<? extends RestServlet> target, Map<Integer, String> expectedResults, EntityType<?> requestType,
-		EntityType<?> responseType) {
+		EntityType<?> responseType, boolean forceSSL) {
 		this.name = name;
 		this.action = action;
 		this.description = description;
@@ -38,6 +38,7 @@ public class RestMethod {
 		this.expectedResults = Collections.unmodifiableMap(expectedResults);
 		this.requestType = requestType;
 		this.responseType = responseType;
+        this.forceSSL = forceSSL;
 		
 		int required = 0;
 		int dynamicIndex = 0;
@@ -166,6 +167,8 @@ public class RestMethod {
 	public int getRequiredParamaters() {
 		return requiredArguments;
 	}
+
+    public boolean isForceSSL() { return forceSSL; }
 	
 	@Override
 	public String toString() {

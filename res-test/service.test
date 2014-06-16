@@ -172,3 +172,15 @@ GET /generics   info.orestes.rest.Testing1(Map[String, Integer]): List[Integer]
 @id:Integer The id arg
 
 GET /generics/;id   info.orestes.rest.Testing2(  Map [  String   , Object   ] )
+
+##Method G.1
+
+SPOST /test/33 info.orestes.rest.Testing3
+
+##Method G.2
+
+SGET /test/33 info.orestes.rest.Testing3
+
+##Method G.3
+
+SPUT /test/33 info.orestes.rest.Testing3

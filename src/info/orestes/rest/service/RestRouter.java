@@ -37,7 +37,7 @@ public class RestRouter extends HandlerWrapper {
 			r = (RestRequest) req;
 		} else {
 			HttpURI uri = request.getUri();
-			
+
 			Map<String, String> matrix = uri.getParam() == null ? null : createMap(uri.getParam().split(";"));
 			Map<String, String> query = uri.getQuery() == null ? null : createMap(uri.getQuery().split("&"));
 			

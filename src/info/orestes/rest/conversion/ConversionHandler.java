@@ -60,7 +60,7 @@ public class ConversionHandler extends RestHandler {
 	@Override
 	public void handle(RestRequest request, final RestResponse response) throws ServletException, IOException {
 		RestMethod method = request.getRestMethod();
-		
+
 		if (!request.isAsyncStarted()) {
 			for (Entry<String, Object> entry : request.getArguments().entrySet()) {
 				Class<?> argType = method.getArguments().get(entry.getKey()).getValueType();

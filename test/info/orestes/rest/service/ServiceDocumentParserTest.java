@@ -5,6 +5,11 @@ import info.orestes.rest.Testing1;
 import info.orestes.rest.Testing2;
 import info.orestes.rest.Testing3;
 import info.orestes.rest.service.PathElement.Type;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestName;
 
 import java.util.HashMap;
 import java.util.List;
@@ -12,17 +17,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
-
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class ServiceDocumentParserTest {
 	
@@ -78,6 +73,8 @@ public class ServiceDocumentParserTest {
 		assertAction("GET");
 		
 		assertSignatureParts(1, 0);
+
+        assertFalse(method.isForceSSL());
 		
 		assertPath(0, "");
 		asserTarget(Testing1.class);
@@ -99,6 +96,8 @@ public class ServiceDocumentParserTest {
 		assertSignatureParts(1, 0);
 		
 		assertPath(0, "test");
+
+        assertFalse(method.isForceSSL());
 		
 		asserTarget(Testing2.class);
 		asserRequestType(null);
@@ -118,6 +117,8 @@ public class ServiceDocumentParserTest {
 		
 		assertPath(0, "test");
 		assertPath(1, "33");
+
+        assertFalse(method.isForceSSL());
 		
 		asserTarget(Testing3.class);
 		asserRequestType(null);
@@ -138,6 +139,8 @@ public class ServiceDocumentParserTest {
 		assertPath(0, "a");
 		assertPath(1, "b");
 		assertPath(2, "c");
+
+        assertFalse(method.isForceSSL());
 		
 		asserTarget(Testing3.class);
 		asserRequestType(Object.class);
@@ -158,6 +161,8 @@ public class ServiceDocumentParserTest {
 		assertPath(0, "a");
 		assertPath(1, "b");
 		assertPath(2, "c");
+
+        assertFalse(method.isForceSSL());
 		
 		asserTarget(Testing1.class);
 		asserRequestType(null);
@@ -176,6 +181,8 @@ public class ServiceDocumentParserTest {
 		assertSignatureParts(1, 0);
 		
 		assertVariable(0, "id", Integer.class);
+
+        assertFalse(method.isForceSSL());
 		
 		asserTarget(Testing1.class);
 		asserRequestType(String.class);
@@ -195,6 +202,8 @@ public class ServiceDocumentParserTest {
 		
 		assertPath(0, "test");
 		assertVariable(1, "test", String.class);
+
+        assertFalse(method.isForceSSL());
 		
 		asserTarget(Testing2.class);
 		asserRequestType(null);
@@ -215,6 +224,8 @@ public class ServiceDocumentParserTest {
 		assertVariable(0, "test", Boolean.class);
 		assertPath(1, "33");
 		assertVariable(2, "id", String.class);
+
+        assertFalse(method.isForceSSL());
 		
 		asserTarget(Testing3.class);
 		asserRequestType(null);
@@ -238,6 +249,8 @@ public class ServiceDocumentParserTest {
 		assertVariable(1, "b", Boolean.class);
 		assertVariable(2, "c", Integer.class);
 		assertVariable(3, "d", String.class);
+
+        assertFalse(method.isForceSSL());
 		
 		asserTarget(Testing3.class);
 		asserRequestType(Object.class);
@@ -257,6 +270,8 @@ public class ServiceDocumentParserTest {
 		
 		assertPath(0, "");
 		assertQuery(1, "id", false, Integer.class, null);
+
+        assertFalse(method.isForceSSL());
 		
 		asserTarget(Testing1.class);
 		asserRequestType(String.class);
@@ -277,6 +292,8 @@ public class ServiceDocumentParserTest {
 		assertPath(0, "test");
 		assertPath(1, "");
 		assertQuery(2, "test", true, String.class, null);
+
+        assertFalse(method.isForceSSL());
 		
 		asserTarget(Testing2.class);
 		asserRequestType(null);
@@ -298,6 +315,8 @@ public class ServiceDocumentParserTest {
 		assertQuery(1, "test", true, String.class, null);
 		assertQuery(2, "id", true, Integer.class, "33");
 		assertQuery(3, "name", false, Integer.class, null);
+
+        assertFalse(method.isForceSSL());
 		
 		asserTarget(Testing3.class);
 		asserRequestType(null);
@@ -319,6 +338,8 @@ public class ServiceDocumentParserTest {
 		assertQuery(1, "a", true, String.class, null);
 		assertQuery(2, "b", false, Integer.class, null);
 		assertQuery(3, "c", true, Integer.class, "44");
+
+        assertFalse(method.isForceSSL());
 		
 		asserTarget(Testing3.class);
 		asserRequestType(Object.class);
@@ -338,6 +359,8 @@ public class ServiceDocumentParserTest {
 		
 		assertPath(0, "");
 		assertMatrix(1, "id", false, Integer.class, null);
+
+        assertFalse(method.isForceSSL());
 		
 		asserTarget(Testing1.class);
 		asserRequestType(String.class);
@@ -358,6 +381,8 @@ public class ServiceDocumentParserTest {
 		assertPath(0, "testing");
 		assertPath(1, "");
 		assertMatrix(2, "test", true, String.class, null);
+
+        assertFalse(method.isForceSSL());
 		
 		asserTarget(Testing2.class);
 		asserRequestType(null);
@@ -379,6 +404,8 @@ public class ServiceDocumentParserTest {
 		assertMatrix(1, "test", true, String.class, null);
 		assertMatrix(2, "id", true, Integer.class, "33");
 		assertMatrix(3, "name", false, Integer.class, null);
+
+        assertFalse(method.isForceSSL());
 		
 		asserTarget(Testing3.class);
 		asserRequestType(null);
@@ -400,6 +427,8 @@ public class ServiceDocumentParserTest {
 		assertMatrix(1, "a", true, String.class, null);
 		assertMatrix(2, "b", false, Integer.class, null);
 		assertMatrix(3, "c", true, Integer.class, "44");
+
+        assertFalse(method.isForceSSL());
 		
 		asserTarget(Testing3.class);
 		asserRequestType(Object.class);
@@ -418,6 +447,8 @@ public class ServiceDocumentParserTest {
 		assertResult(400, "Bad boy");
 		
 		assertAction("GET");
+
+        assertFalse(method.isForceSSL());
 		
 		assertSignatureParts(3, 3);
 		
@@ -441,7 +472,9 @@ public class ServiceDocumentParserTest {
 		assertResultSize(0);
 		
 		assertAction("GET");
-		
+
+        assertFalse(method.isForceSSL());
+
 		assertSignatureParts(5, 9);
 		
 		assertPath(0, "db");
@@ -470,6 +503,8 @@ public class ServiceDocumentParserTest {
 		assertResultSize(0);
 		
 		assertAction("GET");
+
+        assertFalse(method.isForceSSL());
 		
 		assertSignatureParts(1, 0);
 		
@@ -485,6 +520,8 @@ public class ServiceDocumentParserTest {
 		assertResultSize(0);
 		
 		assertAction("GET");
+
+        assertFalse(method.isForceSSL());
 		
 		assertSignatureParts(2, 1);
 		
@@ -495,6 +532,21 @@ public class ServiceDocumentParserTest {
 		asserRequestType(Map.class, String.class, Object.class);
 		asserResponseType(null);
 	}
+
+    @Test
+    public void routeG1() {
+        assertTrue(method.isForceSSL());
+    }
+
+    @Test
+    public void routeG2() {
+        assertTrue(method.isForceSSL());
+    }
+
+    @Test
+    public void routeG3() {
+        assertTrue(method.isForceSSL());
+    }
 	
 	private void assertPath(int index, String name) {
 		assertPathElement(index, Type.PATH, name, null, false, null, null);
@@ -589,4 +641,5 @@ public class ServiceDocumentParserTest {
 	private void assertDescritpion(String... expected) {
 		assertArrayEquals(expected, method.getDescription());
 	}
+
 }

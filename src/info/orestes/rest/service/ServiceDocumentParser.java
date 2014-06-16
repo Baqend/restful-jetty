@@ -250,14 +250,17 @@ public class ServiceDocumentParser {
 			
 			String action = matcher.group(1);
 			Class<? extends RestServlet> servletClass = getClassForTarget(matcher.group(3));
-			
+
+            boolean forceSSL = action.toUpperCase().startsWith("S");
+            action = forceSSL ? action.substring(1) : action;
+
 			if (!RestServlet.isDeclared(servletClass, action)) {
 				throw new IOException("The RestServlet doesn't declare an action handler for the method " + action + ". Ensure the action handler is public.");
 			}
-			
+
 			RestMethod method = new RestMethod(
 				currentName, currentDescription.toArray(new String[currentDescription.size()]),
-				action, pathElements, servletClass, currentResults, requestType, responseType);
+				action, pathElements, servletClass, currentResults, requestType, responseType, forceSSL);
 			
 			currentGroup.add(method);
 			
