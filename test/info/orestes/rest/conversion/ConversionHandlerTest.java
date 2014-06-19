@@ -3,28 +3,9 @@ package info.orestes.rest.conversion;
 import info.orestes.rest.error.BadRequest;
 import info.orestes.rest.error.NotAcceptable;
 import info.orestes.rest.error.UnsupportedMediaType;
-import info.orestes.rest.service.MethodGroup;
-import info.orestes.rest.service.RestHandler;
-import info.orestes.rest.service.RestMethod;
-import info.orestes.rest.service.RestRequest;
-import info.orestes.rest.service.RestResponse;
+import info.orestes.rest.service.*;
 import info.orestes.rest.service.RestRouter.Route;
-import info.orestes.rest.service.ServiceDocumentParser;
 import info.orestes.rest.util.Module;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.PipedReader;
-import java.io.PipedWriter;
-import java.io.PrintWriter;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -33,11 +14,15 @@ import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import javax.servlet.DispatcherType;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
 
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
@@ -353,8 +338,8 @@ public class ConversionHandlerTest {
 		
 		RestRequest req = new RestRequest(null, request, route, arguments);
 		RestResponse res = new RestResponse(response, arguments);
-		
-		handler.setHandler(callback);
+
+        handler.setHandler(callback);
 		
 		handler.start();
 		handler.handle(req, res);
@@ -390,8 +375,13 @@ public class ConversionHandlerTest {
 		public void setContentType(String contentType) {
 			this.contentType = contentType;
 		}
-		
-		@Override
+
+        @Override
+        public DispatcherType getDispatcherType() {
+            return DispatcherType.REQUEST;
+        }
+
+        @Override
 		public PrintWriter getWriter() throws IOException {
 			init();
 			return new PrintWriter(in);
