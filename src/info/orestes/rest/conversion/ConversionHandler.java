@@ -9,6 +9,7 @@ import info.orestes.rest.service.*;
 import info.orestes.rest.util.Inject;
 import org.eclipse.jetty.http.HttpHeader;
 
+import javax.servlet.DispatcherType;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -61,7 +62,7 @@ public class ConversionHandler extends RestHandler {
 	public void handle(RestRequest request, final RestResponse response) throws ServletException, IOException {
 		RestMethod method = request.getRestMethod();
 
-		if (!request.isAsyncStarted()) {
+		if (request.getDispatcherType() == DispatcherType.REQUEST) {
 			for (Entry<String, Object> entry : request.getArguments().entrySet()) {
 				Class<?> argType = method.getArguments().get(entry.getKey()).getValueType();
 				try {
@@ -72,12 +73,12 @@ public class ConversionHandler extends RestHandler {
 					throw new BadRequest("The argument " + entry.getKey() + " can not be parsed.", e);
 				}
 			}
-		}
-		
-		if (request.getEntity() == null && request.getContentType() != null) {
-			handleRequestEntity(request, response);
-		}
-		
+
+            if (request.getContentType() != null) {
+                handleRequestEntity(request, response);
+            }
+        }
+
 		super.handle(request, response);
 		
 		if (response.getEntity() != null && !response.isCommitted()) {

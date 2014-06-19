@@ -84,6 +84,10 @@ public class RestException extends ServletException {
 		
 		return ex;
 	}
+
+    public static RestException of(Throwable t) {
+        return t instanceof RestException? (RestException) t: new InternalServerError(t);
+    }
 	
 	protected RestException(String message) {
 		this(message, null);

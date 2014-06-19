@@ -1,7 +1,6 @@
 package info.orestes.rest.service;
 
 import info.orestes.rest.error.Forbidden;
-import info.orestes.rest.error.InternalServerError;
 import info.orestes.rest.error.RestException;
 import org.eclipse.jetty.server.handler.HandlerWrapper;
 
@@ -18,10 +17,8 @@ public abstract class RestHandler extends HandlerWrapper {
 
 		try {
 			handle((RestRequest) request, (RestResponse) response);
-		} catch (RestException e) {
-			((RestResponse) response).sendError(e);
 		} catch (Exception e) {
-			((RestResponse) response).sendError(new InternalServerError(e));
+			((RestResponse) response).sendError(RestException.of(e));
 		}
 	}
 	
