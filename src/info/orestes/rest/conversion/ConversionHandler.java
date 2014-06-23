@@ -60,10 +60,9 @@ public class ConversionHandler extends RestHandler {
 	
 	@Override
 	public void handle(RestRequest request, final RestResponse response) throws ServletException, IOException {
-		RestMethod method = request.getRestMethod();
-
-		if (request.getDispatcherType() == DispatcherType.REQUEST) {
-			for (Entry<String, Object> entry : request.getArguments().entrySet()) {
+        if (request.getDispatcherType() == DispatcherType.REQUEST) {
+            RestMethod method = request.getRestMethod();
+            for (Entry<String, Object> entry : request.getArguments().entrySet()) {
 				Class<?> argType = method.getArguments().get(entry.getKey()).getValueType();
 				try {
 					if (entry.getValue() != null) {
@@ -80,8 +79,8 @@ public class ConversionHandler extends RestHandler {
         }
 
 		super.handle(request, response);
-		
-		if (response.getEntity() != null && !response.isCommitted()) {
+
+        if (response.getEntity() != null && !response.isCommitted()) {
 			handleResponseEntity(request, response);
 		}
 	}

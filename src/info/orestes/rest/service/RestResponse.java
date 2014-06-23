@@ -2,15 +2,13 @@ package info.orestes.rest.service;
 
 import info.orestes.rest.Response;
 import info.orestes.rest.error.RestException;
-
-import java.io.IOException;
-import java.util.Map;
+import org.eclipse.jetty.server.HttpChannel;
+import org.eclipse.jetty.server.Request;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
-
-import org.eclipse.jetty.server.HttpChannel;
-import org.eclipse.jetty.server.Request;
+import java.io.IOException;
+import java.util.Map;
 
 public class RestResponse extends HttpServletResponseWrapper implements Response {
 	
@@ -44,15 +42,15 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
 	public void setArgument(String name, Object value) {
 		arguments.put(name, value);
 	}
-	
+
 	@Override
 	public void sendError(RestException error) throws IOException {
 		Request request = HttpChannel.getCurrentHttpChannel().getRequest();
-		
+
 		if (request != null) {
 			request.setAttribute("javax.servlet.error.exception", error);
 		}
-		
+
 		sendError(error.getStatusCode());
 	}
 }

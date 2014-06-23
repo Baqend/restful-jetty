@@ -76,7 +76,10 @@ public class RestRouter extends HandlerWrapper {
 		}
 		
 		if (r != null) {
-			res = new RestResponse(res, r.getArguments());
+            if (!(res instanceof RestResponse)) {
+                res = new RestResponse(res, r.getArguments());
+            }
+
 			super.handle(path, request, r, res);
 			request.setHandled(true);
 		}

@@ -4,9 +4,8 @@ import info.orestes.rest.conversion.ConversionHandler;
 import info.orestes.rest.conversion.WritableContext;
 import info.orestes.rest.error.RestException;
 
-import java.io.IOException;
-
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /*
  * {@inheritDoc}
@@ -30,10 +29,10 @@ public interface Response extends WritableContext, HttpServletResponse {
 	 *            the response entity
 	 */
 	public void setEntity(Object entity);
-	
+
 	/**
 	 * Signals that the request handling results in an error
-	 * 
+	 *
 	 * @param e
 	 *            The error which is occurred while handling the request
 	 * @throws IOException

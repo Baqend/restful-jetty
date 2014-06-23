@@ -6,14 +6,12 @@ import info.orestes.rest.error.MethodNotAllowed;
 import info.orestes.rest.error.RestException;
 import info.orestes.rest.service.RestRouter;
 import info.orestes.rest.service.RestServletHandler;
-
-import java.io.IOException;
-
-import javax.servlet.GenericServlet;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-
 import org.eclipse.jetty.http.HttpStatus;
+
+import javax.servlet.*;
+import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 /**
  * An {@link RestServlet} represents a resource or a group of resources which is
@@ -28,7 +26,9 @@ import org.eclipse.jetty.http.HttpStatus;
  */
 @SuppressWarnings("serial")
 public abstract class RestServlet extends GenericServlet {
-	
+
+    public static final String ASYNC_RESULT = "info.orestes.rest.result";
+
 	/**
 	 * Indicates if the given {@link RestServlet} implements the given http
 	 * method handler
@@ -47,10 +47,15 @@ public abstract class RestServlet extends GenericServlet {
 		
 		try {
 			restServlet.getMethod(methodName, Request.class, Response.class);
-			return true;
 		} catch (NoSuchMethodException e) {
-			return false;
+            try {
+                restServlet.getMethod(methodName + "Async", Request.class, Response.class);
+            } catch (NoSuchMethodException ex) {
+                return false;
+            }
 		}
+
+        return true;
 	}
 	
 	/**
@@ -69,6 +74,25 @@ public abstract class RestServlet extends GenericServlet {
 	 */
 	protected void doDelete(Request request, Response response) throws RestException, IOException {
 		notSupported(request, response);
+	}
+
+	/**
+	 * Handles asynchronous the DELETE method request for the resource.
+	 *
+	 * @param request
+	 *            The request which contains the HTTP-Header and the entity
+	 * @param response
+	 *            The response that will be send back
+	 * @throws RestException
+	 *             Signals that the request handling results in an error.
+	 *             Throwing this kind of exceptions has the same effect as
+	 *             calling {@link Response#sendError(RestException)}
+	 * @throws IOException
+	 *             if an I/O error occures
+	 */
+	protected CompletableFuture<Void> doDeleteAsync(Request request, Response response) throws RestException, IOException {
+		doDelete(request, response);
+        return null;
 	}
 	
 	/**
@@ -89,6 +113,27 @@ public abstract class RestServlet extends GenericServlet {
 	 */
 	protected void doGet(Request request, Response response) throws RestException, IOException {
 		notSupported(request, response);
+	}
+
+	/**
+	 * Handles asynchronous the GET method request for the resource.<br>
+	 * <br>
+	 * Implementing this method will also enable the HEAD method.
+	 *
+	 * @param request
+	 *            The request which contains the HTTP-Header and the entity
+	 * @param response
+	 *            The response that will be send back
+	 * @throws RestException
+	 *             Signals that the request handling results in an error.
+	 *             Throwing this kind of exceptions has the same effect as
+	 *             calling {@link Response#sendError(RestException)}
+	 * @throws IOException
+	 *             if an I/O error occures
+	 */
+	protected CompletableFuture<Void> doGetAsync(Request request, Response response) throws RestException, IOException {
+		doGet(request, response);
+        return null;
 	}
 	
 	/**
@@ -117,9 +162,71 @@ public abstract class RestServlet extends GenericServlet {
 		response.setContentLength(length);
 		response.setEntity(null);
 	}
-	
+
 	/**
-	 * Handles the OPTIONS method request for the resource.<br>
+	 * Handles asynchronous the HEAD method request for the resource.<br>
+	 * <br>
+	 * The default implementation calls the {@link #doGet(Request, Response)}
+	 * method and just remove the entity content.
+	 *
+	 * @param request
+	 *            The request which contains the HTTP-Header and the entity
+	 * @param response
+	 *            The response that will be send back
+	 * @throws RestException
+	 *             Signals that the request handling results in an error.
+	 *             Throwing this kind of exceptions has the same effect as
+	 *             calling {@link Response#sendError(RestException)}
+	 * @throws IOException
+	 *             if an I/O error occures
+	 */
+	public CompletableFuture<Void> doHeadAsync(Request request, Response response) throws RestException, IOException {
+		doHead(request, response);
+        return null;
+	}
+
+    /**
+     * Handles the OPTIONS method request for the resource.<br>
+     *
+     * @param request
+     *            The request which contains the HTTP-Header and the entity
+     * @param response
+     *            The response that will be send back
+     * @throws RestException
+     *             Signals that the request handling results in an error.
+     *             Throwing this kind of exceptions has the same effect as
+     *             calling {@link Response#sendError(RestException)}
+     * @throws IOException
+     *             if an I/O error occures
+     */
+    public void doOptions(Request request, Response response) throws RestException, IOException {
+        StringBuilder allow = new StringBuilder();
+
+        allow.append("OPTIONS");
+
+        if (isDeclared("GET")) {
+            allow.append(", GET");
+            allow.append(", HEAD");
+        }
+
+        if (isDeclared("POST")) {
+            allow.append(", POST");
+        }
+
+        if (isDeclared("PUT")) {
+            allow.append(", PUT");
+        }
+
+        if (isDeclared("DELETE")) {
+            allow.append(", DELETE");
+        }
+
+        response.setStatus(HttpStatus.NO_CONTENT_204);
+        response.setHeader("Allow", allow.toString());
+    }
+
+	/**
+	 * Handles asynchronous the OPTIONS method request for the resource.<br>
 	 * 
 	 * @param request
 	 *            The request which contains the HTTP-Header and the entity
@@ -132,30 +239,9 @@ public abstract class RestServlet extends GenericServlet {
 	 * @throws IOException
 	 *             if an I/O error occures
 	 */
-	public void doOptions(Request request, Response response) throws RestException, IOException {
-		StringBuffer allow = new StringBuffer();
-		
-		allow.append("OPTIONS");
-		
-		if (isDeclared("GET")) {
-			allow.append(", GET");
-			allow.append(", HEAD");
-		}
-		
-		if (isDeclared("POST")) {
-			allow.append(", POST");
-		}
-		
-		if (isDeclared("PUT")) {
-			allow.append(", PUT");
-		}
-		
-		if (isDeclared("DELETE")) {
-			allow.append(", DELETE");
-		}
-		
-		response.setStatus(HttpStatus.NO_CONTENT_204);
-		response.setHeader("Allow", allow.toString());
+	protected CompletableFuture<Void> doOptionsAsync(Request request, Response response) throws RestException, IOException {
+        doOptions(request, response);
+        return null;
 	}
 	
 	/**
@@ -187,9 +273,46 @@ public abstract class RestServlet extends GenericServlet {
 	protected void doPost(Request request, Response response) throws RestException, IOException {
 		notSupported(request, response);
 	}
-	
+
 	/**
-	 * Handles the PUT method request for the resource.<br>
+	 * Handles asynchronous the POST method request for the resource.<br>
+	 *
+	 * @param request
+	 *            The request which contains the HTTP-Header and the entity
+	 * @param response
+	 *            The response that will be send back
+	 * @throws RestException
+	 *             Signals that the request handling results in an error.
+	 *             Throwing this kind of exceptions has the same effect as
+	 *             calling {@link Response#sendError(RestException)}
+	 * @throws IOException
+	 *             if an I/O error occures
+	 */
+	protected CompletableFuture<Void> doPostAsync(Request request, Response response) throws RestException, IOException {
+		doPost(request, response);
+        return null;
+	}
+
+    /**
+     * Handles the PUT method request for the resource.<br>
+     *
+     * @param request
+     *            The request which contains the HTTP-Header and the entity
+     * @param response
+     *            The response that will be send back
+     * @throws RestException
+     *             Signals that the request handling results in an error.
+     *             Throwing this kind of exceptions has the same effect as
+     *             calling {@link Response#sendError(RestException)}
+     * @throws IOException
+     *             if an I/O error occures
+     */
+    protected void doPut(Request request, Response response) throws RestException, IOException {
+        notSupported(request, response);
+    }
+
+	/**
+	 * Handles asynchronous the PUT method request for the resource.<br>
 	 * 
 	 * @param request
 	 *            The request which contains the HTTP-Header and the entity
@@ -202,8 +325,9 @@ public abstract class RestServlet extends GenericServlet {
 	 * @throws IOException
 	 *             if an I/O error occures
 	 */
-	protected void doPut(Request request, Response response) throws RestException, IOException {
-		notSupported(request, response);
+	protected CompletableFuture<Void> doPutAsync(Request request, Response response) throws RestException, IOException {
+		doPut(request, response);
+        return null;
 	}
 	
 	/**
@@ -224,28 +348,51 @@ public abstract class RestServlet extends GenericServlet {
 	 *             if an I/O error occures
 	 */
 	public void service(Request request, Response response) throws RestException, IOException {
-		switch (request.getMethod()) {
-			case "DELETE":
-				doDelete(request, response);
-				break;
-			case "GET":
-				doGet(request, response);
-				break;
-			case "HEAD":
-				doHead(request, response);
-				break;
-			case "OPTIONS":
-				doOptions(request, response);
-				break;
-			case "POST":
-				doPost(request, response);
-				break;
-			case "PUT":
-				doPut(request, response);
-				break;
-			default:
-				notSupported(request, response);
-		}
+        CompletableFuture<?> result = (CompletableFuture<?>) request.getAttribute(ASYNC_RESULT);
+
+        if (result == null) {
+            switch (request.getMethod()) {
+                case "DELETE":
+                    result = doDeleteAsync(request, response);
+                    break;
+                case "GET":
+                    result = doGetAsync(request, response);
+                    break;
+                case "HEAD":
+                    result = doHeadAsync(request, response);
+                    break;
+                case "OPTIONS":
+                    result = doOptionsAsync(request, response);
+                    break;
+                case "POST":
+                    result = doPostAsync(request, response);
+                    break;
+                case "PUT":
+                    result = doPutAsync(request, response);
+                    break;
+                default:
+                    notSupported(request, response);
+            }
+        }
+
+        if (result != null) {
+            if (result.isDone()) {
+                if (result.isCompletedExceptionally()) {
+                    try {
+                        result.join();
+                    } catch (CompletionException e) {
+                        throw RestException.of(e.getCause());
+                    }
+                }
+            } else {
+                AsyncContext context = request.startAsync(request, response);
+
+                if (request.getDispatcherType() == DispatcherType.REQUEST) {
+                    request.setAttribute(ASYNC_RESULT, result);
+                    result.whenComplete((empty, error) -> context.dispatch());
+                }
+            }
+        }
 	}
 	
 	@Override
@@ -278,4 +425,18 @@ public abstract class RestServlet extends GenericServlet {
 			response.sendError(new BadRequest("The method is not allowed for this resource."));
 		}
 	}
+
+    public static interface AsyncListener extends javax.servlet.AsyncListener {
+        @Override
+        public default void onComplete(AsyncEvent asyncEvent) throws IOException {}
+
+        @Override
+        public default void onTimeout(AsyncEvent asyncEvent) throws IOException {}
+
+        @Override
+        public default void onError(AsyncEvent asyncEvent) throws IOException {}
+
+        @Override
+        public default void onStartAsync(AsyncEvent asyncEvent) throws IOException {}
+    }
 }

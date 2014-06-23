@@ -6,13 +6,6 @@ import info.orestes.rest.conversion.MediaType;
 import info.orestes.rest.conversion.WritableContext;
 import info.orestes.rest.error.InternalServerError;
 import info.orestes.rest.error.RestException;
-
-import java.io.IOException;
-import java.io.PrintWriter;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
@@ -20,12 +13,17 @@ import org.eclipse.jetty.server.handler.ErrorHandler;
 import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.util.log.Logger;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
+
 public class RestErrorHandler extends ErrorHandler {
 	
 	private final Logger LOG = Log.getLogger(ErrorHandler.class);
-	
+
 	private final ConverterService converterService;
-	
+
 	public RestErrorHandler(ConverterService converterService) {
 		this.converterService = converterService;
 	}
