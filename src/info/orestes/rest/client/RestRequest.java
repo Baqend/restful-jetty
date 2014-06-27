@@ -11,9 +11,7 @@ import org.eclipse.jetty.client.api.Response.CompleteListener;
 import org.eclipse.jetty.http.HttpHeader;
 
 import java.net.URI;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.CompletableFuture;
 
 public class RestRequest extends HttpRequest {
 	private final RestClient client;
@@ -43,38 +41,32 @@ public class RestRequest extends HttpRequest {
 		return super.content(content, contentType);
 	}
 	
-	public <T> EntityResponse<T> send(Class<T> cls) throws InterruptedException, TimeoutException,
-			ExecutionException {
+	public <T> CompletableFuture<EntityResponse<T>> send(Class<T> cls) {
 		return send(new EntityType<T>(cls));
 	}
 	
-	public <T> EntityResponse<T> send(EntityType<T> entityType) throws InterruptedException, TimeoutException,
-			ExecutionException {
-		FutureResponseListener<T> listener = new FutureResponseListener<T>(entityType);
-		
-		// FIXME: ugly save timeout and restore it after send call, to prevent
-		// extra timeout listener registration in the
-		// HttpClient#send(CompleteListener) method
-		long timeout = getTimeout();
-		timeout(0, TimeUnit.MILLISECONDS);
-		
-		send(listener);
-		
-		timeout(timeout, TimeUnit.MILLISECONDS);
-		
-		if (timeout <= 0) {
-			return listener.get();
-		}
-		
-		try {
-			return listener.get(timeout, TimeUnit.MILLISECONDS);
-		} catch (InterruptedException | TimeoutException x) {
-			// Differently from the Future, the semantic of this method is that
-			// if
-			// the send() is interrupted or times out, we abort the request.
-			abort(x);
-			throw x;
-		}
+	public <T> CompletableFuture<EntityResponse<T>> send(EntityType<T> entityType) {
+        CompletableFuture<EntityResponse<T>> future = new CompletableFuture<>();
+
+        send(new EntityResponseListener<T>(entityType) {
+            @Override
+            public void onComplete(EntityResult<T> result) {
+                if (result.isSucceeded()) {
+                    future.complete(new HttpEntityResponse<T>(result.getResponse(), getEntityType(), result.getEntity()));
+                } else {
+                    future.completeExceptionally(result.getFailure());
+                }
+            }
+        });
+
+        future.exceptionally(t -> {
+            if (future.isCancelled()) {
+                abort(t);
+            }
+            return null;
+        });
+
+        return future;
 	}
 	
 	@Override

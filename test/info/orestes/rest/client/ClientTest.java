@@ -190,13 +190,11 @@ public class ClientTest {
 	public void testSuccessFuture() throws Exception {
 		setupStringHandler("Test string.");
 		
-		List<Future<EntityResponse<String>>> results = new ArrayList<>(3);
+		List<CompletableFuture<EntityResponse<String>>> results = new ArrayList<>(3);
 		
 		for (int i = 0; i < 3; ++i) {
-			Request request = client.newRequest("/");
-			FutureResponseListener<String> future = new FutureResponseListener<>(String.class);
-			
-			request.send(future);
+			RestRequest request = client.newRequest("/");
+			CompletableFuture<EntityResponse<String>> future = request.send(String.class);
 			results.add(future);
 		}
 		
@@ -214,10 +212,8 @@ public class ClientTest {
 		List<Future<EntityResponse<String>>> results = new ArrayList<>(3);
 		
 		for (int i = 0; i < 3; ++i) {
-			Request request = client.newRequest("/");
-			FutureResponseListener<String> future = new FutureResponseListener<>(String.class);
-			
-			request.send(future);
+			RestRequest request = client.newRequest("/");
+            CompletableFuture<EntityResponse<String>> future = request.send(String.class);
 			results.add(future);
 		}
 		
@@ -238,10 +234,8 @@ public class ClientTest {
 		List<Future<EntityResponse<String>>> results = new ArrayList<>(3);
 		
 		for (int i = 0; i < 3; ++i) {
-			Request request = client.newRequest("/");
-			FutureResponseListener<String> future = new FutureResponseListener<>(String.class);
-			
-			request.send(future);
+			RestRequest request = client.newRequest("/");
+            CompletableFuture<EntityResponse<String>> future = request.send(String.class);
 			results.add(future);
 		}
 		
