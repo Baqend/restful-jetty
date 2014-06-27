@@ -45,6 +45,10 @@ public class RestClient extends HttpClient {
         //setExecutor(executor);
     }
 
+    public RestClient(ConverterService converterService) {
+        this("", converterService, null);
+    }
+
     @Override
 	protected RestRequest newHttpRequest(HttpConversation conversation, URI uri) {
 		return new RestRequest(this, conversation, uri);
