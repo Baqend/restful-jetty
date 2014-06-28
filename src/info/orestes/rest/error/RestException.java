@@ -49,7 +49,7 @@ public class RestException extends ServletException {
 		if (exClass != null) {
 			return create(exClass, statusCode, message, throwable);
 		} else {
-			return create(statusCode, message, throwable);
+			return create(statusCode, className + ": " + message, throwable);
 		}
 	}
 	
