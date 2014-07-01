@@ -80,9 +80,9 @@ public class ConversionHandler extends RestHandler {
 
 		super.handle(request, response);
 
-        if (response.getEntity() != null && !response.isCommitted()) {
+        if (response.getEntity() != null && !request.isAsyncStarted()) {
 			handleResponseEntity(request, response);
-		}
+        }
 	}
 	
 	private void handleRequestEntity(RestRequest request, RestResponse response) throws RestException, IOException {
