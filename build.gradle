@@ -1,0 +1,53 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'java-library-distribution'
+
+def distFolder = file("dist")
+
+repositories {
+    mavenCentral()
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src'
+        }
+    }
+    test {
+        java {
+            srcDir 'test'
+        }
+        resources {
+            srcDir 'res-test'
+        }
+    }
+}
+
+dependencies {
+    testCompile (
+            'junit:junit:4.11',
+            'org.mockito:mockito-all:1.9.5'
+    )
+    compile (
+            'org.eclipse.jetty:jetty-server:9.2.1.v20140609',
+            'org.eclipse.jetty:jetty-client:9.2.1.v20140609'
+    )
+}
+
+task buildInfo {
+    def cmd = "git rev-parse --short HEAD"
+    def proc = cmd.execute()
+    ext.revision = proc.text.trim()
+}
+
+version = buildInfo.revision
+
+
+distZip.destinationDir = distFolder
+
+task dist(dependsOn: distZip, type:Jar){
+    from sourceSets.main.allSource
+    destinationDir distFolder
+    classifier = 'source'
+}
