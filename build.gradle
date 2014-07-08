@@ -43,7 +43,7 @@ task buildInfo {
 }
 
 version = buildInfo.revision
-
+test.ignoreFailures = true
 distZip.destinationDir = distFolder
 distZip.baseName = projectName
 jar.baseName = projectName
