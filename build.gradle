@@ -2,7 +2,8 @@ apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'java-library-distribution'
 
-def distFolder = file("dist")
+def distFolder = file('dist')
+def projectName = 'restful-jetty'
 
 repositories {
     mavenCentral()
@@ -43,10 +44,11 @@ task buildInfo {
 
 version = buildInfo.revision
 
-
 distZip.destinationDir = distFolder
+distZip.baseName = projectName
 
 task dist(dependsOn: distZip, type:Jar){
+    baseName = projectName
     from sourceSets.main.allSource
     destinationDir distFolder
     classifier = 'source'
