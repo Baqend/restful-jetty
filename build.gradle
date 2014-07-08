@@ -46,6 +46,7 @@ version = buildInfo.revision
 
 distZip.destinationDir = distFolder
 distZip.baseName = projectName
+jar.baseName = projectName
 
 task dist(dependsOn: distZip, type:Jar){
     baseName = projectName
