@@ -5,24 +5,11 @@ apply plugin: 'java-library-distribution'
 def distFolder = file('dist')
 def projectName = 'restful-jetty'
 
+group = "com.baqend"
+version = "1.0-SNAPSHOT"
+
 repositories {
     mavenCentral()
-}
-
-sourceSets {
-    main {
-        java {
-            srcDir 'src'
-        }
-    }
-    test {
-        java {
-            srcDir 'test'
-        }
-        resources {
-            srcDir 'res-test'
-        }
-    }
 }
 
 dependencies {
@@ -42,7 +29,6 @@ task buildInfo {
     ext.revision = proc.text.trim()
 }
 
-version = buildInfo.revision
 test.ignoreFailures = true
 distZip.destinationDir = distFolder
 distZip.baseName = projectName
