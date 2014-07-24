@@ -23,12 +23,6 @@ dependencies {
     )
 }
 
-task buildInfo {
-    def cmd = "git rev-parse --short HEAD"
-    def proc = cmd.execute()
-    ext.revision = proc.text.trim()
-}
-
 test.ignoreFailures = true
 distZip.destinationDir = distFolder
 distZip.baseName = projectName
