@@ -220,12 +220,11 @@ SPUT /test/secure info.orestes.rest.Testing3
 
 Some other tricky method
 
-@ns : String The name of the class
 @name : String The name of the person
 @limit : Integer Hit counts
 @from : Integer Offset of results
 
-SGET  /db/:ns/db_all;from=0;limit=?name=Franz+Kafka  info.orestes.rest.Testing1(String):Object
+SGET  /db/db_all;from=0;limit=?name=Franz+Kafka  info.orestes.rest.Testing1(String):Object
 Cache-Control: String another header
 
 200     All seems to be ok

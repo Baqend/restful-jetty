@@ -551,7 +551,7 @@ public class ServiceDocumentParserTest {
     @Test
     public void routeH1() {
         assertDescritpion("Some other tricky method");
-        assertArgumentSize(4);
+        assertArgumentSize(3);
 
         assertResultSize(4);
         assertResult(200, "All seems to be ok");
@@ -563,14 +563,13 @@ public class ServiceDocumentParserTest {
 
         assertTrue(method.isForceSSL());
 
-        assertSignatureParts(3, 3);
+        assertSignatureParts(2, 3);
 
         assertPath(0, "db");
-        assertVariable(1, "ns", "The name of the class", String.class);
-        assertPath(2, "db_all");
-        assertMatrix(3, "from", "Offset of results", true, Integer.class, "0");
-        assertMatrix(4, "limit", "Hit counts", true, Integer.class, null);
-        assertQuery(5, "name", "The name of the person", true, String.class, "Franz Kafka");
+        assertPath(1, "db_all");
+        assertMatrix(2, "from", "Offset of results", true, Integer.class, "0");
+        assertMatrix(3, "limit", "Hit counts", true, Integer.class, null);
+        assertQuery(4, "name", "The name of the person", true, String.class, "Franz Kafka");
 
         assertRequestHeader("Cache-Control", String.class, "another header");
 

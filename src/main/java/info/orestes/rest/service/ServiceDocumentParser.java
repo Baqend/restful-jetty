@@ -185,12 +185,15 @@ public class ServiceDocumentParser {
 				if (parseHeader(line,  currentResponseHeader)) {
 					state = State.RESPONSE_HEADER;
 					break;
-				}
-			default:
-                endMethod();
-                state = State.GROUP;
-                parseLine(line);
+				} else {
+                    endMethod();
+                    state = State.GROUP;
+                    parseLine(line);
+                    break;
+                }
 
+			default:
+				throw new IOException("Illegal statement.");
 		}
 	}
 	
