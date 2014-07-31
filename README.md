@@ -2,7 +2,7 @@ A REST Layer on top of Jetty HTTP Connector
 ===========================================
 
 Thin Layer
-abstraction of content negotation and conversion
+abstraction of content negotation and conversion 
 REST api specification and routing
 Route based request handling
 support for async request handling
