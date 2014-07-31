@@ -1,4 +1,4 @@
-A REST Layer on top of Jetty HTTP Connector
+A powerful REST Layer for Jetty
 ===========================================
 
 * Thin Layer on top of unmodifized standalone Jetty
