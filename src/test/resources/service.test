@@ -6,6 +6,7 @@ Calls Method A.1
 
 GET / info.orestes.rest.Testing1  (String  ) :  Object
 
+200 ok here you go.
 ##Method A.2
 
 
@@ -14,21 +15,24 @@ Calls Method A.2, with
 
 multi line comment.
 
->200 ok
-
->404 not found
 GET /test info.orestes.rest.Testing2() : Object
+200 ok
+
+404 not found
 ##Method A.3
 
 POST /test/33 info.orestes.rest.Testing3
+200 ok
 
 ##Method A.4
 
 PUT   /a/b/c      info.orestes.rest.Testing3(  Object  )
+200 ok
 
 ##Method A.5
 
 DELETE /a/b/c info.orestes.rest.Testing1    : Integer
+200 ok
 
 #group-b : Group B
 
@@ -37,12 +41,14 @@ DELETE /a/b/c info.orestes.rest.Testing1    : Integer
 @id:Integer The id arg
 
 GET /:id   info.orestes.rest.Testing1 ( String ) : Object
+200 ok
 
 ##Method B.2
 
 @test:String The test arg
 
 GET /test/:test info.orestes.rest.Testing2(  ) : Object
+200 ok
 
 ##Method B.3
 
@@ -50,6 +56,7 @@ GET /test/:test info.orestes.rest.Testing2(  ) : Object
 @test:Boolean The test arg
 
 POST /:test/33/:id info.orestes.rest.Testing3
+200 ok
 
 ##Method B.4
 
@@ -60,10 +67,12 @@ Test Method B.4
 @b : Boolean The b arg
 @d  :   String The d arg
 
->200 ok
-> 404 not found
 
 PUT   /:a/:b/:c/:d      info.orestes.rest.Testing3   ( Object )
+200 ok
+
+200 ok
+404 not found
 
 #group-c : Group C
 
@@ -72,12 +81,15 @@ PUT   /:a/:b/:c/:d      info.orestes.rest.Testing3   ( Object )
 @id:Integer The id arg
 
 GET /?id   info.orestes.rest.Testing1   (   String   )   :   Object
+200 ok
 
 ##Method C.2
 
 @test:String The test arg
 
 GET /test/?test= info.orestes.rest.Testing2(    )   :  Object
+
+200 ok
 
 ##Method C.3
 
@@ -86,6 +98,7 @@ GET /test/?test= info.orestes.rest.Testing2(    )   :  Object
 @name : Integer The name arg
 
 POST /?test=&id=33&name info.orestes.rest.Testing3
+200 ok
 
 ##Method C.4
 
@@ -94,6 +107,7 @@ POST /?test=&id=33&name info.orestes.rest.Testing3
 @b : Integer The b arg
 
 PUT   /test?a=&b&c=44      info.orestes.rest.Testing3(Object)
+200 ok
 
 #group-d : Group D
 
@@ -103,11 +117,14 @@ PUT   /test?a=&b&c=44      info.orestes.rest.Testing3(Object)
 
 GET /;id   info.orestes.rest.Testing1(String):Object
 
+200 ok
+
 ##Method D.2
 
 @test:String The test arg
 
 GET /testing/;test= info.orestes.rest.Testing2():Object
+200 ok
 
 ##Method D.3
 
@@ -116,6 +133,7 @@ GET /testing/;test= info.orestes.rest.Testing2():Object
 @name : Integer The name arg
 
 POST /;test=;id=33;name info.orestes.rest.Testing3
+200 ok
 
 ##Method D.4
 
@@ -124,6 +142,7 @@ POST /;test=;id=33;name info.orestes.rest.Testing3
 @b : Integer The b arg
 
 PUT   /test;a=;b;c=44      info.orestes.rest.Testing3(Object)
+200 ok
 
 #group-e : Group E
 
@@ -136,12 +155,15 @@ A very tricky method
 @limit : Integer Hit counts
 @from : Integer Offset of results
 
->   200 All seems to be ok
->       302 No changes at all
->404 Are you stupid guy? I have never heard about that
->       400 Bad boy
-
 GET  /db/:ns/db_all;from=0;limit=?name=Franz+Kafka  info.orestes.rest.Testing1(String):Object
+Cache-Control: String A header
+
+200     All seems to be ok
+302 No changes at all
+404   Are you stupid guy? I have never heard about that
+400 Bad boy
+ETag: String the version of the entity
+
 
 ##Method E.2
 
@@ -162,10 +184,12 @@ Which hopefully nobody understand and therefore never been used
 @l : String The l arg
 
 GET  /db/:a/t/:b/:c;d=12;e=;f;g=Test+String?h&i=1&j=At_Home&k&l= info.orestes.rest.Testing3(Object):Object
+200 ok
 
 ##Method F.1
 
 GET /generics   info.orestes.rest.Testing1(Map[String, Integer]): List[Integer]
+200 ok
 
 ##Method F.2
 
@@ -173,14 +197,60 @@ GET /generics   info.orestes.rest.Testing1(Map[String, Integer]): List[Integer]
 
 GET /generics/;id   info.orestes.rest.Testing2(  Map [  String   , Object   ] )
 
+200 ok
+
 ##Method G.1
 
 SPOST /test/secure info.orestes.rest.Testing3
+200 ok
 
 ##Method G.2
 
 SGET /test/secure info.orestes.rest.Testing3
+200 ok
 
 ##Method G.3
 
 SPUT /test/secure info.orestes.rest.Testing3
+200 ok
+
+#group-H : Group H
+
+##Method H.1
+
+Some other tricky method
+
+@ns : String The name of the class
+@name : String The name of the person
+@limit : Integer Hit counts
+@from : Integer Offset of results
+
+SGET  /db/:ns/db_all;from=0;limit=?name=Franz+Kafka  info.orestes.rest.Testing1(String):Object
+Cache-Control: String another header
+
+200     All seems to be ok
+302 No changes at all
+404   Are you stupid guy? I have never heard about that
+400 Bad boy
+ETag: String Die Version des objektes
+
+
+##Method H.2
+
+A even rather more complex method.
+Which hopefully nobody understand and therefore never been used
+
+GET  /db info.orestes.rest.Testing3(Object):Object
+
+Cookie: String year the text
+Content-MD5: String Q2hlY2sgSW50ZWdyaXR5IQ==
+Date: String Tue, 15 Nov 1994 08:12:31 GMT
+WWW-Authenticate: String OAuth realm="http://sp.example.test/"
+
+200 ok
+
+Accept: String text/plain
+Accept-Charset: String utf-8
+Accept-Encoding: String gzip, deflate
+Accept-Language: String en-CA
+Cookie: String $Version=1; Skin=new;

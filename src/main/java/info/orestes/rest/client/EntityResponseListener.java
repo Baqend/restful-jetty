@@ -9,6 +9,7 @@ import org.eclipse.jetty.client.api.Response.Listener.Adapter;
 import org.eclipse.jetty.client.api.Result;
 import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.http.HttpHeader;
+import org.eclipse.jetty.http.HttpMethod;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -54,11 +55,16 @@ public abstract class EntityResponseListener<E> extends Adapter {
 	@Override
 	public void onHeaders(Response response) {
 		super.onHeaders(response);
+
+        if (response.getRequest().getMethod().equals(HttpMethod.HEAD.asString())) {
+            // skip content handling on head requests
+            return;
+        }
 		
 		HttpFields headers = response.getHeaders();
 		
 		boolean isChunked = false;
-		
+
 		long length = headers.getLongField(HttpHeader.CONTENT_LENGTH.asString());
 		if (length > 0) {
 			buffer = new byte[(int) length];

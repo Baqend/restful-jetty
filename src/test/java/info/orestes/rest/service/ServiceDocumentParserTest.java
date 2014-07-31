@@ -55,10 +55,10 @@ public class ServiceDocumentParserTest {
 	public void tearDown() {
 		method = null;
 	}
-	
+
 	@Test
 	public void testGroups() {
-		assertSame(5, groups.size());
+		assertSame(6, groups.size());
 		
 		assertEquals("group-a", groups.get(0).getName());
 		assertEquals("Group A", groups.get(0).getDescription());
@@ -68,7 +68,7 @@ public class ServiceDocumentParserTest {
 	public void routeA1() {
 		assertDescritpion("Calls Method A.1");
 		assertArgumentSize(0);
-		assertResultSize(0);
+		assertResultSize(1);
 		
 		assertAction("GET");
 		
@@ -109,7 +109,7 @@ public class ServiceDocumentParserTest {
 		assertDescritpion();
 		assertArgumentSize(0);
 		
-		assertResultSize(0);
+		assertResultSize(1);
 		
 		assertAction("POST");
 		
@@ -130,7 +130,7 @@ public class ServiceDocumentParserTest {
 		assertDescritpion();
 		assertArgumentSize(0);
 		
-		assertResultSize(0);
+		assertResultSize(1);
 		
 		assertAction("PUT");
 		
@@ -152,7 +152,7 @@ public class ServiceDocumentParserTest {
 		assertDescritpion();
 		assertArgumentSize(0);
 		
-		assertResultSize(0);
+		assertResultSize(1);
 		
 		assertAction("DELETE");
 		
@@ -174,7 +174,7 @@ public class ServiceDocumentParserTest {
 		assertDescritpion();
 		assertArgumentSize(1);
 		
-		assertResultSize(0);
+		assertResultSize(1);
 		
 		assertAction("GET");
 		
@@ -194,7 +194,7 @@ public class ServiceDocumentParserTest {
 		assertDescritpion();
 		assertArgumentSize(1);
 		
-		assertResultSize(0);
+		assertResultSize(1);
 		
 		assertAction("GET");
 		
@@ -215,7 +215,7 @@ public class ServiceDocumentParserTest {
 		assertDescritpion();
 		assertArgumentSize(2);
 		
-		assertResultSize(0);
+		assertResultSize(1);
 		
 		assertAction("POST");
 		
@@ -262,7 +262,7 @@ public class ServiceDocumentParserTest {
 		assertDescritpion();
 		assertArgumentSize(1);
 		
-		assertResultSize(0);
+		assertResultSize(1);
 		
 		assertAction("GET");
 		
@@ -283,7 +283,7 @@ public class ServiceDocumentParserTest {
 		assertDescritpion();
 		assertArgumentSize(1);
 		
-		assertResultSize(0);
+		assertResultSize(1);
 		
 		assertAction("GET");
 		
@@ -305,7 +305,7 @@ public class ServiceDocumentParserTest {
 		assertDescritpion();
 		assertArgumentSize(3);
 		
-		assertResultSize(0);
+		assertResultSize(1);
 		
 		assertAction("POST");
 		
@@ -328,7 +328,7 @@ public class ServiceDocumentParserTest {
 		assertDescritpion();
 		assertArgumentSize(3);
 		
-		assertResultSize(0);
+		assertResultSize(1);
 		
 		assertAction("PUT");
 		
@@ -351,7 +351,7 @@ public class ServiceDocumentParserTest {
 		assertDescritpion();
 		assertArgumentSize(1);
 		
-		assertResultSize(0);
+		assertResultSize(1);
 		
 		assertAction("GET");
 		
@@ -372,7 +372,7 @@ public class ServiceDocumentParserTest {
 		assertDescritpion();
 		assertArgumentSize(1);
 		
-		assertResultSize(0);
+		assertResultSize(1);
 		
 		assertAction("GET");
 		
@@ -394,7 +394,7 @@ public class ServiceDocumentParserTest {
 		assertDescritpion();
 		assertArgumentSize(3);
 		
-		assertResultSize(0);
+		assertResultSize(1);
 		
 		assertAction("POST");
 		
@@ -417,7 +417,7 @@ public class ServiceDocumentParserTest {
 		assertDescritpion();
 		assertArgumentSize(3);
 		
-		assertResultSize(0);
+		assertResultSize(1);
 		
 		assertAction("PUT");
 		
@@ -469,7 +469,7 @@ public class ServiceDocumentParserTest {
 		assertDescritpion("A really complex method.", "Which hopefully nobody understand and therefore never been used");
 		assertArgumentSize(12);
 		
-		assertResultSize(0);
+		assertResultSize(1);
 		
 		assertAction("GET");
 
@@ -500,7 +500,7 @@ public class ServiceDocumentParserTest {
 	@Test
 	public void routeF1() {
 		assertArgumentSize(0);
-		assertResultSize(0);
+		assertResultSize(1);
 		
 		assertAction("GET");
 
@@ -517,7 +517,7 @@ public class ServiceDocumentParserTest {
 	@Test
 	public void routeF2() {
 		assertArgumentSize(1);
-		assertResultSize(0);
+		assertResultSize(1);
 		
 		assertAction("GET");
 
@@ -546,6 +546,67 @@ public class ServiceDocumentParserTest {
     @Test
     public void routeG3() {
         assertTrue(method.isForceSSL());
+    }
+
+    @Test
+    public void routeH1() {
+        assertDescritpion("Some other tricky method");
+        assertArgumentSize(4);
+
+        assertResultSize(4);
+        assertResult(200, "All seems to be ok");
+        assertResult(302, "No changes at all");
+        assertResult(404, "Are you stupid guy? I have never heard about that");
+        assertResult(400, "Bad boy");
+
+        assertAction("GET");
+
+        assertTrue(method.isForceSSL());
+
+        assertSignatureParts(3, 3);
+
+        assertPath(0, "db");
+        assertVariable(1, "ns", "The name of the class", String.class);
+        assertPath(2, "db_all");
+        assertMatrix(3, "from", "Offset of results", true, Integer.class, "0");
+        assertMatrix(4, "limit", "Hit counts", true, Integer.class, null);
+        assertQuery(5, "name", "The name of the person", true, String.class, "Franz Kafka");
+
+        assertRequestHeader("Cache-Control", String.class, "another header");
+
+        asserTarget(Testing1.class);
+        asserRequestType(String.class);
+        asserResponseType(Object.class);
+        assertResponseHeader("ETag", String.class, "Die Version des objektes");
+    }
+
+    @Test
+    public void routeH2() {
+        assertArgumentSize(0);
+        assertResultSize(1);
+
+        assertAction("GET");
+
+        assertFalse(method.isForceSSL());
+
+        assertSignatureParts(1, 0);
+
+        assertPath(0, "db");
+        asserTarget(Testing3.class);
+        asserRequestType(Object.class);
+        asserResponseType(Object.class);
+
+        assertRequestHeader("Cookie", String.class, "year the text");
+        assertRequestHeader("Content-MD5", String.class, "Q2hlY2sgSW50ZWdyaXR5IQ==");
+        assertRequestHeader("Date", String.class, "Tue, 15 Nov 1994 08:12:31 GMT");
+        assertRequestHeader("WWW-Authenticate", String.class, "OAuth realm=\"http://sp.example.test/\"");
+
+        assertResult(200, "ok");
+        assertResponseHeader("Accept", String.class, "text/plain");
+        assertResponseHeader("Accept-Charset", String.class, "utf-8");
+        assertResponseHeader("Accept-Encoding", String.class, "gzip, deflate");
+        assertResponseHeader("Accept-Language", String.class, "en-CA");
+        assertResponseHeader("Cookie", String.class, "$Version=1; Skin=new;");
     }
 	
 	private void assertPath(int index, String name) {
@@ -625,15 +686,26 @@ public class ServiceDocumentParserTest {
 			assertArrayEquals(genericParams, method.getResponseType().getActualTypeArguments());
 		}
 	}
+
 	
 	private void assertAction(String expected) {
 		assertEquals(expected, method.getAction());
 	}
-	
+
+	private void assertRequestHeader(String name, Class<?> type, String description) {
+		assertEquals(description, method.getRequestHeader().get(name).getDescription());
+		assertEquals(type, method.getRequestHeader().get(name).getType());
+	}
+
+    private void assertResponseHeader(String name, Class<?> type, String description) {
+		assertEquals(description, method.getResponseHeader().get(name).getDescription());
+		assertEquals(type, method.getResponseHeader().get(name).getType());
+	}
+
 	private void assertResultSize(int expected) {
 		assertEquals(expected, method.getExpectedResults().size());
 	}
-	
+
 	private void assertArgumentSize(int expected) {
 		assertEquals(expected, method.getArguments().size());
 	}

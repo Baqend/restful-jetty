@@ -20,17 +20,19 @@ import java.util.regex.Pattern;
 public class ServiceDocumentParser {
 	
 	public static enum State {
-		GROUP, NAME, DESCRIPTION, PARAMETERS, RESULTS, SIGNATURE
+		GROUP, NAME, DESCRIPTION, PARAMETERS, SIGNATURE, REQUEST_HEADER, RESULTS, RESPONSE_HEADER
 	}
 	
 	private static final Pattern PARAM_PATTERN = Pattern.compile("@(\\w+)\\s*:\\s*(\\w+)\\s+(.*)");
-	private static final Pattern RESULT_PATTERN = Pattern.compile(">\\s*(\\d{3})\\s+(.*)");
+	private static final Pattern RESULT_PATTERN = Pattern.compile("(\\d{3})\\s+(.*)");
 	private static final Pattern SIGNATURE_PATTERN = Pattern
 		.compile("([A-Z]+)\\s+(/\\S*)\\s+(\\w[\\w\\.]*)(\\s*\\(([^\\)]*)\\))?(\\s*:(.*))?");
 	private static final Pattern ENTITY_TYPE_PATTERN = Pattern
 		.compile("\\s*(\\w+)\\s*(\\[\\s*(\\w+\\s*(,\\s*\\w+\\s*)*)\\])?");
-	
-	private final ServiceDocumentTypes types;
+    private static final Pattern HEADER_PATTERN = Pattern.compile("([\\w_-]+):\\s*(\\S+)\\s+(.*)");
+
+
+    private final ServiceDocumentTypes types;
 	private final ClassLoader classLoader;
 	
 	private State state;
@@ -40,8 +42,16 @@ public class ServiceDocumentParser {
 	private List<String> currentDescription;
 	private Map<String, ArgumentDefinition> currentArguments;
 	private Map<Integer, String> currentResults;
-	
-	public ServiceDocumentParser(ServiceDocumentTypes types) {
+    private Map<String, HeaderElement> currentRequestHeader;
+    private Map<String, HeaderElement> currentResponseHeader;
+    private String methodAction;
+    private List<PathElement> methodPathElements;
+    private Class<? extends RestServlet> methodServletClass;
+    private EntityType<?> methodRequestType;
+    private EntityType<?> methodResponseType;
+    private Boolean methodForceSSL;
+
+    public ServiceDocumentParser(ServiceDocumentTypes types) {
 		this(types, ServiceDocumentParser.class.getClassLoader());
 	}
 	
@@ -116,7 +126,7 @@ public class ServiceDocumentParser {
 					parseLine(line);
 				}
 			}
-			
+            endMethod();
 			return spec;
 		} catch (Exception e) {
 			if (line != null) {
@@ -151,22 +161,36 @@ public class ServiceDocumentParser {
 					state = State.PARAMETERS;
 					break;
 				}
+			case SIGNATURE:
+				if (parseSignature(line)) {
+					state = State.REQUEST_HEADER;
+					break;
+				}
+				if (state == State.DESCRIPTION && parseDescription(line)) {
+					break;
+				}
+			case REQUEST_HEADER:
+				if (parseHeader(line, currentRequestHeader)) {
+					state = State.REQUEST_HEADER;
+					break;
+				}
 			case RESULTS:
 				if (parseResult(line)) {
 					state = State.RESULTS;
 					break;
-				}
-			case SIGNATURE:
-				if (parseSignature(line)) {
-					state = State.GROUP;
-					break;
-				}
-				
-				if (state == State.DESCRIPTION && parseDescription(line)) {
+				} else if (currentResults.isEmpty()){
+                    throw new IOException("The method has no result stated.");
+                }
+            case RESPONSE_HEADER:
+				if (parseHeader(line,  currentResponseHeader)) {
+					state = State.RESPONSE_HEADER;
 					break;
 				}
 			default:
-				throw new IOException("Illegal statement.");
+                endMethod();
+                state = State.GROUP;
+                parseLine(line);
+
 		}
 	}
 	
@@ -192,6 +216,8 @@ public class ServiceDocumentParser {
 			currentDescription = new LinkedList<>();
 			currentArguments = new HashMap<>();
 			currentResults = new HashMap<>();
+            currentRequestHeader = new HashMap<>();
+            currentResponseHeader = new HashMap<>();
 			return true;
 		} else {
 			return false;
@@ -225,15 +251,29 @@ public class ServiceDocumentParser {
 		}
 	}
 	
-	private boolean parseResult(String line) throws IOException {
-		if (line.charAt(0) == RESULT_PATTERN.pattern().charAt(0)) {
+	private boolean parseHeader(String line, Map<String, HeaderElement> headers) throws IOException {
+		if (!Character.isDigit(line.charAt(0)) && !line.startsWith("#")) {
+			Matcher matcher = HEADER_PATTERN.matcher(line);
+			if (matcher.matches()) {
+                headers.put(matcher.group(1), new HeaderElement(matcher.group(1), matcher.group(3), getClassForArgument(matcher.group(2))));
+			} else {
+				throw new IOException("Illegal Header definition " + line);
+			}
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+    private boolean parseResult(String line) throws IOException {
+		if (Character.isDigit(line.charAt(0))) {
 			Matcher matcher = RESULT_PATTERN.matcher(line);
 			if (matcher.matches()) {
 				currentResults.put(Integer.parseInt(matcher.group(1)), matcher.group(2));
 			} else {
 				throw new IOException("Illegal result definition " + line);
 			}
-			
+
 			return true;
 		} else {
 			return false;
@@ -243,32 +283,40 @@ public class ServiceDocumentParser {
 	private boolean parseSignature(String line) throws IOException {
 		Matcher matcher = SIGNATURE_PATTERN.matcher(line);
 		if (matcher.matches()) {
-			List<PathElement> pathElements = parsePath(matcher.group(2));
-			
-			EntityType<?> requestType = matcher.group(5) == null ? null : parseEntityType(matcher.group(5));
-			EntityType<?> responseType = matcher.group(7) == null ? null : parseEntityType(matcher.group(7));
-			
-			String action = matcher.group(1);
-			Class<? extends RestServlet> servletClass = getClassForTarget(matcher.group(3));
+            methodPathElements = parsePath(matcher.group(2));
 
-            boolean forceSSL = action.toUpperCase().startsWith("S");
-            action = forceSSL ? action.substring(1) : action;
+            methodRequestType = matcher.group(5) == null ? null : parseEntityType(matcher.group(5));
+            methodResponseType = matcher.group(7) == null ? null : parseEntityType(matcher.group(7));
 
-			if (!RestServlet.isDeclared(servletClass, action)) {
-				throw new IOException("The RestServlet doesn't declare an action handler for the method " + action + ". Ensure the action handler is public.");
+            methodAction = matcher.group(1);
+            methodServletClass = getClassForTarget(matcher.group(3));
+
+            methodForceSSL = methodAction.toUpperCase().startsWith("S");
+            methodAction = methodForceSSL ? methodAction.substring(1) : methodAction;
+
+			if (!RestServlet.isDeclared(methodServletClass, methodAction)) {
+				throw new IOException("The RestServlet doesn't declare an action handler for the method " + methodAction + ". Ensure the action handler is public.");
 			}
-
-			RestMethod method = new RestMethod(
-				currentName, currentDescription.toArray(new String[currentDescription.size()]),
-				action, pathElements, servletClass, currentResults, requestType, responseType, forceSSL);
-			
-			currentGroup.add(method);
-			
 			return true;
 		} else {
 			return false;
 		}
 	}
+
+    private void endMethod() throws IOException {
+        if (currentResults == null || currentResults.isEmpty()){
+            throw new IOException("expected result type missing in method " + currentName);
+        }else if (methodPathElements == null){
+            throw new IOException("Signature missing in method " + currentName);
+        }
+
+        RestMethod method = new RestMethod(
+                currentName, currentDescription.toArray(new String[currentDescription.size()]),
+                methodAction, methodPathElements, methodServletClass, currentRequestHeader, currentResponseHeader,
+                currentResults,methodRequestType, methodResponseType, methodForceSSL);
+
+        currentGroup.add(method);
+    }
 	
 	private List<PathElement> parsePath(String completePath) throws IOException {
 		int queryIndex = completePath.indexOf('?');
