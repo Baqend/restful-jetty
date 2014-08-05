@@ -435,7 +435,7 @@ public class ConverterService {
 	}
 	
 	public <T, F> F toRepresentation(EntityType<T> sourceType, Class<F> targetType, T source) {
-		return toRepresentation(null, sourceType, targetType, source);
+		return toRepresentation(new SimpleContext(), sourceType, targetType, source);
 	}
 	
 	public <T, F> F toRepresentation(Context context, EntityType<T> sourceType, Class<F> targetType, T source) {
@@ -454,7 +454,7 @@ public class ConverterService {
 	}
 	
 	public <T, F> T toObject(Class<F> sourceType, EntityType<T> targetType, F source) {
-		return toObject(null, sourceType, targetType, source);
+		return toObject(new SimpleContext(), sourceType, targetType, source);
 	}
 	
 	public <T, F> T toObject(Context context, Class<F> sourceType, EntityType<T> targetType, F source) {
