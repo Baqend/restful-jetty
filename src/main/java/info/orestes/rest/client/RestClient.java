@@ -2,6 +2,7 @@ package info.orestes.rest.client;
 
 import info.orestes.rest.conversion.ConverterService;
 import info.orestes.rest.conversion.MediaType;
+import info.orestes.rest.util.Inject;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.HttpConversation;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
@@ -45,6 +46,7 @@ public class RestClient extends HttpClient {
         //setExecutor(executor);
     }
 
+    @Inject
     public RestClient(ConverterService converterService) {
         this("", converterService, null);
     }
