@@ -1,6 +1,6 @@
 #group-a : Group A
 
-##Method A.1
+##A1 : Method A.1
 
 A really complex method.
 Which hopefully nobody understand and therefore never been used
@@ -21,17 +21,17 @@ Which hopefully nobody understand and therefore never been used
 GET  /db/:a/t/:b/:c;d=12;e=;f;g=Test+String?h&i=1&j=At_Home&k&l= info.orestes.rest.Testing3(Long):Boolean
 200 Ok
 
-##Method A.2
+##A2 : Method A.2
 
 GET  / info.orestes.rest.Testing3():Integer
 200 Ok
 
-##Method A.3
+##A3 : Method A.3
 
 GET  / info.orestes.rest.Testing3(Long)
 200 Ok
 
-##Method A.4
+##A4 : Method A.4
 
 GET  / info.orestes.rest.Testing3()
 200 Ok

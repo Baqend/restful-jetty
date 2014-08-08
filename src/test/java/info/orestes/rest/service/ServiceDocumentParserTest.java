@@ -47,7 +47,7 @@ public class ServiceDocumentParserTest {
 	public void setUp() {
 		Matcher matcher = ROUTE_TEST.matcher(testName.getMethodName());
 		if (matcher.matches()) {
-			String name = "Method " + matcher.group(1) + "." + matcher.group(2);
+			String name = matcher.group(1) + matcher.group(2);
 			method = methods.get(name);
 		}
 	}
@@ -66,7 +66,9 @@ public class ServiceDocumentParserTest {
 	
 	@Test
 	public void routeA1() {
-		assertDescritpion("Calls Method A.1");
+        assertDescritpion("Method A.1");
+
+		assertLongDescritpion("Calls Method A.1");
 		assertArgumentSize(0);
 		assertResultSize(1);
 		
@@ -84,7 +86,7 @@ public class ServiceDocumentParserTest {
 	
 	@Test
 	public void routeA2() {
-		assertDescritpion("Calls Method A.2, with", "multi line comment.");
+		assertLongDescritpion("Calls Method A.2, with", "multi line comment.");
 		assertArgumentSize(0);
 		
 		assertResultSize(2);
@@ -106,7 +108,7 @@ public class ServiceDocumentParserTest {
 	
 	@Test
 	public void routeA3() {
-		assertDescritpion();
+		assertLongDescritpion();
 		assertArgumentSize(0);
 		
 		assertResultSize(1);
@@ -127,7 +129,7 @@ public class ServiceDocumentParserTest {
 	
 	@Test
 	public void routeA4() {
-		assertDescritpion();
+		assertLongDescritpion();
 		assertArgumentSize(0);
 		
 		assertResultSize(1);
@@ -149,7 +151,7 @@ public class ServiceDocumentParserTest {
 	
 	@Test
 	public void routeA5() {
-		assertDescritpion();
+		assertLongDescritpion();
 		assertArgumentSize(0);
 		
 		assertResultSize(1);
@@ -171,7 +173,7 @@ public class ServiceDocumentParserTest {
 	
 	@Test
 	public void routeB1() {
-		assertDescritpion();
+		assertLongDescritpion();
 		assertArgumentSize(1);
 		
 		assertResultSize(1);
@@ -191,7 +193,7 @@ public class ServiceDocumentParserTest {
 	
 	@Test
 	public void routeB2() {
-		assertDescritpion();
+		assertLongDescritpion();
 		assertArgumentSize(1);
 		
 		assertResultSize(1);
@@ -212,7 +214,7 @@ public class ServiceDocumentParserTest {
 	
 	@Test
 	public void routeB3() {
-		assertDescritpion();
+		assertLongDescritpion();
 		assertArgumentSize(2);
 		
 		assertResultSize(1);
@@ -234,7 +236,7 @@ public class ServiceDocumentParserTest {
 	
 	@Test
 	public void routeB4() {
-		assertDescritpion("Test Method B.4");
+		assertLongDescritpion("Test Method B.4");
 		assertArgumentSize(4);
 		
 		assertResultSize(2);
@@ -259,7 +261,7 @@ public class ServiceDocumentParserTest {
 	
 	@Test
 	public void routeC1() {
-		assertDescritpion();
+		assertLongDescritpion();
 		assertArgumentSize(1);
 		
 		assertResultSize(1);
@@ -280,7 +282,7 @@ public class ServiceDocumentParserTest {
 	
 	@Test
 	public void routeC2() {
-		assertDescritpion();
+		assertLongDescritpion();
 		assertArgumentSize(1);
 		
 		assertResultSize(1);
@@ -302,7 +304,7 @@ public class ServiceDocumentParserTest {
 	
 	@Test
 	public void routeC3() {
-		assertDescritpion();
+		assertLongDescritpion();
 		assertArgumentSize(3);
 		
 		assertResultSize(1);
@@ -325,7 +327,7 @@ public class ServiceDocumentParserTest {
 	
 	@Test
 	public void routeC4() {
-		assertDescritpion();
+		assertLongDescritpion();
 		assertArgumentSize(3);
 		
 		assertResultSize(1);
@@ -348,7 +350,7 @@ public class ServiceDocumentParserTest {
 	
 	@Test
 	public void routeD1() {
-		assertDescritpion();
+		assertLongDescritpion();
 		assertArgumentSize(1);
 		
 		assertResultSize(1);
@@ -369,7 +371,7 @@ public class ServiceDocumentParserTest {
 	
 	@Test
 	public void routeD2() {
-		assertDescritpion();
+		assertLongDescritpion();
 		assertArgumentSize(1);
 		
 		assertResultSize(1);
@@ -391,7 +393,7 @@ public class ServiceDocumentParserTest {
 	
 	@Test
 	public void routeD3() {
-		assertDescritpion();
+		assertLongDescritpion();
 		assertArgumentSize(3);
 		
 		assertResultSize(1);
@@ -414,7 +416,7 @@ public class ServiceDocumentParserTest {
 	
 	@Test
 	public void routeD4() {
-		assertDescritpion();
+		assertLongDescritpion();
 		assertArgumentSize(3);
 		
 		assertResultSize(1);
@@ -437,7 +439,7 @@ public class ServiceDocumentParserTest {
 	
 	@Test
 	public void routeE1() {
-		assertDescritpion("A very tricky method");
+		assertLongDescritpion("A very tricky method");
 		assertArgumentSize(4);
 		
 		assertResultSize(4);
@@ -466,7 +468,7 @@ public class ServiceDocumentParserTest {
 	
 	@Test
 	public void routeE2() {
-		assertDescritpion("A really complex method.", "Which hopefully nobody understand and therefore never been used");
+		assertLongDescritpion("A really complex method.", "Which hopefully nobody understand and therefore never been used");
 		assertArgumentSize(12);
 		
 		assertResultSize(1);
@@ -550,7 +552,8 @@ public class ServiceDocumentParserTest {
 
     @Test
     public void routeH1() {
-        assertDescritpion("Some other tricky method");
+        assertDescritpion("Method /H.1");
+        assertLongDescritpion("Some other tricky method");
         assertArgumentSize(3);
 
         assertResultSize(4);
@@ -709,8 +712,12 @@ public class ServiceDocumentParserTest {
 		assertEquals(expected, method.getArguments().size());
 	}
 	
-	private void assertDescritpion(String... expected) {
-		assertArrayEquals(expected, method.getDescription());
+	private void assertLongDescritpion(String... expected) {
+		assertArrayEquals(expected, method.getLongDescription());
+	}
+
+    private void assertDescritpion(String expected) {
+		assertEquals(expected, method.getDescription());
 	}
 
 }

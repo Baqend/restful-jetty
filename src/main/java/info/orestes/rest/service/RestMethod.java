@@ -12,7 +12,8 @@ import java.util.Map;
 public class RestMethod {
 	
 	private final String name;
-	private final String[] description;
+	private final String description;
+	private final String[] longDescription;
 	private final String action;
     private final boolean forceSSL;
 	
@@ -29,13 +30,14 @@ public class RestMethod {
     private final EntityType<?> requestType;
     private final EntityType<?> responseType;
 
-    public RestMethod(String name, String[] description, String action, List<PathElement> signature,
+    public RestMethod(String name, String description, String[] longDescription, String action, List<PathElement> signature,
 		Class<? extends RestServlet> target, Map<String, HeaderElement> requestHeader, Map<String,
         HeaderElement> responseHeader, Map<Integer, String> expectedResults, EntityType<?> requestType,
 		EntityType<?> responseType, boolean forceSSL) {
 		this.name = name;
 		this.action = action;
 		this.description = description;
+        this.longDescription = longDescription;
 		this.signature = Collections.unmodifiableList(signature);
 		this.target = target;
         this.requestHeader = requestHeader;
@@ -129,8 +131,11 @@ public class RestMethod {
 		return action;
 	}
 
-	public String[] getDescription() {
+	public String getDescription() {
 		return description;
+	}
+	public String[] getLongDescription() {
+		return longDescription;
 	}
 
 	public List<PathElement> getSignature() {

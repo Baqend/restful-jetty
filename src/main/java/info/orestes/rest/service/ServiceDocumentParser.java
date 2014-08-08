@@ -23,6 +23,7 @@ public class ServiceDocumentParser {
 		GROUP, NAME, DESCRIPTION, PARAMETERS, SIGNATURE, REQUEST_HEADER, RESULTS, RESPONSE_HEADER
 	}
 	
+	private static final Pattern NAME_PATTERN = Pattern.compile("##(\\w+)\\s*:\\s*(.*)");
 	private static final Pattern PARAM_PATTERN = Pattern.compile("@(\\w+)\\s*:\\s*(\\w+)\\s+(.*)");
 	private static final Pattern RESULT_PATTERN = Pattern.compile("(\\d{3})\\s+(.*)");
 	private static final Pattern SIGNATURE_PATTERN = Pattern
@@ -39,7 +40,8 @@ public class ServiceDocumentParser {
 	private MethodGroup currentGroup;
 	private Spec spec;
 	private String currentName;
-	private List<String> currentDescription;
+	private String currentDescription;
+	private List<String> currentLongDescription;
 	private Map<String, ArgumentDefinition> currentArguments;
 	private Map<Integer, String> currentResults;
     private Map<String, HeaderElement> currentRequestHeader;
@@ -213,10 +215,15 @@ public class ServiceDocumentParser {
 		}
 	}
 	
-	private boolean parseName(String line) {
+	private boolean parseName(String line) throws IOException {
 		if (line.length() > 2 && line.startsWith("##") && line.charAt(2) != '#') {
-			currentName = line.substring(2).trim();
-			currentDescription = new LinkedList<>();
+            Matcher matcher = NAME_PATTERN.matcher(line);
+            if (!matcher.matches()) {
+                throw new IOException("Illegal name definition.");
+            }
+			currentName = matcher.group(1).trim();
+            currentDescription = matcher.group(2).trim();
+			currentLongDescription = new LinkedList<>();
 			currentArguments = new HashMap<>();
 			currentResults = new HashMap<>();
             currentRequestHeader = new HashMap<>();
@@ -228,7 +235,7 @@ public class ServiceDocumentParser {
 	}
 	
 	private boolean parseDescription(String line) {
-		currentDescription.add(line);
+		currentLongDescription.add(line);
 		return true;
 	}
 	
@@ -314,7 +321,7 @@ public class ServiceDocumentParser {
         }
 
         RestMethod method = new RestMethod(
-                currentName, currentDescription.toArray(new String[currentDescription.size()]),
+                currentName, currentDescription, currentLongDescription.toArray(new String[currentLongDescription.size()]),
                 methodAction, methodPathElements, methodServletClass, currentRequestHeader, currentResponseHeader,
                 currentResults,methodRequestType, methodResponseType, methodForceSSL);
 

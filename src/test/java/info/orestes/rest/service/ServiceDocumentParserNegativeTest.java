@@ -15,7 +15,7 @@ public class ServiceDocumentParserNegativeTest {
 	public final void testInlineParsing() {
 		List<MethodGroup> groups = parse(
 			"#test : Test",
-			"##Test method",
+			"##method:Test method",
 			"GET / info.orestes.rest.Testing1(String)",
             "200 everything ok");
 		
@@ -27,7 +27,7 @@ public class ServiceDocumentParserNegativeTest {
 	public final void testMissingResult() {
 		parse(
 			"#test : Test",
-			"##Test method",
+			"##test : Test method",
 			"GET / info.orestes.rest.Testing1(String)");
 	}
 	
@@ -43,7 +43,7 @@ public class ServiceDocumentParserNegativeTest {
 	public final void testMissingGroupName() {
 		parse(
 			"#Test",
-			"##Test method",
+			"##testing : Test method",
 			"GET / info.orestes.rest.Testing1(String)",
             "200 everything ok");
 	}
@@ -52,7 +52,7 @@ public class ServiceDocumentParserNegativeTest {
 	public final void testResourceNotAvailable() {
 		parse(
 			"#test : Test",
-			"##Test method",
+			"##aTest:Test method",
 			"GET / info.orestes.rest.Testing55(String)",
             "200 everything ok");
 	}
@@ -61,7 +61,7 @@ public class ServiceDocumentParserNegativeTest {
 	public final void testInvalidArgument() {
 		parse(
 			"#test : Test",
-			"##Test method",
+			"##Test:Test method",
 			"GET / info.orestes.rest.Testing1(Long)",
             "200 everything ok");
 	}
@@ -70,7 +70,7 @@ public class ServiceDocumentParserNegativeTest {
 	public final void testInvalidReturnValue() {
 		parse(
 			"#test : Test",
-			"##Test method",
+			"##test:Test method",
 			"GET / info.orestes.rest.Testing1 : Long",
             "200 everything ok");
 	}
@@ -79,7 +79,7 @@ public class ServiceDocumentParserNegativeTest {
 	public final void testMethodNotDeclared() {
 		parse(
 			"#test : Test",
-			"##Test method",
+			"##testing:Test method",
 			"POST / info.orestes.rest.Testing1(String)",
             "200 everything ok");
 	}
@@ -88,7 +88,7 @@ public class ServiceDocumentParserNegativeTest {
 	public final void testMethodNotPublic() {
 		parse(
 			"#test : Test",
-			"##Test method",
+			"##Test: method",
 			"PUT / info.orestes.rest.Testing1(String)",
             "200 everything ok");
 	}
@@ -97,7 +97,7 @@ public class ServiceDocumentParserNegativeTest {
     public final void testMissingColonInHeader() {
         parse(
                 "#test : Test",
-                "##Test method",
+                "##Test: method",
                 "GET / info.orestes.rest.Testing1(String)",
                 "Content-MD5 : String Q2hlY2sgSW50ZWdyaXR5IQ==",
                 "200 everything ok");
@@ -107,7 +107,7 @@ public class ServiceDocumentParserNegativeTest {
     public final void testMissingColonInHeader2() {
         parse(
                 "#test : Test",
-                "##Test method",
+                "##Test: method",
                 "GET / info.orestes.rest.Testing1(String)",
                 "Content-MD5StringQ2hlY2sgSW50ZWdyaXR5IQ==  ",
                 "200 everything ok");
@@ -117,7 +117,7 @@ public class ServiceDocumentParserNegativeTest {
     public final void testMissingHeaderDescription() {
         parse(
                 "#test : Test",
-                "##Test method",
+                "##Test: method",
                 "GET / info.orestes.rest.Testing1(String)",
                 "Content-MD5: String ",
                 "200 everything ok");
@@ -127,7 +127,7 @@ public class ServiceDocumentParserNegativeTest {
     public final void testMissingHeaderType() {
         parse(
                 "#test : Test",
-                "##Test method",
+                "##Test :method",
                 "GET / info.orestes.rest.Testing1(String)",
                 "Content-MD5: Q2hlY2sgSW50ZWdyaXR5IQ== ",
                 "200 everything ok");
@@ -137,7 +137,7 @@ public class ServiceDocumentParserNegativeTest {
     public final void testErrorInResult() {
         parse(
                 "#test : Test",
-                "##Test method",
+                "##Test :method",
                 "GET / info.orestes.rest.Testing1(String)",
                 "Content-MD5: String Q2hlY2sgSW50ZWdyaXR5IQ== ",
                 "200everything ok");
@@ -147,7 +147,7 @@ public class ServiceDocumentParserNegativeTest {
     public final void testErrorInResult2() {
         parse(
                 "#test : Test",
-                "##Test method",
+                "##Test :method",
                 "GET / info.orestes.rest.Testing1(String)",
                 "Content-MD5: String Q2hlY2sgSW50ZWdyaXR5IQ== ",
                 "200");
@@ -157,10 +157,30 @@ public class ServiceDocumentParserNegativeTest {
     public final void testErrorInResult3() {
         parse(
                 "#test : Test",
-                "##Test method",
+                "##Test :method",
                 "GET / info.orestes.rest.Testing1(String)",
                 "Content-MD5: String Q2hlY2sgSW50ZWdyaXR5IQ== ",
                 "20 3 count");
+    }
+
+    @Test(expected = ServiceDocumentParserException.class)
+    public final void testErrorInMethodName() {
+        parse(
+                "#test : Test",
+                "##Testmethod",
+                "GET / info.orestes.rest.Testing1(String)",
+                "Content-MD5: String Q2hlY2sgSW50ZWdyaXR5IQ== ",
+                "203 count");
+    }
+
+    @Test(expected = ServiceDocumentParserException.class)
+    public final void testErrorInMethodName2() {
+        parse(
+                "#test : Test",
+                "##Te*st : method",
+                "GET / info.orestes.rest.Testing1(String)",
+                "Content-MD5: String Q2hlY2sgSW50ZWdyaXR5IQ== ",
+                "203 count");
     }
 
 	private List<MethodGroup> parse(String... lines) {
