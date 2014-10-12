@@ -127,8 +127,10 @@ public abstract class EntityResponseListener<E> extends Adapter {
 			
 			if (exception == null) {
 				exception = RestException.create(response.getStatus(), response.getReason(), null);
-			}
-			
+            }
+
+            exception.setRemote(true);
+
 			if (suppressed != null) {
 				exception.addSuppressed(suppressed);
 			}

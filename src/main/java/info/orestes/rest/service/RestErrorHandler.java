@@ -65,7 +65,7 @@ public class RestErrorHandler extends ErrorHandler {
 			e = RestException.create(code, message, throwable);
 		}
 		
-		if (e instanceof InternalServerError) {
+		if (e instanceof InternalServerError && !e.isRemote()) {
 			LOG.warn(e);
 		} else {
 			LOG.debug(e);

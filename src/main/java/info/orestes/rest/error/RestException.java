@@ -17,6 +17,7 @@ public class RestException extends ServletException {
 	
 	private int statusCode;
 	private String reason;
+    private boolean remote = false;
 	
 	static {
 		load(ERROR_PACKAGE);
@@ -26,7 +27,7 @@ public class RestException extends ServletException {
 		for (Class<?> cls : ClassUtil.getPackageClasses(packageName)) {
 			if (RestException.class.isAssignableFrom(cls)) {
 				Class<? extends RestException> exception = cls.asSubclass(RestException.class);
-				errorMap.put(exception.getSimpleName(), exception);
+				errorMap.put(exception.getName(), exception);
 				
 				HttpError error = exception.getAnnotation(HttpError.class);
 				if (error != null && exception.getSuperclass().equals(RestException.class)) {
@@ -49,10 +50,17 @@ public class RestException extends ServletException {
 		if (exClass != null) {
 			return create(exClass, statusCode, message, throwable);
 		} else {
-			return create(statusCode, className + ": " + message, throwable);
+			return create(statusCode, message, throwable);
 		}
 	}
-	
+
+    /**
+     * Creates a RestException for the given http status code
+     * @param statusCode The http status code
+     * @param message The error message
+     * @param throwable The cause, can be null
+     * @return A new instance of the associated RestException for the given status code
+     */
 	public static RestException create(int statusCode, String message, Throwable throwable) {
 		return create(getExceptionClass(statusCode), statusCode, message, throwable);
 	}
@@ -85,15 +93,29 @@ public class RestException extends ServletException {
 		return ex;
 	}
 
+    /**
+     * Ensures that the given exception is a RestException.
+     * @param t The throwable which will be wrapped
+     * @return the throwable itself if it is an RestException otherwise wrapped by an {@link InternalServerError}
+     */
     public static RestException of(Throwable t) {
         return t instanceof RestException? (RestException) t: new InternalServerError(t);
     }
-	
+
+    /**
+     * Creates a RestException by a message.
+     * @param message The message of the exception
+     */
 	protected RestException(String message) {
 		this(message, null);
 	}
-	
-	protected RestException(String message, Throwable rootCause) {
+
+    /**
+     * Creates a RestException by a message and a cause.
+     * @param message The message of the exception
+     * @param rootCause The cause of the exception
+     */
+    protected RestException(String message, Throwable rootCause) {
 		super(message, rootCause);
 	}
 	
@@ -103,7 +125,11 @@ public class RestException extends ServletException {
 		this.statusCode = statusCode;
 		reason = "Unknown Error";
 	}
-	
+
+    /**
+     * The status code of the error. Maps to the HTTP status code
+     * @return The status code of the error
+     */
 	public int getStatusCode() {
 		if (statusCode == 0) {
 			statusCode = getClass().getAnnotation(HttpError.class).status();
@@ -111,7 +137,11 @@ public class RestException extends ServletException {
 		
 		return statusCode;
 	}
-	
+
+    /**
+     * The reason of the error. Maps to the HTTP status code message
+     * @return The reason of the error
+     */
 	public String getReason() {
 		if (reason == null) {
 			reason = getClass().getSimpleName().replaceAll("([a-z])([A-Z])", "$1 $2");
@@ -119,4 +149,27 @@ public class RestException extends ServletException {
 		
 		return reason;
 	}
+
+    /**
+     * Indicates if the exception is thrown on remote, i.e. by another server
+     * @return <code>true</code> if the exception is thrown on remote
+     */
+    public boolean isRemote() {
+        return remote;
+    }
+
+    /**
+     * Sets the remote flag of this RestException
+     * @param remote The new remote flag
+     */
+    public void setRemote(boolean remote) {
+        this.remote = remote;
+    }
+
+    @Override
+    public String toString() {
+        String s = (isRemote()? "Remote Exception: ": "") + getClass().getName();
+        String message = getMessage();
+        return (message != null ? (s + ": " + message) : s);
+    }
 }
