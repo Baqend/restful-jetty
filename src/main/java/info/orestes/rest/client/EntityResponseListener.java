@@ -1,5 +1,6 @@
 package info.orestes.rest.client;
 
+import info.orestes.rest.conversion.ConverterService;
 import info.orestes.rest.conversion.MediaType;
 import info.orestes.rest.conversion.ReadableContext;
 import info.orestes.rest.error.RestException;
@@ -11,18 +12,12 @@ import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpMethod;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.ByteBuffer;
 
 public abstract class EntityResponseListener<E> extends Adapter {
 	
-	private static final EntityType<RestException> errorType = new EntityType<>(RestException.class);
-	
 	private final EntityType<E> entityType;
-	private MediaType contentType;
 	private RestRequest request;
 	
 	private byte[] buffer = new byte[0];
@@ -38,10 +33,6 @@ public abstract class EntityResponseListener<E> extends Adapter {
 	
 	public EntityType<E> getEntityType() {
 		return entityType;
-	}
-	
-	public MediaType getContentType() {
-		return contentType;
 	}
 	
 	public RestRequest getRequest() {
@@ -62,25 +53,11 @@ public abstract class EntityResponseListener<E> extends Adapter {
         }
 		
 		HttpFields headers = response.getHeaders();
-		
-		boolean isChunked = false;
 
 		long length = headers.getLongField(HttpHeader.CONTENT_LENGTH.asString());
 		if (length > 0) {
 			buffer = new byte[(int) length];
-		} else {
-			String encoding = headers.get(HttpHeader.TRANSFER_ENCODING);
-			if (encoding != null && encoding.equals("chunked")) {
-				isChunked = true;
-			}
 		}
-
-        String cType = headers.get(HttpHeader.CONTENT_TYPE);
-        if (cType != null) {
-            contentType = MediaType.parse(cType);
-        } else if (length > 0 || isChunked) {
-            response.abort(new IllegalArgumentException("No content type is provided in the response."));
-        }
 	}
 	
 	@Override
@@ -101,7 +78,7 @@ public abstract class EntityResponseListener<E> extends Adapter {
 	public final void onComplete(Result result) {
 		if (result.isSucceeded()) {
 			try {
-				E entity = readEntity(result.getResponse());
+				E entity = readEntity(result.getResponse(), buffer.length > 0? new ByteArrayInputStream(buffer): null);
 				onComplete(new EntityResult<E>(result.getRequest(), result.getResponse(), entity));
 			} catch (Exception e) {
 				onComplete(new EntityResult<E>(result.getRequest(), result.getResponse(), e));
@@ -112,14 +89,14 @@ public abstract class EntityResponseListener<E> extends Adapter {
 		}
 	}
 	
-	private E readEntity(Response response) throws Exception {
+	private E readEntity(Response response, InputStream entityStream) throws Exception {
 		if (response.getStatus() >= 400) {
 			RestException exception = null;
 			Exception suppressed = null;
-			if (buffer.length > 0) {
+			if (entityStream != null) {
 				try {
-					EntityReader reader = new EntityReader();
-					exception = reader.read(errorType, getContentType(), buffer);
+					EntityReader reader = new EntityReader(getRequest());
+					exception = reader.readException(response, entityStream);
 				} catch (Exception e) {
 					suppressed = e;
 				}
@@ -137,13 +114,9 @@ public abstract class EntityResponseListener<E> extends Adapter {
 			
 			throw exception;
 		} else if (response.getStatus() >= 200 && response.getStatus() < 300) {
-			if (buffer.length > 0) {
-				try {
-					EntityReader reader = new EntityReader();
-					return reader.read(getEntityType(), getContentType(), buffer);
-				} catch (Exception e) {
-					throw e;
-				}
+			if (entityStream != null) {
+                EntityReader reader = new EntityReader(getRequest());
+                return reader.read(response, getEntityType(), entityStream);
 			}
 		}
 		
@@ -152,23 +125,45 @@ public abstract class EntityResponseListener<E> extends Adapter {
 	
 	public abstract void onComplete(EntityResult<E> result);
 	
-	public class EntityReader implements ReadableContext {
-		private BufferedReader reader;
+	public static class EntityReader implements ReadableContext {
+        private static final EntityType<RestException> errorType = new EntityType<>(RestException.class);
+        private final ConverterService converterService;
+        private final RestRequest request;
+
+        private BufferedReader reader;
+
+        public EntityReader(RestRequest request) {
+            this.converterService = request.getClient().getConverterService();
+            this.request = request;
+        }
+
+        public RestException readException(Response response, InputStream entityStream) throws IOException, RestException {
+            return read(response, errorType, entityStream);
+        }
 		
-		public <T> T read(EntityType<T> entityType, MediaType contentType, byte[] byteBuffer) throws Exception {
-			try (ByteArrayInputStream in = new ByteArrayInputStream(byteBuffer)) {
+		public <T> T read(Response response, EntityType<T> entityType, InputStream entityStream) throws IOException, RestException {
+			try (InputStream in = entityStream) {
 				reader = new BufferedReader(new InputStreamReader(in));
 				
-				return request.getClient().getConverterService().toObject(this, contentType, entityType);
+				return converterService.toObject(this, getMediaType(response), entityType);
 			} finally {
 				reader = null;
 			}
 		}
+
+        private MediaType getMediaType(Response response) throws IOException {
+            String cType = response.getHeaders().get(HttpHeader.CONTENT_TYPE);
+            if (cType != null) {
+                return MediaType.parse(cType);
+            } else {
+                throw new IOException("No Content-Type is provided in the response.");
+            }
+        }
 		
 		@SuppressWarnings("unchecked")
 		@Override
-		public <T> T getArgument(String name) {
-			return (T) request.getAttributes().get(name);
+		public <P> P getArgument(String name) {
+			return (P) request.getAttributes().get(name);
 		}
 		
 		@Override

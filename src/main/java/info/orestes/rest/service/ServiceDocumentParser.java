@@ -315,7 +315,7 @@ public class ServiceDocumentParser {
 
     private void endMethod() throws IOException {
         if (currentResults == null || currentResults.isEmpty()){
-            throw new IOException("expected result type missing in method " + currentName);
+            throw new IOException("missing Statuscode in method " + currentName);
         }else if (methodPathElements == null){
             throw new IOException("Signature missing in method " + currentName);
         }
