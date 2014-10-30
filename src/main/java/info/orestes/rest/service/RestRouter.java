@@ -32,7 +32,10 @@ public class RestRouter extends HandlerWrapper {
 	@Override
 	public void handle(String path, Request request, HttpServletRequest req, HttpServletResponse res)
 			throws IOException, ServletException {
-		RestRequest r = null;
+        // jetty decodes the path param
+		path = request.getUri().getPath();
+
+        RestRequest r = null;
 		if (req instanceof RestRequest) {
 			r = (RestRequest) req;
 		} else {
