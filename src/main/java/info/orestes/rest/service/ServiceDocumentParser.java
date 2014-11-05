@@ -19,7 +19,7 @@ public class ServiceDocumentParser {
 	private static final Pattern PARAM_PATTERN = Pattern.compile("@(\\w+)\\s*:\\s*(\\w+)\\s+(.*)");
 	private static final Pattern RESULT_PATTERN = Pattern.compile("(\\d{3})\\s+(.*)");
 	private static final Pattern SIGNATURE_PATTERN = Pattern
-		.compile("([A-Z]+)\\s+(/\\S*)\\s+(\\w[\\w\\.]*)(\\s*\\(([^\\)]*)\\))?(\\s*:(.*))?");
+		.compile("([A-Z]+)\\s+(/\\S*)\\s+(\\w[\\w\\.$]*)(\\s*\\(([^\\)]*)\\))?(\\s*:(.*))?");
 	private static final Pattern ENTITY_TYPE_PATTERN = Pattern
 		.compile("\\s*(\\w+)\\s*(\\[\\s*(\\w+\\s*(,\\s*\\w+\\s*)*)\\])?");
     private static final Pattern HEADER_PATTERN = Pattern.compile("([\\w_-]+):\\s*(\\S+)\\s+(.*)");
