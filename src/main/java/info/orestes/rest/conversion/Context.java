@@ -14,6 +14,11 @@ public interface Context {
 	 *            The name of the method argument
 	 */
 	public <T> T getArgument(String name);
+
+	public default <T> T getArgument(String name, T def) {
+		T result = getArgument(name);
+		return result == null ? def : result;
+	}
 	
 	/**
 	 * Set the matched {@link RestMethod} argument to the given value. This method
