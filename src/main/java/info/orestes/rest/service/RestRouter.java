@@ -111,7 +111,7 @@ public class RestRouter extends HandlerWrapper {
 	// modified
 	public void add(RestMethod method) {
 		if (isStarted()) {
-			throw new IllegalStateException("The Roter can not be modified while it is running");
+			throw new IllegalStateException("The router can not be modified while it is running");
 		}
 		
 		List<Route> list = getRoutes(method);
@@ -141,7 +141,7 @@ public class RestRouter extends HandlerWrapper {
 	
 	public void remove(RestMethod method) {
 		if (isStarted()) {
-			throw new IllegalStateException("The Roter can not be modified while it is running");
+			throw new IllegalStateException("The router can not be modified while it is running");
 		}
 		
 		int index = methods.indexOf(method);
@@ -167,7 +167,7 @@ public class RestRouter extends HandlerWrapper {
 	
 	public void clear() {
 		if (isStarted()) {
-			throw new IllegalStateException("The Roter can not be modified while it is running");
+			throw new IllegalStateException("The router can not be modified while it is running");
 		}
 		
 		Arrays.fill(routeLists, null);
