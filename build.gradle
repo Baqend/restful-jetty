@@ -1,36 +1,85 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'net.researchgate:gradle-release:2.0.2'
+    }
+}
+
 apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'java-library-distribution'
-
-def distFolder = file('dist')
-def projectName = 'restful-jetty'
-
-group = "com.baqend"
-version = "1.0-SNAPSHOT"
+apply plugin: 'net.researchgate.release'
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    testCompile (
-            'junit:junit:4.11',
-            'org.mockito:mockito-all:1.9.5'
-    )
     compile (
             'org.eclipse.jetty:jetty-server:9.2.1.v20140609',
             'org.eclipse.jetty:jetty-client:9.2.1.v20140609'
     )
+    testCompile (
+            'junit:junit:4.11',
+            'org.mockito:mockito-all:1.9.5'
+    )
 }
 
-test.ignoreFailures = true
-distZip.destinationDir = distFolder
-distZip.baseName = projectName
+group = "com.baqend"
+version = "1.0.0-SNAPSHOT"
+
+def distFolder = file('dist')
+def docFolder = file("doc")
+def projectName = 'restful-jetty'
+
+javadoc.destinationDir = docFolder
 jar.baseName = projectName
+jar.destinationDir = distFolder
+distZip.destinationDir = distFolder
+distTar.destinationDir = distFolder
+distTar.compression "GZIP"
 
-task dist(dependsOn: distZip, type:Jar){
-    baseName = projectName
-    from sourceSets.main.allSource
-    destinationDir distFolder
-    classifier = 'source'
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.3'
 }
+
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+    destinationDir = distFolder
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+    destinationDir = distFolder
+}
+
+task dist() {
+    dependsOn distZip, distTar
+}
+
+task gitAdd(dependsOn: [dist, javadoc]) << {
+    'git add -f dist doc'.execute().waitFor()
+}
+
+task gitRemove() << {
+    'git rm -r --cached dist doc'.execute().waitFor()
+}
+
+preTagCommit.dependsOn gitAdd
+commitNewVersion.dependsOn gitRemove
+
+clean {
+    delete distFolder
+    delete docFolder
+}
+
+release {
+    preTagCommitMessage = "pre tag commit:"
+    tagCommitMessage = "creating tag:"
+    newVersionCommitMessage = "new version commit:"
+}
+
