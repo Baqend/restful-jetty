@@ -32,10 +32,8 @@ version = "1.0.0-SNAPSHOT"
 
 def distFolder = file('dist')
 def docFolder = file("doc")
-def projectName = 'restful-jetty'
 
 javadoc.destinationDir = docFolder
-jar.baseName = projectName
 jar.destinationDir = distFolder
 distZip.destinationDir = distFolder
 distTar.destinationDir = distFolder
