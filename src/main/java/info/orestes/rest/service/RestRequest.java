@@ -3,13 +3,12 @@ package info.orestes.rest.service;
 import info.orestes.rest.Request;
 import info.orestes.rest.service.RestRouter.Route;
 
-import java.util.Map;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
+import java.util.Map;
 
 public class RestRequest extends HttpServletRequestWrapper implements Request {
-	
+
 	private final org.eclipse.jetty.server.Request baseRequest;
 	private final Map<String, Object> arguments;
 	private final Route route;

@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.util.Map;
 
 public class RestResponse extends HttpServletResponseWrapper implements Response {
-	
+
 	private Object entity;
 	private final Map<String, Object> arguments;
 	

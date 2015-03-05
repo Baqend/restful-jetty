@@ -18,7 +18,10 @@ import java.io.IOException;
 import java.util.*;
 
 public class RestRouter extends HandlerWrapper {
-	
+
+    public static final String REST_REQUEST = RestRequest.class.getName();
+    public static final String REST_RESPONSE = RestResponse.class.getName();
+
 	private final Module module;
 	private final List<RestMethod> methods = new ArrayList<>();
 	@SuppressWarnings("unchecked")
@@ -35,10 +38,9 @@ public class RestRouter extends HandlerWrapper {
         // jetty decodes the path param
 		path = request.getUri().getPath();
 
-        RestRequest r = null;
-		if (req instanceof RestRequest) {
-			r = (RestRequest) req;
-		} else {
+        RestRequest restRequest = (RestRequest) request.getAttribute(REST_REQUEST);
+        RestResponse restResponse = (RestResponse) request.getAttribute(REST_RESPONSE);
+        if (restRequest == null) {
 			HttpURI uri = request.getUri();
 
 			Map<String, String> matrix = uri.getParam() == null ? null : createMap(uri.getParam().split(";"));
@@ -72,18 +74,18 @@ public class RestRouter extends HandlerWrapper {
 						res.setStatus(HttpStatus.NO_CONTENT_204);
 					}
 					
-					r = new RestRequest(request, req, route, matches);
+					restRequest = new RestRequest(request, req, route, matches);
+					restResponse = new RestResponse(res, restRequest.getArguments());
+
+                    request.setAttribute(REST_REQUEST, restRequest);
+                    request.setAttribute(REST_RESPONSE, restResponse);
 					break;
 				}
 			}
 		}
 		
-		if (r != null) {
-            if (!(res instanceof RestResponse)) {
-                res = new RestResponse(res, r.getArguments());
-            }
-
-			super.handle(path, request, r, res);
+		if (restRequest != null) {
+			super.handle(path, request, restRequest, restResponse);
 			request.setHandled(true);
 		}
 	}
