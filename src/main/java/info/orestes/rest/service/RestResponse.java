@@ -4,6 +4,8 @@ import info.orestes.rest.Response;
 import info.orestes.rest.error.RestException;
 import org.eclipse.jetty.server.HttpChannel;
 import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.util.log.Log;
+import org.eclipse.jetty.util.log.Logger;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
@@ -12,7 +14,8 @@ import java.util.Map;
 
 public class RestResponse extends HttpServletResponseWrapper implements Response {
 
-	private Object entity;
+    private final Logger LOG = Log.getLogger(RestResponse.class);
+    private Object entity;
 	private final Map<String, Object> arguments;
 	
 	public RestResponse(HttpServletResponse response, Map<String, Object> arguments) {
@@ -51,6 +54,11 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
 			request.setAttribute("javax.servlet.error.exception", error);
 		}
 
-		sendError(error.getStatusCode());
+        try {
+		    sendError(error.getStatusCode());
+        } catch (Exception e) {
+            error.addSuppressed(e);
+            LOG.warn(error);
+        }
 	}
 }
