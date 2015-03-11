@@ -120,6 +120,8 @@ public class ConversionHandler extends RestHandler {
 				response.setCharacterEncoding("utf-8");
 
 			    converterService.toRepresentation(response, responseType, mediaType, response.getEntity());
+
+                response.getWriter().close();
 			} else {
 				throw new NotAcceptable("The requested response media types are not supported.");
 			}
