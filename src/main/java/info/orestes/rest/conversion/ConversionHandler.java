@@ -129,7 +129,7 @@ public class ConversionHandler extends RestHandler {
 			} else {
 				throw new NotAcceptable("The requested response media types are not supported.");
 			}
-		} else if (response.getStatus() == HttpStatus.OK_200) {
+		} else if (response.getStatus() == HttpStatus.OK_200 && response.getContentType() == null) {
             try {
                 response.setStatus(HttpStatus.NO_CONTENT_204);
             } catch (Exception e) {
