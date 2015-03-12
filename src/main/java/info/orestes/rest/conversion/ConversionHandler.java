@@ -8,6 +8,7 @@ import info.orestes.rest.error.RestException;
 import info.orestes.rest.service.*;
 import info.orestes.rest.util.Inject;
 import org.eclipse.jetty.http.HttpHeader;
+import org.eclipse.jetty.http.HttpStatus;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.ServletException;
@@ -80,7 +81,7 @@ public class ConversionHandler extends RestHandler {
 
 		super.handle(request, response);
 
-        if (response.getEntity() != null && !request.isAsyncStarted()) {
+        if (!request.isAsyncStarted()) {
 			handleResponseEntity(request, response);
         }
 	}
@@ -109,9 +110,12 @@ public class ConversionHandler extends RestHandler {
 	 * @throws IOException
 	 */
 	private void handleResponseEntity(Request request, Response response) throws IOException, RestException {
-		EntityType<?> responseType = request.getRestMethod().getResponseType();
-		
-		if (responseType != null) {
+        if (response.getEntity() != null) {
+            EntityType<?> responseType = request.getRestMethod().getResponseType();
+            if (responseType == null) {
+                throw new IllegalStateException("A response entity was set, but not declared in the specification.");
+            }
+
 			List<MediaType> mediaTypes = parseMediaTypes(request.getHeader(HttpHeader.ACCEPT.asString()));
 			
 			MediaType mediaType = converterService.getPreferedMediaType(mediaTypes, responseType.getRawType());
@@ -125,6 +129,12 @@ public class ConversionHandler extends RestHandler {
 			} else {
 				throw new NotAcceptable("The requested response media types are not supported.");
 			}
-		}
+		} else if (response.getStatus() == HttpStatus.OK_200) {
+            try {
+                response.setStatus(HttpStatus.NO_CONTENT_204);
+            } catch (Exception e) {
+                throw e;
+            }
+        }
 	}
 }

@@ -6,6 +6,7 @@ import info.orestes.rest.error.UnsupportedMediaType;
 import info.orestes.rest.service.*;
 import info.orestes.rest.service.RestRouter.Route;
 import info.orestes.rest.util.Module;
+import org.eclipse.jetty.http.HttpStatus;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -49,6 +50,8 @@ public class ConversionHandlerTest {
 		
 		doReturn("text/*").when(request).getHeader("Accept");
 		doReturn(false).when(request).isAsyncStarted();
+
+        response.setStatus(HttpStatus.OK_200);
 	}
 	
 	@After
@@ -306,6 +309,21 @@ public class ConversionHandlerTest {
 		
 		assertNull(responseEntity);
 	}
+
+    @Test(expected = IllegalStateException.class)
+    public final void testResponseContentNotExpected() throws Exception {
+        RestMethod method = group.get(3);
+        HashMap<String, Object> args = new HashMap<>();
+
+        handle(method, args, null, new RestHandler() {
+            @Override
+            public void handle(RestRequest request, RestResponse response) throws IOException, ServletException {
+                assertNull(request.getEntity());
+
+                response.setEntity(true);
+            }
+        });
+    }
 	
 	@Test(expected = IOException.class)
 	public final void testInvalidResponseContent() throws Exception {
@@ -349,6 +367,7 @@ public class ConversionHandlerTest {
 		if (response.getReader().ready()) {
 			assertEquals(MediaType.TEXT_PLAIN, response.getContentType());
 			assertEquals("utf-8", response.getCharacterEncoding());
+            assertEquals(HttpStatus.OK_200, response.getStatus());
 
             Class<O> cls = (Class<O>) method.getResponseType().getRawType();
             if (cls == null)
@@ -357,6 +376,7 @@ public class ConversionHandlerTest {
 			return (O) converterService.toObject(response, MediaType.parse(MediaType.TEXT_PLAIN), cls);
 		} else {
 			assertNull(response.getContentType());
+            assertEquals(HttpStatus.NO_CONTENT_204, response.getStatus());
 			return null;
 		}
 	}
@@ -411,8 +431,19 @@ public class ConversionHandlerTest {
 		private PipedWriter in;
 		private String contentType;
 		private String characterEncoding;
-		
-		@Override
+        private int status;
+
+        @Override
+        public int getStatus() {
+            return status;
+        }
+
+        @Override
+        public void setStatus(int status) {
+            this.status = status;
+        }
+
+        @Override
 		public String getContentType() {
 			return contentType;
 		}

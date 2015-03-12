@@ -181,16 +181,8 @@ public class RestRouterTest {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-		
-		if (expected != null) {
-			if (expected.getResponseType() != null) {
-				verify(res).setStatus(RestResponse.SC_OK);
-			} else {
-				verify(res).setStatus(RestResponse.SC_NO_CONTENT);
-			}
-		} else {
-			verify(res, never()).setStatus(RestResponse.SC_NO_CONTENT);
-			verify(res, never()).setStatus(RestResponse.SC_OK);
-		}
+
+        verify(res, never()).setStatus(RestResponse.SC_NO_CONTENT);
+        verify(res, never()).setStatus(RestResponse.SC_OK);
 	}
 }

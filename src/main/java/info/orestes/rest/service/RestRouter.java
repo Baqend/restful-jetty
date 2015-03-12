@@ -68,12 +68,6 @@ public class RestRouter extends HandlerWrapper {
 						params.putAllValues(matches);
 					}
 					
-					if (route.getMethod().getResponseType() != null) {
-						res.setStatus(HttpStatus.OK_200);
-					} else {
-						res.setStatus(HttpStatus.NO_CONTENT_204);
-					}
-					
 					restRequest = new RestRequest(request, req, route, matches);
 					restResponse = new RestResponse(res, restRequest.getArguments());
 
