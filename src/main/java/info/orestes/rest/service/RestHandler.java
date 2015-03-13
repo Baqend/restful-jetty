@@ -1,6 +1,5 @@
 package info.orestes.rest.service;
 
-import info.orestes.rest.error.Forbidden;
 import info.orestes.rest.error.RestException;
 import org.eclipse.jetty.server.handler.HandlerWrapper;
 
@@ -25,9 +24,10 @@ public abstract class RestHandler extends HandlerWrapper {
 	public void handle(RestRequest request, RestResponse response) throws IOException, ServletException {
 		org.eclipse.jetty.server.Request req = request.getBaseRequest();
 
-        if(request.getRestMethod().isForceSSL() && !request.isSecure()) {
+		//TODO: better separation of secure and non-secure traffic
+        /*if(request.getRestMethod().isForceSSL() && !request.isSecure()) {
             throw new Forbidden("SSL required.");
-        }
+        }*/
 
 		super.handle(req != null ? req.getPathInfo() : null, req, request, response);
 	}
