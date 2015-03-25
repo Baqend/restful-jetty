@@ -129,14 +129,14 @@ public class ClassUtil {
                 int sep = spec.indexOf("!/");
                 String file = spec;
                 //TODO: May be removed in Java 8
+				//http://bugs.java.com/bugdatabase/view_bug.do?bug_id=7156873
                 //handle classes in jar file
 
                 FileSystem fileSystem = null;
                 if (sep != -1) {
                     file = file.substring(0, sep);
-
-                    fileSystem = FileSystems.newFileSystem(new URI("jar", file, null), Collections.<String, String>emptyMap());
-
+					URI fileUri = new URI(file);
+                    fileSystem = FileSystems.newFileSystem(Paths.get(fileUri).toAbsolutePath(), classLoader);
                     path = fileSystem.getPath(spec.substring(sep + 1));
                 } else {
                     path = Paths.get(uri);
