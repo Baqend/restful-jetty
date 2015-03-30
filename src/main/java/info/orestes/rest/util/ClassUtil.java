@@ -21,6 +21,7 @@ public class ClassUtil {
 	 * @param subClass
 	 *            The sub {@link Class} which binds the generic Paramaters to
 	 *            concrete Classes
+	 * @param <T> The type of the base class
 	 * @return An array of the binded Classes in the same order as they are
 	 *         declared by forClass
 	 */

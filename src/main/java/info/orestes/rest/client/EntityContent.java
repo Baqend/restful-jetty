@@ -4,6 +4,7 @@ import info.orestes.rest.conversion.ConverterService;
 import info.orestes.rest.conversion.MediaType;
 import info.orestes.rest.conversion.WritableContext;
 import info.orestes.rest.service.EntityType;
+import org.eclipse.jetty.client.api.ContentProvider;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -13,8 +14,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
-
-import org.eclipse.jetty.client.api.ContentProvider;
 
 /**
  * convert an entity to a representation and provide the converted content
@@ -61,6 +60,7 @@ public class EntityContent<E> implements ContentProvider {
 	
 	/**
 	 * Sets the Content-Type of the entity
+	 * @param contentType The Content-Type of the entity
 	 */
 	public void setContentType(MediaType contentType) {
 		this.contentType = contentType;
@@ -110,6 +110,7 @@ public class EntityContent<E> implements ContentProvider {
 	
 	/**
 	 * Attach the {@link RestRequest} which is used to perform the conversion
+	 * @param request The base request
 	 */
 	public void setRequest(RestRequest request) {
 		this.request = request;

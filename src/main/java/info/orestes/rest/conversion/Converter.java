@@ -87,9 +87,10 @@ public abstract class Converter<T, F> {
 	 *            The {@link Context} used by some {@link Converter}s to perform
 	 *            the conversion
 	 * @param type
-	 *            The java type of the decoded value
+	 *            The class of the decoded value
 	 * @param source
 	 *            The value to encode
+	 * @param <E> The java type of the decoded value
 	 * @return The encoded value
 	 * @throws UnsupportedOperationException
 	 *             if no converter is available to handle the conversion
@@ -112,6 +113,7 @@ public abstract class Converter<T, F> {
 	 *            The java type with generic parameters of the decoded value
 	 * @param source
 	 *            The value to encode
+	 * @param <E> The java type of the decoded value
 	 * @return The encoded value
 	 * @throws UnsupportedOperationException
 	 *             if no converter is available to handle the conversion
@@ -132,9 +134,10 @@ public abstract class Converter<T, F> {
 	 *            The {@link Context} used by some {@link Converter}s to perform
 	 *            the conversion
 	 * @param type
-	 *            The java type of the decoded value
+	 *            The class of the decoded value
 	 * @param source
 	 *            The value to decode
+	 * @param <E> The java type of the decoded value
 	 * @return The decoded value
 	 * @throws UnsupportedOperationException
 	 *             if no converter is available to handle the conversion
@@ -157,6 +160,7 @@ public abstract class Converter<T, F> {
 	 *            The java type with generic parameters of the decoded value
 	 * @param source
 	 *            The value to decode
+	 * @param <E> The java type of the decoded value
 	 * @return The decoded value
 	 * @throws UnsupportedOperationException
 	 *             if no converter is available to handle the conversion

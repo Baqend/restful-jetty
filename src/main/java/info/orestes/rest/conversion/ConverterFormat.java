@@ -109,15 +109,16 @@ public abstract class ConverterFormat<F> {
 	 * type
 	 * 
 	 * @param type
-	 *            The java type to get the {@link Converter} for
+	 *            The java types class to get the {@link Converter} for
 	 * @param genericParams
 	 *            If the java type is generic, the used types to convert the
 	 *            generic java type
 	 * 
 	 * @return A {@link Converter} which can convert between this format and the
 	 *         given java type
-	 * 
-	 * @throws UnsupportedOperationException
+	 * @param <T>
+	 *            The java type to get the {@link Converter} for
+	 * @throws UnsupportedMediaType
 	 *             if no converter is available to handle the conversion
 	 * @throws IllegalArgumentException
 	 *             if the genericParams count does not match the expected

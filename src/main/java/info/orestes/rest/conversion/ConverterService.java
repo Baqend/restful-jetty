@@ -67,7 +67,7 @@ public class ConverterService {
 	 * @param genericParams
 	 *            the generic parameter types to check for
 	 * 
-	 * @throws UnsupportedOperationException
+	 * @throws UnsupportedMediaType
 	 *             if the converter is null or not compatible with the given
 	 *             java type
 	 * @throws IllegalArgumentException
