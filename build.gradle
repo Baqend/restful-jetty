@@ -33,6 +33,7 @@ group = "com.baqend"
 def distFolder = file('dist')
 def docFolder = file("doc")
 
+javadoc.disabled = true
 javadoc.destinationDir = docFolder
 jar.destinationDir = distFolder
 distZip.destinationDir = distFolder
