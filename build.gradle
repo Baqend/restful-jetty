@@ -33,7 +33,6 @@ group = "com.baqend"
 def distFolder = file('dist')
 def docFolder = file("doc")
 
-javadoc.disabled = true
 javadoc.destinationDir = docFolder
 jar.destinationDir = distFolder
 distZip.destinationDir = distFolder
@@ -60,7 +59,7 @@ task dist() {
     dependsOn distZip, distTar, sourcesJar
 }
 
-task gitAdd(dependsOn: [dist, javadoc]) << {
+task gitAdd(dependsOn: [dist]) << {
     'git add -f dist doc'.execute().waitFor()
 }
 
