@@ -83,6 +83,7 @@ public abstract class RestServlet extends GenericServlet {
 	 *            The request which contains the HTTP-Header and the entity
 	 * @param response
 	 *            The response that will be send back
+     * @return An optional future which signals the completion of the async request processing
 	 * @throws RestException
 	 *             Signals that the request handling results in an error.
 	 *             Throwing this kind of exceptions has the same effect as
@@ -124,6 +125,7 @@ public abstract class RestServlet extends GenericServlet {
 	 *            The request which contains the HTTP-Header and the entity
 	 * @param response
 	 *            The response that will be send back
+     * @return An optional future which signals the completion of the async request processing
 	 * @throws RestException
 	 *             Signals that the request handling results in an error.
 	 *             Throwing this kind of exceptions has the same effect as
@@ -173,6 +175,7 @@ public abstract class RestServlet extends GenericServlet {
 	 *            The request which contains the HTTP-Header and the entity
 	 * @param response
 	 *            The response that will be send back
+     * @return An optional future which signals the completion of the async request processing
 	 * @throws RestException
 	 *             Signals that the request handling results in an error.
 	 *             Throwing this kind of exceptions has the same effect as
@@ -232,6 +235,7 @@ public abstract class RestServlet extends GenericServlet {
 	 *            The request which contains the HTTP-Header and the entity
 	 * @param response
 	 *            The response that will be send back
+     * @return An optional future which signals the completion of the async request processing
 	 * @throws RestException
 	 *             Signals that the request handling results in an error.
 	 *             Throwing this kind of exceptions has the same effect as
@@ -281,6 +285,7 @@ public abstract class RestServlet extends GenericServlet {
 	 *            The request which contains the HTTP-Header and the entity
 	 * @param response
 	 *            The response that will be send back
+     * @return An optional future which signals the completion of the async request processing
 	 * @throws RestException
 	 *             Signals that the request handling results in an error.
 	 *             Throwing this kind of exceptions has the same effect as
@@ -318,6 +323,7 @@ public abstract class RestServlet extends GenericServlet {
 	 *            The request which contains the HTTP-Header and the entity
 	 * @param response
 	 *            The response that will be send back
+     * @return An optional future which signals the completion of the async request processing
 	 * @throws RestException
 	 *             Signals that the request handling results in an error.
 	 *             Throwing this kind of exceptions has the same effect as
@@ -411,6 +417,7 @@ public abstract class RestServlet extends GenericServlet {
 	 *            Than request which was handled and raised the exception
 	 * @param e
 	 *            The unexpected exception
+     * @throws RestException An exception which may caused while handling the exception
 	 */
 	public void doCatch(Request request, RuntimeException e) throws RestException {
 		throw e;

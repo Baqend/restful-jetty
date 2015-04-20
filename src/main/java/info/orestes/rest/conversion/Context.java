@@ -14,6 +14,7 @@ public interface Context {
 	 *            The name of the method argument
 	 * @param <T>
 	 *            The type of the returning parameter
+	 * @return Returns the matched and converted {@link RestMethod} argument
 	 */
 	public <T> T getArgument(String name);
 
@@ -28,6 +29,7 @@ public interface Context {
 	 *            The default value to return when no paramater value is set
 	 * @param <T>
 	 *            The type of the returning parameter
+	 * @return Returns the matched and converted {@link RestMethod} argument
 	 */
 	public default <T> T getArgument(String name, T def) {
 		T result = getArgument(name);

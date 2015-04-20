@@ -15,6 +15,8 @@ public interface Response extends WritableContext, HttpServletResponse {
 	/**
 	 * Returns the response entity which will be processed by the
 	 * {@link ConversionHandler}.
+	 *
+	 * @param <E> The type of the response entity
 	 * 
 	 * @return The response entity
 	 */
@@ -35,7 +37,7 @@ public interface Response extends WritableContext, HttpServletResponse {
 	 *
 	 * @param e
 	 *            The error which is occurred while handling the request
-	 * @throws IOException
+	 * @throws IOException when the exceptional response can't be send back
 	 */
 	public void sendError(RestException e) throws IOException;
 }
