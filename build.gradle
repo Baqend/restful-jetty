@@ -58,8 +58,8 @@ release {
 createReleaseTag.dependsOn bintray
 
 bintray {
-    user = bintray_user
-    key = bintray_api_key
+    user = project.properties.get('bintray_user')
+    key = project.properties.get('bintray_api_key')
 
     configurations = ['archives'] //When uploading configuration files
     dryRun = false //Whether to run this as dry-run, without deploying
