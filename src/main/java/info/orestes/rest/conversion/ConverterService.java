@@ -33,16 +33,16 @@ import java.util.Set;
  * </p>
  * 
  * <ul>
- * <li>For in bound messages: raw data -> interpretable java representation ->
+ * <li>For in bound messages: raw data -&gt; interpretable java representation -&gt;
  * java object
- * <li>For out bound messages: java object -> interpretable java representation
- * -> raw data
+ * <li>For out bound messages: java object -&gt; interpretable java representation
+ * -&gt; raw data
  * </ul>
  * 
  * <p>
- * The conversion between raw data <-> interpretable java representation will be
+ * The conversion between raw data &lt;-&gt; interpretable java representation will be
  * handled by a {@link ConverterFormat} implementation.<br>
- * The conversion between interpretable java representation <-> java object will
+ * The conversion between interpretable java representation &lt;-&gt; java object will
  * be handled by a {@link Converter} implementation.
  * </p>
  */
@@ -128,7 +128,7 @@ public class ConverterService {
 	
 	/**
 	 * Load all {@link ConverterFormat}s form the {@value #FORMAT_PACKAGE_NAME}
-	 * package and add them to the {@link ConverterService
+	 * package and add them to the {@link ConverterService}
 	 */
 	public void loadConverters() {
 		for (Class<?> cls : ClassUtil.getPackageClasses(FORMAT_PACKAGE_NAME)) {
@@ -173,8 +173,9 @@ public class ConverterService {
 	 * 
 	 * @param formatType
 	 *            The format type
+	 * @param <F> The base class of the format
 	 * @return All available converters that can handle the specified format
-	 * @throws UnsupportedOperationException
+	 * @throws UnsupportedOperationException if the requested fomat type is not supported
 	 */
 	@SuppressWarnings("unchecked")
 	public <F> ConverterFormat<F> getFormat(Class<F> formatType) {
@@ -195,6 +196,7 @@ public class ConverterService {
 	 * 
 	 * @param converter
 	 *            The converter which will be registered
+	 * @param <F> The base class of the format
 	 */
 	public <F> void add(Converter<?, F> converter) {
 		@SuppressWarnings("unchecked")
@@ -246,6 +248,8 @@ public class ConverterService {
 	 * @param genericParams
 	 *            If the java type is generic, the used types to convert the
 	 *            generic java type
+	 * @param <F> The base class of the format
+	 * @param <T> The class of the type to convert
 	 * @return A {@link Converter} which can convert between the media type and
 	 *         the java type
 	 * 
@@ -279,6 +283,7 @@ public class ConverterService {
 	 *            The media type of the encoded value
 	 * @param target
 	 *            The java type of the decoded value
+	 * @param <T> The class of the type to convert
 	 * @return The read and decoded value
 	 * @throws UnsupportedOperationException
 	 *             if no converter is available to handle the conversion
@@ -302,6 +307,7 @@ public class ConverterService {
 	 *            The media type of the encoded value
 	 * @param target
 	 *            The java type with generic parameters of the decoded value
+	 * @param <T> The class of the type to convert
 	 * @return The read and decoded value
 	 * @throws UnsupportedOperationException
 	 *             if no converter is available to handle the conversion
@@ -329,6 +335,8 @@ public class ConverterService {
 	 * @param genericParams
 	 *            The used java types of the generic parameters if the java type
 	 *            is generic otherwise the array must be empty
+	 * @param <T> The class of the type to convert
+	 * @param <F> The base class of the format
 	 * @return The read and decoded value
 	 * @throws UnsupportedOperationException
 	 *             if no converter is available to handle the conversion
@@ -360,6 +368,7 @@ public class ConverterService {
 	 *            The media type of the encoded value
 	 * @param entity
 	 *            The value which will be encoded and written
+	 * @param <T> The class of the type to convert
 	 * @throws UnsupportedOperationException
 	 *             if no converter is available to handle the conversion
 	 * @throws RestException
@@ -384,6 +393,7 @@ public class ConverterService {
 	 *            The java type with generic parameters of the decoded value
 	 * @param target
 	 *            The media type of the encoded value
+	 * @param <T> The class of the type to convert
 	 * @throws UnsupportedOperationException
 	 *             if no converter is available to handle the conversion
 	 * @throws RestException
@@ -411,6 +421,8 @@ public class ConverterService {
 	 * @param genericParams
 	 *            The used java types of the generic parameters if the java type
 	 *            is generic otherwise the array must be empty
+	 * @param <T> The class of the type to convert
+	 * @param <F> The base class of the format
 	 * @throws UnsupportedOperationException
 	 *             if no converter is available to handle the conversion
 	 * @throws RestException
@@ -478,6 +490,7 @@ public class ConverterService {
 	 *            The java type of the value which is encoded
 	 * @param source
 	 *            The encoded value
+	 * @param <T> The class of the type to convert
 	 * @return The decoded value if the conversion succeed
 	 * 
 	 * @throws UnsupportedOperationException
@@ -494,6 +507,7 @@ public class ConverterService {
 	 *            The java type of the value which is encoded
 	 * @param source
 	 *            The encoded value
+	 * @param <T> The class of the type to convert
 	 * @return The decoded value if the conversion succeed
 	 *
 	 * @throws UnsupportedOperationException
@@ -513,6 +527,7 @@ public class ConverterService {
 	 *            The java type of the value decoded value
 	 * @param source
 	 *            The decoded value
+	 * @param <T> The class of the type to convert
 	 * @return The encoded value if the conversion succeed
 	 * 
 	 * @throws UnsupportedOperationException
@@ -529,6 +544,7 @@ public class ConverterService {
 	 *            The java type of the value decoded value
 	 * @param source
 	 *            The decoded value
+	 * @param <T> The class of the type to convert
 	 * @return The encoded value if the conversion succeed
 	 *
 	 * @throws UnsupportedOperationException

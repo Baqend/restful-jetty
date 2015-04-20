@@ -6,9 +6,8 @@ import info.orestes.rest.service.RestMethod;
 import info.orestes.rest.service.RestRouter;
 import info.orestes.rest.service.RestRouter.Route;
 
-import java.util.Map;
-
 import javax.servlet.http.HttpServletRequest;
+import java.util.Map;
 
 public interface Request extends ReadableContext, HttpServletRequest {
 	
@@ -45,6 +44,8 @@ public interface Request extends ReadableContext, HttpServletRequest {
 	/**
 	 * Returns the converted request entity if the {@link ConversionHandler} had
 	 * processed the {@link Request} already otherwise <code>null</code>
+	 *
+	 * @param <E> The type of the converted entity
 	 * 
 	 * @return The request entity
 	 */
@@ -52,6 +53,8 @@ public interface Request extends ReadableContext, HttpServletRequest {
 	
 	/**
 	 * Sets the request entity
+	 *
+	 * @param entity Sets the converted entity
 	 */
 	public void setEntity(Object entity);
 	

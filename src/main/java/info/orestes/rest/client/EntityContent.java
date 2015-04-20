@@ -48,7 +48,7 @@ public class EntityContent<E> implements ContentProvider {
 	/**
 	 * Get the Content-Type of the entity
 	 * 
-	 * @return
+	 * @return The content type of the entity
 	 */
 	public MediaType getContentType() {
 		if (contentType == null && getConverterService() != null) {

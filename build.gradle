@@ -1,16 +1,13 @@
-buildscript {
-    repositories {
-        jcenter()
-    }
-    dependencies {
-        classpath 'net.researchgate:gradle-release:2.0.2'
-    }
+plugins {
+    id 'com.jfrog.bintray' version "1.1"
+    id 'net.researchgate.release' version '2.0.2'
 }
 
 apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'java-library-distribution'
 apply plugin: 'net.researchgate.release'
+apply plugin: 'com.jfrog.bintray'
 
 repositories {
     mavenCentral()
@@ -30,13 +27,6 @@ dependencies {
 
 group = "com.baqend"
 
-def distFolder = file('dist')
-def docFolder = file("doc")
-
-javadoc.destinationDir = docFolder
-jar.destinationDir = distFolder
-distZip.destinationDir = distFolder
-distTar.destinationDir = distFolder
 distTar.compression "GZIP"
 
 task wrapper(type: Wrapper) {
@@ -46,38 +36,43 @@ task wrapper(type: Wrapper) {
 task javadocJar(type: Jar) {
     classifier = 'javadoc'
     from javadoc
-    destinationDir = distFolder
 }
 
 task sourcesJar(type: Jar) {
     classifier = 'sources'
     from sourceSets.main.allSource
-    destinationDir = distFolder
 }
 
-task dist() {
-    dependsOn distZip, distTar, sourcesJar
-}
-
-task gitAdd(dependsOn: [dist]) << {
-    'git add -f dist doc'.execute().waitFor()
-}
-
-task gitRemove() << {
-    'git rm -r --cached dist doc'.execute().waitFor()
-}
-
-preTagCommit.dependsOn gitAdd
-commitNewVersion.dependsOn gitRemove
-
-clean {
-    delete distFolder
-    delete docFolder
+artifacts {
+    archives javadocJar, sourcesJar
 }
 
 release {
     preTagCommitMessage = "pre tag commit:"
     tagCommitMessage = "creating tag:"
     newVersionCommitMessage = "new version commit:"
+}
+
+createReleaseTag.dependsOn bintray
+
+bintray {
+    user = bintray_user
+    key = bintray_api_key
+
+    configurations = ['archives'] //When uploading configuration files
+    dryRun = false //Whether to run this as dry-run, without deploying
+    publish = true //If version should be auto published after an upload
+    pkg {
+        repo = 'maven'
+        userOrg = 'baqend' //An optional organization name when the repo belongs to one of the user's orgs
+        name = 'restful-jetty'
+        desc = 'A restfull layer ontop of jetty server'
+        websiteUrl = 'https://github.com/Baqend/restful-jetty'
+        issueTrackerUrl = 'https://github.com/Baqend/restful-jetty/issues'
+        vcsUrl = 'git@github.com:Baqend/restful-jetty.git'
+        licenses = ['MIT']
+        labels = ['REST', 'jetty', 'server']
+        publicDownloadNumbers = true
+    }
 }
 
