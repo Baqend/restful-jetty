@@ -11,7 +11,8 @@ import java.util.Objects;
  */
 public class MediaType implements Comparable<MediaType> {
 	
-	public static final String TEXT_PLAIN = "text/plain;q=0.5";
+	public static final String TEXT_ALL = "text/*;q=0.8";
+	public static final String APPLICATION_JAVASCRIPT = "application/javascript;q=0.8";
 	public static final String ALL = "*/*";
 	
 	/**

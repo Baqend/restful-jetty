@@ -11,14 +11,8 @@ import info.orestes.rest.util.Module;
 
 import java.io.IOException;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 
 /**
  * <p>
@@ -50,7 +44,7 @@ public class ConverterService {
 	
 	public static final String FORMAT_PACKAGE_NAME = "info.orestes.rest.conversion.format";
 	
-	private static final MediaType ARGUMENT_MEDIA_TYPE = MediaType.parse(MediaType.TEXT_PLAIN);
+	private static final MediaType ARGUMENT_MEDIA_TYPE = MediaType.parse(MediaType.TEXT_ALL);
 	
 	private final Module module;
 	private final Map<Class<?>, Map<MediaType, Converter<?, ?>>> accept = new HashMap<>();
@@ -261,16 +255,30 @@ public class ConverterService {
 	 */
 	@SuppressWarnings("unchecked")
 	private <T, F> Converter<T, F> getConverter(MediaType mediaType, Class<?> type, Class<?>[] genericParams) throws UnsupportedMediaType {
-		Converter<?, ?> converter = null;
-		
-		Map<MediaType, Converter<?, ?>> acceptTypes = accept.get(type);
-		if (acceptTypes != null) {
-			converter = acceptTypes.get(mediaType);
-		}
-		
+		Converter<?, ?> converter = getCompatibleConverter(mediaType, type);
+
 		check(converter, type, genericParams);
 		
 		return (Converter<T, F>) converter;
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T, F> Converter<T, F> getCompatibleConverter(MediaType mediaType, Class<?> type) {
+		Map<MediaType, Converter<?, ?>> acceptTypes = accept.get(type);
+		if(acceptTypes != null) {
+			Converter<?, ?> converter = acceptTypes.get(mediaType);
+			if(converter != null) {
+				return (Converter<T, F>) converter;
+			}
+
+			for(Map.Entry<MediaType, Converter<?, ?>> entry: acceptTypes.entrySet()) {
+				if(mediaType.isCompatible(entry.getKey())) {
+					return (Converter<T, F>) entry.getValue();
+				}
+			}
+		}
+
+		return null;
 	}
 	
 	/**
