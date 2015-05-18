@@ -5,7 +5,7 @@ import info.orestes.rest.conversion.Context;
 import info.orestes.rest.conversion.Converter;
 import info.orestes.rest.conversion.MediaType;
 
-@Accept({MediaType.TEXT_ALL, MediaType.APPLICATION_JAVASCRIPT})
+@Accept({MediaType.TEXT_ALL, MediaType.APPLICATION_JAVASCRIPT, MediaType.TEXT_PLAIN})
 public class StringStringConverter extends Converter<String, String> {
 	
 	@Override

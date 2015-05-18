@@ -44,7 +44,7 @@ public class ConverterService {
 	
 	public static final String FORMAT_PACKAGE_NAME = "info.orestes.rest.conversion.format";
 	
-	private static final MediaType ARGUMENT_MEDIA_TYPE = MediaType.parse(MediaType.TEXT_ALL);
+	private static final MediaType ARGUMENT_MEDIA_TYPE = MediaType.parse(MediaType.TEXT_PLAIN);
 	
 	private final Module module;
 	private final Map<Class<?>, Map<MediaType, Converter<?, ?>>> accept = new HashMap<>();

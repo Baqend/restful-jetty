@@ -10,7 +10,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 
-@Accept(MediaType.TEXT_ALL)
+@Accept(MediaType.TEXT_PLAIN)
 public class StringRestExceptionConverter extends Converter<RestException, String> {
 	
 	@Override

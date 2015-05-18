@@ -5,7 +5,7 @@ import info.orestes.rest.conversion.Context;
 import info.orestes.rest.conversion.Converter;
 import info.orestes.rest.conversion.MediaType;
 
-@Accept(MediaType.TEXT_ALL)
+@Accept(MediaType.TEXT_PLAIN)
 public class StringBooleanConverter extends Converter<Boolean, String> {
 	
 	@Override
