@@ -345,8 +345,8 @@ public class ConversionHandlerTest {
 			throws Exception {
 		if (requestEntity != null) {
 			Class<I> cls = (Class<I>) requestEntity.getClass();
-			request.setContentType(MediaType.TEXT_ALL);
-			converterService.toRepresentation(request, cls, MediaType.parse(MediaType.TEXT_ALL), requestEntity);
+			request.setContentType(MediaType.TEXT_PLAIN);
+			converterService.toRepresentation(request, cls, MediaType.parse(MediaType.TEXT_PLAIN), requestEntity);
 		}
 		
 		request.getWriter().close();
@@ -365,7 +365,7 @@ public class ConversionHandlerTest {
 		response.getWriter().close();
 		
 		if (response.getReader().ready()) {
-			assertEquals(MediaType.TEXT_ALL, response.getContentType());
+			assertEquals(MediaType.TEXT_PLAIN, response.getContentType());
 			assertEquals("utf-8", response.getCharacterEncoding());
             assertEquals(HttpStatus.OK_200, response.getStatus());
 
@@ -373,7 +373,7 @@ public class ConversionHandlerTest {
             if (cls == null)
                 cls = (Class<O>) String.class;
 
-			return (O) converterService.toObject(response, MediaType.parse(MediaType.TEXT_ALL), cls);
+			return (O) converterService.toObject(response, MediaType.parse(MediaType.TEXT_PLAIN), cls);
 		} else {
 			assertNull(response.getContentType());
             assertEquals(HttpStatus.NO_CONTENT_204, response.getStatus());

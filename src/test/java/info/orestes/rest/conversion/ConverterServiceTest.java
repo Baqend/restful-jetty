@@ -96,7 +96,7 @@ public class ConverterServiceTest {
 		
 		cs.loadConverters();
 		
-		assertEquals(MediaType.parse(MediaType.TEXT_ALL),
+		assertEquals(MediaType.parse(MediaType.TEXT_PLAIN),
 			cs.getPreferedMediaType(Arrays.asList(MediaType.parse("text/*")), Long.class));
 		assertEquals(TEST_MEDIA_TYPE,
 			cs.getPreferedMediaType(Arrays.asList(MediaType.parse("application/*")), Long.class));
