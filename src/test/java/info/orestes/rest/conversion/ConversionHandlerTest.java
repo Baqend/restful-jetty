@@ -193,7 +193,7 @@ public class ConversionHandlerTest {
 		RestMethod method = group.get(1);
 		HashMap<String, Object> args = new HashMap<>();
 		
-		doReturn("text/xhtml").when(request).getHeader("Accept");
+		doReturn("text+test/xhtml").when(request).getHeader("Accept");
 		
 		handle(method, args, null, new RestHandler() {
 			@Override

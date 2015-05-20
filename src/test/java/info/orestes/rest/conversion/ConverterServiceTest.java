@@ -67,7 +67,7 @@ public class ConverterServiceTest {
 		cs.addFormat(new TestFormat());
 		cs.add(new LongConverter());
 		
-		assertNull(cs.getPreferedMediaType(Arrays.asList(MediaType.parse(MediaType.TEXT_PLAIN)), Long.class));
+		assertNull(cs.getPreferedMediaType(Arrays.asList(MediaType.parse(MediaType.TEXT_ALL)), Long.class));
 		assertEquals(TEST_MEDIA_TYPE, cs.getPreferedMediaType(Arrays.asList(TEST_MEDIA_TYPE), Long.class));
 	}
 	
@@ -76,7 +76,7 @@ public class ConverterServiceTest {
 		cs.addFormat(new TestFormat());
 		cs.add(new LongConverter() {});
 		
-		assertNull(cs.getPreferedMediaType(Arrays.asList(MediaType.parse(MediaType.TEXT_PLAIN)), Long.class));
+		assertNull(cs.getPreferedMediaType(Arrays.asList(MediaType.parse(MediaType.TEXT_ALL)), Long.class));
 		assertEquals(TEST_MEDIA_TYPE, cs.getPreferedMediaType(Arrays.asList(TEST_MEDIA_TYPE), Long.class));
 	}
 	
@@ -85,7 +85,7 @@ public class ConverterServiceTest {
 		cs.addFormat(new TestFormat());
 		cs.add(new GenericLongConverter<Long>() {});
 		
-		assertNull(cs.getPreferedMediaType(Arrays.asList(MediaType.parse(MediaType.TEXT_PLAIN)), Long.class));
+		assertNull(cs.getPreferedMediaType(Arrays.asList(MediaType.parse(MediaType.TEXT_ALL)), Long.class));
 		assertEquals(TEST_MEDIA_TYPE, cs.getPreferedMediaType(Arrays.asList(TEST_MEDIA_TYPE), Long.class));
 	}
 	

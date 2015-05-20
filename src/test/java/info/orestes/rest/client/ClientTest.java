@@ -150,7 +150,7 @@ public class ClientTest {
 	
 	@Test
 	public void testUnsupportedResponse() throws InterruptedException {
-		setupStringHandler("Test string.", "text/plain+test");
+		setupStringHandler("Test string.", "text+test/plain");
 		final CountDownLatch countDownLatch = new CountDownLatch(1);
 		
 		Request request = client.newRequest("/");
@@ -207,7 +207,7 @@ public class ClientTest {
 	
 	@Test
 	public void testErrorFuture() throws Exception {
-		setupStringHandler("Test string.", "text/plain+test");
+		setupStringHandler("Test string.", "text+test/plain");
 		
 		List<Future<EntityResponse<String>>> results = new ArrayList<>(3);
 		
