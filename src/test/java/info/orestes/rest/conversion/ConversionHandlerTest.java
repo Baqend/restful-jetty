@@ -355,7 +355,7 @@ public class ConversionHandlerTest {
 		doReturn(method).when(route).getMethod();
 		
 		RestRequest req = new RestRequest(null, request, route, arguments);
-		RestResponse res = new RestResponse(response, arguments);
+		RestResponse res = new RestResponse(null, response, arguments);
 
         handler.setHandler(callback);
 		

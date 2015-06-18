@@ -69,7 +69,7 @@ public class RestRouter extends HandlerWrapper {
 					}
 					
 					restRequest = new RestRequest(request, req, route, matches);
-					restResponse = new RestResponse(res, restRequest.getArguments());
+					restResponse = new RestResponse(request, res, restRequest.getArguments());
 
                     request.setAttribute(REST_REQUEST, restRequest);
                     request.setAttribute(REST_RESPONSE, restResponse);
