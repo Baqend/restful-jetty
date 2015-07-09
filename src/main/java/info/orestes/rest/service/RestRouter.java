@@ -1,11 +1,14 @@
 package info.orestes.rest.service;
 
 import info.orestes.rest.RestServlet;
+import info.orestes.rest.conversion.ConverterService;
+import info.orestes.rest.error.BadRequest;
+import info.orestes.rest.error.RestException;
 import info.orestes.rest.service.PathElement.Type;
 import info.orestes.rest.util.Inject;
 import info.orestes.rest.util.Module;
-import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.http.HttpURI;
+import org.eclipse.jetty.server.Dispatcher;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.HandlerWrapper;
 import org.eclipse.jetty.util.MultiMap;
@@ -16,6 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.*;
+import java.util.Map.Entry;
 
 public class RestRouter extends HandlerWrapper {
 
@@ -23,6 +27,7 @@ public class RestRouter extends HandlerWrapper {
     public static final String REST_RESPONSE = RestResponse.class.getName();
 
 	private final Module module;
+	private final ConverterService converterService;
 	private final List<RestMethod> methods = new ArrayList<>();
 	@SuppressWarnings("unchecked")
 	private ArrayList<Route>[] routeLists = (ArrayList<Route>[]) new ArrayList<?>[10];
@@ -30,18 +35,19 @@ public class RestRouter extends HandlerWrapper {
 	@Inject
 	public RestRouter(Module module) {
 		this.module = module;
+		this.converterService = module.moduleInstance(ConverterService.class);
 	}
 	
 	@Override
 	public void handle(String path, Request request, HttpServletRequest req, HttpServletResponse res)
 			throws IOException, ServletException {
         // jetty decodes the path param
-		path = request.getUri().getPath();
+		path = request.getHttpURI().getPath();
 
         RestRequest restRequest = (RestRequest) request.getAttribute(REST_REQUEST);
         RestResponse restResponse = (RestResponse) request.getAttribute(REST_RESPONSE);
         if (restRequest == null) {
-			HttpURI uri = request.getUri();
+			HttpURI uri = request.getHttpURI();
 
 			Map<String, String> matrix = uri.getParam() == null ? null : createMap(uri.getParam().split(";"));
 			Map<String, String> query = uri.getQuery() == null ? null : createMap(uri.getQuery().split("&"));
@@ -67,12 +73,20 @@ public class RestRouter extends HandlerWrapper {
 						}
 						params.putAllValues(matches);
 					}
-					
-					restRequest = new RestRequest(request, req, route, matches);
-					restResponse = new RestResponse(request, res, restRequest.getArguments());
 
-                    request.setAttribute(REST_REQUEST, restRequest);
-                    request.setAttribute(REST_RESPONSE, restResponse);
+					try {
+						Map<String, Object> arguments = parseMatches(route.getMethod(), matches);
+						restRequest = new RestRequest(request, req, route, arguments, converterService);
+						restResponse = new RestResponse(restRequest, res);
+
+						request.setAttribute(REST_REQUEST, restRequest);
+						request.setAttribute(REST_RESPONSE, restResponse);
+					} catch (RestException e) {
+						request.setAttribute(Dispatcher.ERROR_EXCEPTION, e);
+						res.sendError(e.getStatusCode());
+						request.setHandled(true);
+					}
+
 					break;
 				}
 			}
@@ -83,10 +97,10 @@ public class RestRouter extends HandlerWrapper {
 			request.setHandled(true);
 		}
 	}
-	
+
 	protected Map<String, String> createMap(String[] params) {
 		Map<String, String> map = new HashMap<>();
-		
+
 		for (String str : params) {
 			int index = str.indexOf('=');
 			if (index == -1) {
@@ -96,8 +110,23 @@ public class RestRouter extends HandlerWrapper {
 					UrlEncoded.decodeString(str, index + 1, str.length() - index - 1, null));
 			}
 		}
-		
+
 		return map;
+	}
+
+	private Map<String, Object> parseMatches(RestMethod method, Map<String, String> matches) throws BadRequest {
+		Map<String, Object> arguments = new HashMap<>(matches.size());
+		for (Entry<String, String> entry : matches.entrySet()) {
+			Class<?> argType = method.getArguments().get(entry.getKey()).getValueType();
+			try {
+				if (entry.getValue() != null) {
+					arguments.put(entry.getKey(), converterService.toObject(argType, (String) entry.getValue()));
+				}
+			} catch (Exception e) {
+				throw new BadRequest("The argument " + entry.getKey() + " can not be parsed.", e);
+			}
+		}
+		return arguments;
 	}
 	
 	public List<RestMethod> getMethods() {

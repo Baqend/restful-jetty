@@ -1,13 +1,13 @@
 package info.orestes.rest.conversion;
 
-import info.orestes.rest.error.BadRequest;
-import info.orestes.rest.error.NotAcceptable;
-import info.orestes.rest.error.UnsupportedMediaType;
+import info.orestes.rest.error.*;
 import info.orestes.rest.service.*;
 import info.orestes.rest.service.RestRouter.Route;
 import info.orestes.rest.util.Module;
 import org.eclipse.jetty.http.HttpStatus;
-import org.junit.After;
+import org.eclipse.jetty.http.HttpURI;
+import org.eclipse.jetty.server.Dispatcher;
+import org.eclipse.jetty.util.MultiMap;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -20,46 +20,46 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.*;
 
-public class ConversionHandlerTest {
-	
-	private static final ConverterService converterService = new ConverterService(new Module());
-	private static final ConversionHandler handler = new ConversionHandler(converterService);
+public class ConversionTest {
+
+    private static Module module;
 	private static MethodGroup group;
-	
-	@Mock(answer = Answers.CALLS_REAL_METHODS)
+    private static ConverterService converterService;
+
+    @Mock(answer = Answers.CALLS_REAL_METHODS)
 	private TestRequest request;
 	@Mock(answer = Answers.CALLS_REAL_METHODS)
 	private TestResponse response;
-	
+
 	@BeforeClass
 	public static void setUpClass() {
-		ServiceDocumentParser p = new ServiceDocumentParser(converterService.createServiceDocumentTypes());
-		group = p.parse("/conversion.test").get(0);
+        module = new Module();
+        module.bind(ConverterService.class, ConverterService.class);
+
+        converterService = module.moduleInstance(ConverterService.class);
+        ServiceDocumentParser p = new ServiceDocumentParser(converterService.createServiceDocumentTypes());
+        group = p.parse("/conversion.test").get(0);
 	}
-	
+
 	@Before
 	public void setUp() throws IOException {
 		MockitoAnnotations.initMocks(this);
-		
+
 		doReturn("text/*").when(request).getHeader("Accept");
 		doReturn(false).when(request).isAsyncStarted();
 
         response.setStatus(HttpStatus.OK_200);
 	}
-	
-	@After
-	public void tearDown() throws Exception {
-		handler.stop();
-		handler.setHandler(null);
-	}
-	
+
 	@Test
 	public final void testArguments() throws Exception {
 		RestMethod method = group.get(0);
@@ -76,11 +76,11 @@ public class ConversionHandlerTest {
 		args.put("j", "42");
 		args.put("k", Double.toString(98238479923.782973499));
 		args.put("l", Short.toString((short) 8347));
-		
+
 		boolean responseEntity = handle(method, args, 123l, new RestHandler() {
 			@Override
 			public void handle(RestRequest request, RestResponse response) throws IOException, ServletException {
-				
+
 				assertEquals(42.42f, request.getArgument("a"), 0.01f);
 				assertEquals(false, request.getArgument("b"));
 				assertEquals((byte) 111, (byte) request.getArgument("c"));
@@ -93,16 +93,16 @@ public class ConversionHandlerTest {
 				assertEquals("42", request.getArgument("j"));
 				assertEquals(98238479923.782973499, request.getArgument("k"), 0.0000000001);
 				assertEquals((short) 8347, (short) request.getArgument("l"));
-				
-				assertEquals(123l, (long) request.getEntity());
-				
-				response.setEntity(true);
+
+				assertEquals(123l, (long) request.readEntity());
+
+				response.sendEntity(true);
 			}
 		});
-		
+
 		assertTrue(responseEntity);
 	}
-	
+
 	@Test
 	public final void testOptionalArguments() throws Exception {
 		RestMethod method = group.get(0);
@@ -119,11 +119,11 @@ public class ConversionHandlerTest {
 		args.put("j", "42");
 		args.put("k", Double.toString(98238479923.782973499));
 		args.put("l", null);
-		
+
 		boolean responseEntity = handle(method, args, 123l, new RestHandler() {
 			@Override
 			public void handle(RestRequest request, RestResponse response) throws IOException, ServletException {
-				
+
 				assertEquals(42.42f, (float) request.getArgument("a"), 0.001f);
 				assertEquals(false, request.getArgument("b"));
 				assertEquals((byte) 111, (byte) request.getArgument("c"));
@@ -136,16 +136,16 @@ public class ConversionHandlerTest {
 				assertEquals("42", request.getArgument("j"));
 				assertEquals(98238479923.782973499, request.getArgument("k"), 0.0000000001);
 				assertNull(request.getArgument("l"));
-				
-				assertEquals(123l, (long) request.getEntity());
-				
-				response.setEntity(true);
+
+				assertEquals(123l, (long) request.readEntity());
+
+				response.sendEntity(true);
 			}
 		});
-		
+
 		assertTrue(responseEntity);
 	}
-	
+
 	@Test(expected = BadRequest.class)
 	public final void testIllegalArguments() throws Exception {
 		RestMethod method = group.get(0);
@@ -162,7 +162,7 @@ public class ConversionHandlerTest {
 		args.put("j", "42");
 		args.put("k", Double.toString(98238479923.782973499));
 		args.put("l", null);
-		
+
 		handle(method, args, 123l, new RestHandler() {
 			@Override
 			public void handle(RestRequest request, RestResponse response) throws IOException, ServletException {
@@ -170,147 +170,149 @@ public class ConversionHandlerTest {
 			}
 		});
 	}
-	
+
 	@Test
 	public final void testVoidValue() throws Exception {
 		RestMethod method = group.get(1);
 		HashMap<String, Object> args = new HashMap<>();
-		
+
 		int responseEntity = handle(method, args, null, new RestHandler() {
 			@Override
 			public void handle(RestRequest request, RestResponse response) throws IOException, ServletException {
-				assertNull(request.getEntity());
-				
-				response.setEntity(83456);
+				assertNull(request.readEntity());
+
+				response.sendEntity(83456);
 			}
 		});
-		
+
 		assertEquals(83456, responseEntity);
 	}
-	
+
 	@Test(expected = NotAcceptable.class)
 	public final void testUnsupportedResponseType() throws Exception {
 		RestMethod method = group.get(1);
 		HashMap<String, Object> args = new HashMap<>();
-		
+
 		doReturn("text+test/xhtml").when(request).getHeader("Accept");
-		
+
 		handle(method, args, null, new RestHandler() {
 			@Override
 			public void handle(RestRequest request, RestResponse response) throws IOException, ServletException {
-				response.setEntity("Test");
+				response.sendEntity("Test");
 			}
 		});
 	}
-	
+
 	@Test
 	public final void testUndefinedResponseType() throws Exception {
 		RestMethod method = group.get(1);
 		HashMap<String, Object> args = new HashMap<>();
-		
+
 		doReturn(null).when(request).getHeader("Accept");
-		
+
 		handle(method, args, null, new RestHandler() {
 			@Override
 			public void handle(RestRequest request, RestResponse response) throws IOException, ServletException {
-				response.setEntity(46456);
+				response.sendEntity(46456);
 			}
 		});
 	}
-	
+
 	@Test
 	public final void testValueVoid() throws Exception {
 		RestMethod method = group.get(2);
 		HashMap<String, Object> args = new HashMap<>();
-		
+
 		Object responseEntity = handle(method, args, 3132l, new RestHandler() {
 			@Override
 			public void handle(RestRequest request, RestResponse response) throws IOException, ServletException {
-				assertEquals(3132l, (long) request.getEntity());
-				
-				response.setEntity(null);
+				assertEquals(3132l, (long) request.readEntity());
+
+				response.sendEntity(null);
 			}
 		});
-		
+
 		assertNull(responseEntity);
 	}
-	
+
 	@Test(expected = UnsupportedMediaType.class)
 	public final void testUnsupportedRequestType() throws Exception {
 		RestMethod method = group.get(2);
 		HashMap<String, Object> args = new HashMap<>();
-		
+
 		request.setContentType("test/html");
-		
+
 		handle(method, args, null, new RestHandler() {
 			@Override
 			public void handle(RestRequest request, RestResponse response) throws IOException, ServletException {
-				fail("Request type not supported");
+				request.readEntity();
+                fail("Request type not supported");
 			}
 		});
 	}
-	
+
 	@Test
 	public final void testVoidVoid() throws Exception {
 		RestMethod method = group.get(3);
 		HashMap<String, Object> args = new HashMap<>();
-		
+
 		Object responseEntity = handle(method, args, null, new RestHandler() {
 			@Override
 			public void handle(RestRequest request, RestResponse response) throws IOException, ServletException {
-				assertNull(request.getEntity());
-				
-				response.setEntity(null);
+				assertNull(request.readEntity());
+
+				response.sendEntity(null);
 			}
 		});
-		
+
 		assertNull(responseEntity);
 	}
-	
-	@Test
+
+	@Test(expected = BadRequest.class)
 	public final void testRequestContentExpected() throws Exception {
 		RestMethod method = group.get(2);
 		HashMap<String, Object> args = new HashMap<>();
-		
+
 		handle(method, args, null, new RestHandler() {
 			@Override
 			public void handle(RestRequest request, RestResponse response) throws IOException, ServletException {
-				assertNull(request.getEntity());
+				assertNull(request.readEntity());
 			}
 		});
 	}
-	
+
 	@Test(expected = BadRequest.class)
 	public final void testInvalidRequestContent() throws Exception {
 		RestMethod method = group.get(2);
 		HashMap<String, Object> args = new HashMap<>();
-		
+
 		handle(method, args, "This is not a number", new RestHandler() {
 			@Override
 			public void handle(RestRequest request, RestResponse response) throws IOException, ServletException {
-				fail("invalid request content was sent.");
+				request.readEntity();
+                fail("invalid request content was sent.");
 			}
 		});
 	}
-	
+
 	@Test
 	public final void testResponseContentExpected() throws Exception {
 		RestMethod method = group.get(1);
 		HashMap<String, Object> args = new HashMap<>();
-		
+
 		Object responseEntity = handle(method, args, null, new RestHandler() {
 			@Override
 			public void handle(RestRequest request, RestResponse response) throws IOException, ServletException {
-				assertNull(request.getEntity());
-				
-				response.setEntity(null);
+				assertNull(request.readEntity());
+
+				response.sendEntity(null);
 			}
 		});
-		
+
 		assertNull(responseEntity);
 	}
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = InternalServerError.class)
     public final void testResponseContentNotExpected() throws Exception {
         RestMethod method = group.get(3);
         HashMap<String, Object> args = new HashMap<>();
@@ -318,28 +320,28 @@ public class ConversionHandlerTest {
         handle(method, args, null, new RestHandler() {
             @Override
             public void handle(RestRequest request, RestResponse response) throws IOException, ServletException {
-                assertNull(request.getEntity());
+                assertNull(request.readEntity());
 
-                response.setEntity(true);
+                response.sendEntity(true);
             }
         });
     }
-	
-	@Test(expected = IOException.class)
+
+	@Test(expected = InternalServerError.class)
 	public final void testInvalidResponseContent() throws Exception {
 		RestMethod method = group.get(1);
 		HashMap<String, Object> args = new HashMap<>();
-		
+
 		handle(method, args, null, new RestHandler() {
-			@Override
-			public void handle(RestRequest request, RestResponse response) throws IOException, ServletException {
-				assertNull(request.getEntity());
-				
-				response.setEntity("This is not a number");
-			}
-		});
+            @Override
+            public void handle(RestRequest request, RestResponse response) throws IOException, ServletException {
+                assertNull(request.readEntity());
+
+                response.sendEntity("This is not a number");
+            }
+        });
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	private <I, O> O handle(RestMethod method, Map<String, Object> arguments, I requestEntity, RestHandler callback)
 			throws Exception {
@@ -348,23 +350,39 @@ public class ConversionHandlerTest {
 			request.setContentType(MediaType.TEXT_PLAIN);
 			converterService.toRepresentation(request, cls, MediaType.parse(MediaType.TEXT_PLAIN), requestEntity);
 		}
-		
+
 		request.getWriter().close();
-		
+
 		Route route = mock(Route.class);
 		doReturn(method).when(route).getMethod();
-		
-		RestRequest req = new RestRequest(null, request, route, arguments);
-		RestResponse res = new RestResponse(null, response, arguments);
+		doReturn(arguments).when(route).match(any(), any(), any(), any());
 
+        RestRouter handler = new RestRouter(module) {
+            @Override
+            protected List<Route> getRoutes(int parts) {
+                return Collections.singletonList(route);
+            }
+        };
         handler.setHandler(callback);
-		
 		handler.start();
-		handler.handle(req, res);
-		
+
+        RestException[] e = new RestException[1];
+        org.eclipse.jetty.server.Request req = mock(org.eclipse.jetty.server.Request.class);
+        HttpURI uri = new HttpURI("/");
+        MultiMap<String> p = new MultiMap<>();
+        when(req.getHttpURI()).thenReturn(uri);
+        when(req.getMethod()).thenReturn("GET");
+        when(req.getQueryParameters()).thenReturn(p);
+        doAnswer((invocationOnMock) ->
+            e[0] = (RestException) invocationOnMock.getArguments()[1]
+        ).when(req).setAttribute(eq(Dispatcher.ERROR_EXCEPTION), any());
+        handler.handle(uri.getPath(), req, request, response);
+
 		response.getWriter().close();
-		
-		if (response.getReader().ready()) {
+
+        if (e[0] != null) {
+            throw e[0];
+        } else if (response.getReader().ready()) {
 			assertEquals(MediaType.TEXT_PLAIN, response.getContentType());
 			assertEquals("utf-8", response.getCharacterEncoding());
             assertEquals(HttpStatus.OK_200, response.getStatus());
@@ -380,18 +398,18 @@ public class ConversionHandlerTest {
 			return null;
 		}
 	}
-	
+
 	public abstract class TestRequest implements WritableContext, HttpServletRequest {
 		// do not init here will never called
 		private PipedReader out;
 		private PipedWriter in;
 		private String contentType;
-		
+
 		@Override
 		public String getContentType() {
 			return contentType;
 		}
-		
+
 		public void setContentType(String contentType) {
 			this.contentType = contentType;
 		}
@@ -406,13 +424,13 @@ public class ConversionHandlerTest {
 			init();
 			return new PrintWriter(in);
 		}
-		
+
 		@Override
 		public BufferedReader getReader() throws IOException {
 			init();
 			return new BufferedReader(out);
 		}
-		
+
 		private void init() {
 			if (out == null) {
 				try {
@@ -424,7 +442,7 @@ public class ConversionHandlerTest {
 			}
 		}
 	}
-	
+
 	public abstract class TestResponse implements ReadableContext, HttpServletResponse {
 		// do not init here will never called
 		private PipedReader out;
@@ -447,40 +465,45 @@ public class ConversionHandlerTest {
 		public String getContentType() {
 			return contentType;
 		}
-		
+
 		@Override
 		public String getCharacterEncoding() {
 			return characterEncoding;
 		}
-		
+
 		@Override
 		public void setCharacterEncoding(String charset) {
 			characterEncoding = charset;
 		}
-		
+
 		@Override
 		public void setContentType(String contentType) {
 			this.contentType = contentType;
 		}
-		
+
 		@Override
 		public PrintWriter getWriter() throws IOException {
 			init();
 			return new PrintWriter(in);
 		}
-		
+
 		@Override
 		public BufferedReader getReader() throws IOException {
 			init();
 			return new BufferedReader(out);
 		}
-		
+
 		@Override
 		public boolean isCommitted() {
 			return false;
 		}
-		
-		private void init() {
+
+        @Override
+        public void sendError(int sc) throws IOException {
+            this.status = sc;
+        }
+
+        private void init() {
 			if (out == null) {
 				try {
 					out = new PipedReader();
@@ -491,16 +514,16 @@ public class ConversionHandlerTest {
 			}
 		}
 	}
-	
+
 	@SuppressWarnings("serial")
 	public class ErrorSendException extends RuntimeException {
 		private final int status;
-		
+
 		public ErrorSendException(int status, String message) {
 			super(message);
 			this.status = status;
 		}
-		
+
 		public int getStatus() {
 			return status;
 		}

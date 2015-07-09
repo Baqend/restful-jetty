@@ -38,7 +38,7 @@ public class RestClient extends HttpClient {
 
     public RestClient(String baseURI, ConverterService converterService, String trustStorePath) {
         //super(new HttpClientTransportOverSPDY(factory.newSPDYClient(SPDY.V3)), null);
-        super(new SslContextFactory(trustStorePath));
+        super(trustStorePath != null? new SslContextFactory(trustStorePath): new SslContextFactory());
 
         this.baseURI = URI.create(baseURI);
         this.converterService = converterService;

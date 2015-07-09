@@ -16,7 +16,7 @@ import java.util.Map.Entry;
 
 /**
  * <p>
- * This ConverterService is used by the {@link ConversionHandler} to transform
+ * This ConverterService is used to transform
  * request arguments and request entities between java types and representations
  * as well as for response entities.
  * </p>

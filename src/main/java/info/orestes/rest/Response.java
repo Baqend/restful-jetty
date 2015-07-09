@@ -1,43 +1,29 @@
 package info.orestes.rest;
 
-import info.orestes.rest.conversion.ConversionHandler;
+import info.orestes.rest.conversion.ConverterService;
 import info.orestes.rest.conversion.WritableContext;
 import info.orestes.rest.error.RestException;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
 /*
  * {@inheritDoc}
  */
 public interface Response extends WritableContext, HttpServletResponse {
-	
+
 	/**
-	 * Returns the response entity which will be processed by the
-	 * {@link ConversionHandler}.
-	 *
-	 * @param <E> The type of the response entity
-	 * 
-	 * @return The response entity
-	 */
-	public <E> E getEntity();
-	
-	/**
-	 * Sets the response entity, which will be processed by the
-	 * {@link ConversionHandler}. Setting the response entity afterwards has no
-	 * effect
+	 * Sends the response entity, which will be processed by the
+	 * {@link ConverterService}. Setting the response entity twice will result in an error
 	 * 
 	 * @param entity
 	 *            the response entity
 	 */
-	public void setEntity(Object entity);
+	public void sendEntity(Object entity);
 
 	/**
 	 * Signals that the request handling results in an error
 	 *
-	 * @param e
-	 *            The error which is occurred while handling the request
-	 * @throws IOException when the exceptional response can't be send back
+	 * @param e The error which is occurred while handling the request
 	 */
-	public void sendError(RestException e) throws IOException;
+	public void sendError(RestException e);
 }

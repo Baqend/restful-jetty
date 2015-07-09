@@ -1,7 +1,7 @@
 package info.orestes.rest;
 
-import info.orestes.rest.conversion.ConversionHandler;
 import info.orestes.rest.conversion.ReadableContext;
+import info.orestes.rest.error.RestException;
 import info.orestes.rest.service.RestMethod;
 import info.orestes.rest.service.RestRouter;
 import info.orestes.rest.service.RestRouter.Route;
@@ -42,20 +42,13 @@ public interface Request extends ReadableContext, HttpServletRequest {
 	public void setArgument(String name, Object value);
 	
 	/**
-	 * Returns the converted request entity if the {@link ConversionHandler} had
-	 * processed the {@link Request} already otherwise <code>null</code>
+	 * Reads the converted request entity from the underlying input stream
 	 *
 	 * @param <E> The type of the converted entity
 	 * 
 	 * @return The request entity
+	 * @throws RestException if a exception occurred while parsing the request body
 	 */
-	public <E> E getEntity();
-	
-	/**
-	 * Sets the request entity
-	 *
-	 * @param entity Sets the converted entity
-	 */
-	public void setEntity(Object entity);
-	
+	public <E> E readEntity() throws RestException;
+
 }

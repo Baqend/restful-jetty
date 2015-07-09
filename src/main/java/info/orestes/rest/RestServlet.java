@@ -1,6 +1,5 @@
 package info.orestes.rest;
 
-import info.orestes.rest.conversion.ConversionHandler;
 import info.orestes.rest.error.BadRequest;
 import info.orestes.rest.error.MethodNotAllowed;
 import info.orestes.rest.error.RestException;
@@ -15,8 +14,7 @@ import java.util.concurrent.CompletionException;
 
 /**
  * An {@link RestServlet} represents a resource or a group of resources which is
- * selected by the {@link RestRouter} its entities are converted by the
- * {@link ConversionHandler} and is dispatched by the {@link RestServletHandler}
+ * selected by the {@link RestRouter} and is dispatched by the {@link RestServletHandler}
  * .<br>
  * <br>
  * Concurrency Note: One instance can be used by multiple threads at the same
@@ -26,8 +24,6 @@ import java.util.concurrent.CompletionException;
  */
 @SuppressWarnings("serial")
 public abstract class RestServlet extends GenericServlet {
-
-    public static final String ASYNC_RESULT = "info.orestes.rest.result";
 
 	/**
 	 * Indicates if the given {@link RestServlet} implements the given http
@@ -162,7 +158,7 @@ public abstract class RestServlet extends GenericServlet {
 		
 		response.resetBuffer();
 		response.setContentLength(length);
-		response.setEntity(null);
+		response.sendEntity(null);
 	}
 
 	/**
@@ -354,31 +350,28 @@ public abstract class RestServlet extends GenericServlet {
 	 *             if an I/O error occures
 	 */
 	public void service(Request request, Response response) throws RestException, IOException {
-        CompletableFuture<?> result = (CompletableFuture<?>) request.getAttribute(ASYNC_RESULT);
-
-        if (result == null) {
-            switch (request.getMethod()) {
-                case "DELETE":
-                    result = doDeleteAsync(request, response);
-                    break;
-                case "GET":
-                    result = doGetAsync(request, response);
-                    break;
-                case "HEAD":
-                    result = doHeadAsync(request, response);
-                    break;
-                case "OPTIONS":
-                    result = doOptionsAsync(request, response);
-                    break;
-                case "POST":
-                    result = doPostAsync(request, response);
-                    break;
-                case "PUT":
-                    result = doPutAsync(request, response);
-                    break;
-                default:
-                    notSupported(request, response);
-            }
+        CompletableFuture<Void> result = null;
+        switch (request.getMethod()) {
+            case "DELETE":
+                result = doDeleteAsync(request, response);
+                break;
+            case "GET":
+                result = doGetAsync(request, response);
+                break;
+            case "HEAD":
+                result = doHeadAsync(request, response);
+                break;
+            case "OPTIONS":
+                result = doOptionsAsync(request, response);
+                break;
+            case "POST":
+                result = doPostAsync(request, response);
+                break;
+            case "PUT":
+                result = doPutAsync(request, response);
+                break;
+            default:
+                notSupported(request, response);
         }
 
         if (result != null) {
@@ -391,11 +384,21 @@ public abstract class RestServlet extends GenericServlet {
                     }
                 }
             } else {
-                AsyncContext context = request.startAsync(request, response);
 
+                AsyncContext context = request.startAsync(request, response);
                 if (request.getDispatcherType() == DispatcherType.REQUEST) {
-                    request.setAttribute(ASYNC_RESULT, result);
-                    result.whenComplete((empty, error) -> context.dispatch());
+                    result.whenComplete((empty, error) -> {
+                        if (error != null) {
+                            if (error instanceof CompletionException) {
+                                error = error.getCause();
+                            }
+
+                            RestException e = RestException.of(error);
+                            response.sendError(e);
+                        }
+
+                        context.complete();
+                    });
                 }
             }
         }
@@ -433,17 +436,5 @@ public abstract class RestServlet extends GenericServlet {
 		}
 	}
 
-    public static interface AsyncListener extends javax.servlet.AsyncListener {
-        @Override
-        public default void onComplete(AsyncEvent asyncEvent) throws IOException {}
 
-        @Override
-        public default void onTimeout(AsyncEvent asyncEvent) throws IOException {}
-
-        @Override
-        public default void onError(AsyncEvent asyncEvent) throws IOException {}
-
-        @Override
-        public default void onStartAsync(AsyncEvent asyncEvent) throws IOException {}
-    }
 }

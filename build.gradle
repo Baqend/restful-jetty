@@ -15,11 +15,13 @@ repositories {
 
 dependencies {
     compile (
-            'org.eclipse.jetty:jetty-server:9.2.2.v20140723',
-            'org.eclipse.jetty:jetty-client:9.2.2.v20140723',
-            'org.eclipse.jetty.websocket:javax-websocket-server-impl:9.2.2.v20140723',
-            'org.eclipse.jetty.websocket:javax-websocket-client-impl:9.2.2.v20140723',
-            'org.eclipse.jetty:jetty-servlets:9.2.2.v20140723'
+            'org.eclipse.jetty:jetty-server:9.3.0.v20150612',
+            'org.eclipse.jetty:jetty-client:9.3.0.v20150612',
+            'org.eclipse.jetty.websocket:javax-websocket-server-impl:9.3.0.v20150612',
+            'org.eclipse.jetty.websocket:javax-websocket-client-impl:9.3.0.v20150612',
+            'org.eclipse.jetty:jetty-servlets:9.3.0.v20150612',
+            'org.eclipse.jetty.http2:http2-server:9.3.0.v20150612',
+            'org.eclipse.jetty:jetty-alpn-server:9.3.0.v20150612'
     )
     testCompile (
             'junit:junit:4.11',

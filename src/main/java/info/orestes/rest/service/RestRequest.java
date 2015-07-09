@@ -1,6 +1,10 @@
 package info.orestes.rest.service;
 
 import info.orestes.rest.Request;
+import info.orestes.rest.conversion.ConverterService;
+import info.orestes.rest.conversion.MediaType;
+import info.orestes.rest.error.BadRequest;
+import info.orestes.rest.error.RestException;
 import info.orestes.rest.service.RestRouter.Route;
 
 import javax.servlet.http.HttpServletRequest;
@@ -13,21 +17,27 @@ public class RestRequest extends HttpServletRequestWrapper implements Request {
 	private final Map<String, Object> arguments;
 	private final Route route;
 	private Object entity;
-	
+	private ConverterService converterService;
+
 	@SuppressWarnings("unchecked")
 	public RestRequest(org.eclipse.jetty.server.Request baseRequest, HttpServletRequest request, Route route,
-		Map<String, ?> arguments) {
+					   Map<String, Object> arguments, ConverterService converterService) {
 		super(request);
-		
-		this.arguments = (Map<String, Object>) arguments;
+
+		this.arguments = arguments;
 		this.route = route;
 		this.baseRequest = baseRequest;
+		this.converterService = converterService;
 	}
 	
 	public org.eclipse.jetty.server.Request getBaseRequest() {
 		return baseRequest;
 	}
-	
+
+	public ConverterService getConverterService() {
+		return converterService;
+	}
+
 	@Override
 	public Route getRoute() {
 		return route;
@@ -56,12 +66,20 @@ public class RestRequest extends HttpServletRequestWrapper implements Request {
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public <E> E getEntity() {
-		return (E) entity;
-	}
-	
-	@Override
-	public void setEntity(Object entity) {
-		this.entity = entity;
+	public <E> E readEntity() throws RestException {
+		EntityType<E> requestType = (EntityType<E>) getRestMethod().getRequestType();
+
+		if (requestType != null) {
+			try {
+				MediaType mediaType = MediaType.parse(getContentType());
+				return converterService.toObject(this, mediaType, requestType);
+			} catch (RestException e) {
+				throw e;
+			} catch (Exception e) {
+				throw new BadRequest("The requested entity is not valid.", e);
+			}
+		} else {
+			return null;
+		}
 	}
 }

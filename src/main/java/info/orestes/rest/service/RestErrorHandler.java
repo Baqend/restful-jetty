@@ -1,6 +1,5 @@
 package info.orestes.rest.service;
 
-import info.orestes.rest.conversion.ConversionHandler;
 import info.orestes.rest.conversion.ConverterService;
 import info.orestes.rest.conversion.MediaType;
 import info.orestes.rest.conversion.WritableContext;
@@ -32,7 +31,7 @@ public class RestErrorHandler extends ErrorHandler {
 	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
 		baseRequest.setHandled(true);
-		Response res = Response.getResponse(response);
+		Response res = baseRequest.getResponse();
 		res.setHeader(HttpHeader.CACHE_CONTROL, "must-revalidate, no-cache, no-store");
 		
 		if (request.getMethod().equals("HEAD")) {
@@ -40,7 +39,7 @@ public class RestErrorHandler extends ErrorHandler {
 		}
 		
 		String accept = request.getHeader(HttpHeader.ACCEPT.asString());
-		MediaType mediaType = converterService.getPreferedMediaType(ConversionHandler.parseMediaTypes(accept),
+		MediaType mediaType = converterService.getPreferedMediaType(RestResponse.parseMediaTypes(accept),
 			RestException.class);
 		
 		res.setHeader(HttpHeader.CONTENT_TYPE, mediaType.toString());

@@ -1,5 +1,6 @@
 package info.orestes.rest.service;
 
+import info.orestes.rest.conversion.ConverterService;
 import info.orestes.rest.service.PathElement.Type;
 import info.orestes.rest.util.Module;
 import org.eclipse.jetty.http.HttpURI;
@@ -31,7 +32,9 @@ public class RestRouterTest {
 	
 	@Before
 	public void setUp() {
-		router = new RestRouter(new Module());
+		Module module = new Module();
+		module.bind(ConverterService.class, ConverterService.class);
+		router = new RestRouter(module);
 		for (List<RestMethod> group : groups) {
 			router.addAll(group);
 		}
@@ -75,7 +78,13 @@ public class RestRouterTest {
 			int value = 1;
 			for (PathElement el : method.getSignature()) {
 				if (el.getType() != Type.PATH && !el.isOptional()) {
-					params.put(el.getName(), new String[] { "value" + value++ });
+					if (el.getValueType() == String.class) {
+						params.put(el.getName(), new String[] { "value" + ++value });
+					} else if (el.getValueType() == Integer.class) {
+						params.put(el.getName(), new String[] { String.valueOf(++value) });
+					} else if (el.getValueType() == Boolean.class) {
+						params.put(el.getName(), new String[] { String.valueOf(++value % 2 == 1) });
+					}
 				}
 			}
 			
@@ -160,7 +169,7 @@ public class RestRouterTest {
 				assertSame(path + " was mismatched", expected, request.getRestMethod());
 				
 				for (Entry<String, String[]> entry : params.entrySet()) {
-					assertEquals(entry.getValue()[0], request.getArgument(entry.getKey()));
+					assertEquals(entry.getValue()[0], String.valueOf(request.getArgument(entry.getKey())));
 				}
 			}
 		});
@@ -170,7 +179,7 @@ public class RestRouterTest {
 		
 		HttpURI uri = new HttpURI(path);
 		MultiMap<String> p = new MultiMap<>();
-		when(req.getUri()).thenReturn(uri);
+		when(req.getHttpURI()).thenReturn(uri);
 		when(req.getMethod()).thenReturn(action);
 		when(req.getQueryParameters()).thenReturn(p);
 		

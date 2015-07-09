@@ -1,14 +1,11 @@
 package info.orestes.rest.conversion;
 
-import info.orestes.rest.Request;
 import info.orestes.rest.service.RestMethod;
 
 public interface Context {
 	
 	/**
-	 * Returns the matched and converted {@link RestMethod} argument if the
-	 * {@link ConversionHandler} had previously processed the {@link Request}
-	 * otherwise the string value
+	 * Returns the matched and converted {@link RestMethod} argument
 	 * 
 	 * @param name
 	 *            The name of the method argument
@@ -19,9 +16,8 @@ public interface Context {
 	public <T> T getArgument(String name);
 
 	/**
-	 * Returns the matched and converted {@link RestMethod} argument if the
-	 * {@link ConversionHandler} had previously processed the {@link Request}
-	 * otherwise the string value. If no parameter is set, the default value will be returned.
+	 * Returns the matched and converted {@link RestMethod} argument
+	 * If no parameter is set, the default value will be returned.
 	 *
 	 * @param name
 	 *            The name of the method argument
