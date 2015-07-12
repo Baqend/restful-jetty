@@ -2,13 +2,11 @@ package info.orestes.rest.service;
 
 import info.orestes.rest.RestServlet;
 import info.orestes.rest.conversion.ConverterService;
-import info.orestes.rest.error.BadRequest;
 import info.orestes.rest.error.RestException;
 import info.orestes.rest.service.PathElement.Type;
 import info.orestes.rest.util.Inject;
 import info.orestes.rest.util.Module;
 import org.eclipse.jetty.http.HttpURI;
-import org.eclipse.jetty.server.Dispatcher;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.HandlerWrapper;
 import org.eclipse.jetty.util.MultiMap;
@@ -19,7 +17,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.*;
-import java.util.Map.Entry;
 
 public class RestRouter extends HandlerWrapper {
 
@@ -60,7 +57,7 @@ public class RestRouter extends HandlerWrapper {
 				offset = next + 1;
 			}
 			pathParts.add(UrlEncoded.decodeString(path, offset, path.length() - offset, null));
-			
+
 			for (Route route : getRoutes(pathParts.size())) {
 				String method = request.getMethod();
 				
@@ -74,20 +71,20 @@ public class RestRouter extends HandlerWrapper {
 						params.putAllValues(matches);
 					}
 
+					restRequest = new RestRequest(request, req, route, converterService);
+					restResponse = new RestResponse(restRequest, res);
+
+					request.setAttribute(REST_REQUEST, restRequest);
+					request.setAttribute(REST_RESPONSE, restResponse);
+
 					try {
-						Map<String, Object> arguments = parseMatches(route.getMethod(), matches);
-						restRequest = new RestRequest(request, req, route, arguments, converterService);
-						restResponse = new RestResponse(restRequest, res);
-
-						request.setAttribute(REST_REQUEST, restRequest);
-						request.setAttribute(REST_RESPONSE, restResponse);
+						restRequest.setMatches(matches);
+						break;
 					} catch (RestException e) {
-						request.setAttribute(Dispatcher.ERROR_EXCEPTION, e);
-						res.sendError(e.getStatusCode());
+						restResponse.sendError(e);
 						request.setHandled(true);
+						return;
 					}
-
-					break;
 				}
 			}
 		}
@@ -112,21 +109,6 @@ public class RestRouter extends HandlerWrapper {
 		}
 
 		return map;
-	}
-
-	private Map<String, Object> parseMatches(RestMethod method, Map<String, String> matches) throws BadRequest {
-		Map<String, Object> arguments = new HashMap<>(matches.size());
-		for (Entry<String, String> entry : matches.entrySet()) {
-			Class<?> argType = method.getArguments().get(entry.getKey()).getValueType();
-			try {
-				if (entry.getValue() != null) {
-					arguments.put(entry.getKey(), converterService.toObject(argType, (String) entry.getValue()));
-				}
-			} catch (Exception e) {
-				throw new BadRequest("The argument " + entry.getKey() + " can not be parsed.", e);
-			}
-		}
-		return arguments;
 	}
 	
 	public List<RestMethod> getMethods() {

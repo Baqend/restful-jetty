@@ -4,9 +4,10 @@ import info.orestes.rest.error.*;
 import info.orestes.rest.service.*;
 import info.orestes.rest.service.RestRouter.Route;
 import info.orestes.rest.util.Module;
+import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.http.HttpURI;
-import org.eclipse.jetty.server.Dispatcher;
+import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.util.MultiMap;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -31,9 +32,9 @@ import static org.mockito.Mockito.*;
 
 public class ConversionTest {
 
-    private static Module module;
+    private static Module module = new Module();
 	private static MethodGroup group;
-    private static ConverterService converterService;
+    private static ConverterService converterService = new ConverterService(module);
 
     @Mock(answer = Answers.CALLS_REAL_METHODS)
 	private TestRequest request;
@@ -42,10 +43,7 @@ public class ConversionTest {
 
 	@BeforeClass
 	public static void setUpClass() {
-        module = new Module();
-        module.bind(ConverterService.class, ConverterService.class);
-
-        converterService = module.moduleInstance(ConverterService.class);
+        module.bindInstance(ConverterService.class, converterService);
         ServiceDocumentParser p = new ServiceDocumentParser(converterService.createServiceDocumentTypes());
         group = p.parse("/conversion.test").get(0);
 	}
@@ -366,22 +364,20 @@ public class ConversionTest {
         handler.setHandler(callback);
 		handler.start();
 
-        RestException[] e = new RestException[1];
         org.eclipse.jetty.server.Request req = mock(org.eclipse.jetty.server.Request.class);
+        org.eclipse.jetty.server.Response res = new Response(null, null);
         HttpURI uri = new HttpURI("/");
         MultiMap<String> p = new MultiMap<>();
         when(req.getHttpURI()).thenReturn(uri);
         when(req.getMethod()).thenReturn("GET");
         when(req.getQueryParameters()).thenReturn(p);
-        doAnswer((invocationOnMock) ->
-            e[0] = (RestException) invocationOnMock.getArguments()[1]
-        ).when(req).setAttribute(eq(Dispatcher.ERROR_EXCEPTION), any());
+        when(req.getResponse()).thenReturn(res);
         handler.handle(uri.getPath(), req, request, response);
 
 		response.getWriter().close();
 
-        if (e[0] != null) {
-            throw e[0];
+		if (res.getStatus() >= 400) {
+            throw RestException.create(res.getStatus(), null, null);
         } else if (response.getReader().ready()) {
 			assertEquals(MediaType.TEXT_PLAIN, response.getContentType());
 			assertEquals("utf-8", response.getCharacterEncoding());
@@ -405,7 +401,12 @@ public class ConversionTest {
 		private PipedWriter in;
 		private String contentType;
 
-		@Override
+        @Override
+        public String getMethod() {
+            return HttpMethod.GET.asString();
+        }
+
+        @Override
 		public String getContentType() {
 			return contentType;
 		}
@@ -452,6 +453,11 @@ public class ConversionTest {
         private int status;
 
         @Override
+        public void resetBuffer() {
+
+        }
+
+        @Override
         public int getStatus() {
             return status;
         }
@@ -459,6 +465,11 @@ public class ConversionTest {
         @Override
         public void setStatus(int status) {
             this.status = status;
+        }
+
+        @Override
+        public void setHeader(String name, String value) {
+
         }
 
         @Override
@@ -506,7 +517,7 @@ public class ConversionTest {
         private void init() {
 			if (out == null) {
 				try {
-					out = new PipedReader();
+					out = new PipedReader(8096);
 					in = new PipedWriter(out);
 				} catch (IOException e) {
 					throw new RuntimeException(e);

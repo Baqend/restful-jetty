@@ -3,17 +3,17 @@ package info.orestes.rest.service;
 import info.orestes.rest.Response;
 import info.orestes.rest.conversion.ConverterService;
 import info.orestes.rest.conversion.MediaType;
+import info.orestes.rest.error.InternalServerError;
 import info.orestes.rest.error.NotAcceptable;
 import info.orestes.rest.error.RestException;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpStatus;
-import org.eclipse.jetty.server.Dispatcher;
-import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.util.log.Logger;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -63,20 +63,8 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
 			throw new IllegalStateException("A response entity was set, but not declared in the specification.");
 		}
 
-		List<MediaType> mediaTypes = parseMediaTypes(request.getHeader(HttpHeader.ACCEPT.asString()));
-
 		try {
-			ConverterService converterService = request.getConverterService();
-			MediaType mediaType = converterService.getPreferedMediaType(mediaTypes, responseType.getRawType());
-
-			if (mediaType != null) {
-				setContentType(mediaType.toString());
-				setCharacterEncoding("utf-8");
-
-				converterService.toRepresentation(this, responseType, mediaType, entity);
-			} else {
-				throw new NotAcceptable("The requested response media types are not supported.");
-			}
+			sendBody(entity, responseType);
 		} catch (Exception e) {
 			sendError(RestException.of(e));
 		}
@@ -94,15 +82,56 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
 	}
 
 	@Override
-	public void sendError(RestException error) {
-		Request request = this.request.getBaseRequest();
-		request.setAttribute(Dispatcher.ERROR_EXCEPTION, error);
+	public void sendError(int sc) {
+		sendError(sc, "An unexpected error occurred.");
+	}
 
-        try {
-		    sendError(error.getStatusCode());
+	@Override
+	public void sendError(int code, String message) {
+		sendError(RestException.create(code, message, null));
+	}
+
+	@Override
+	public void sendError(RestException error) {
+		if (error instanceof InternalServerError && !error.isRemote()) {
+			LOG.warn(error);
+		} else {
+			LOG.debug(error);
+		}
+
+		try {
+			resetBuffer();
+            request.getBaseRequest().getResponse().setStatusWithReason(error.getStatusCode(), error.getReason());
+			setHeader(HttpHeader.EXPIRES.asString(), null);
+			setHeader(HttpHeader.LAST_MODIFIED.asString(),null);
+			setHeader(HttpHeader.CONTENT_TYPE.asString(),null);
+			setHeader(HttpHeader.CONTENT_LENGTH.asString(), null);
+			setHeader(HttpHeader.CACHE_CONTROL.asString(), "must-revalidate, no-cache, no-store");
+
+			if (request.getMethod().equals("HEAD")) {
+				return;
+			}
+
+		    sendBody(error, new EntityType<RestException>(RestException.class));
         } catch (Exception e) {
-            error.addSuppressed(e);
-            LOG.warn(error);
+			e.addSuppressed(error);
+            LOG.warn(e);
         }
+	}
+
+	private void sendBody(Object entity, EntityType<?> type) throws IOException, RestException {
+		List<MediaType> mediaTypes = parseMediaTypes(request.getHeader(HttpHeader.ACCEPT.asString()));
+
+		ConverterService converterService = request.getConverterService();
+		MediaType mediaType = converterService.getPreferedMediaType(mediaTypes, type.getRawType());
+
+		if (mediaType != null) {
+            setContentType(mediaType.toString());
+            setCharacterEncoding("utf-8");
+
+			converterService.toRepresentation(this, type, mediaType, entity);
+		} else {
+			throw new NotAcceptable("The requested response media types are not supported.");
+		}
 	}
 }

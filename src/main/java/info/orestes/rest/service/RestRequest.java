@@ -9,25 +9,37 @@ import info.orestes.rest.service.RestRouter.Route;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
+import java.util.HashMap;
 import java.util.Map;
 
 public class RestRequest extends HttpServletRequestWrapper implements Request {
 
 	private final org.eclipse.jetty.server.Request baseRequest;
-	private final Map<String, Object> arguments;
+	private final Map<String, Object> arguments = new HashMap<>();
 	private final Route route;
 	private Object entity;
 	private ConverterService converterService;
 
 	@SuppressWarnings("unchecked")
-	public RestRequest(org.eclipse.jetty.server.Request baseRequest, HttpServletRequest request, Route route,
-					   Map<String, Object> arguments, ConverterService converterService) {
+	public RestRequest(org.eclipse.jetty.server.Request baseRequest, HttpServletRequest request, Route route, ConverterService converterService) {
 		super(request);
 
-		this.arguments = arguments;
 		this.route = route;
 		this.baseRequest = baseRequest;
 		this.converterService = converterService;
+	}
+
+	void setMatches(Map<String, String> matches) throws BadRequest {
+		for (Map.Entry<String, String> entry : matches.entrySet()) {
+			Class<?> argType = route.getMethod().getArguments().get(entry.getKey()).getValueType();
+			try {
+				if (entry.getValue() != null) {
+					arguments.put(entry.getKey(), converterService.toObject(argType, (String) entry.getValue()));
+				}
+			} catch (Exception e) {
+				throw new BadRequest("The argument " + entry.getKey() + " can not be parsed.", e);
+			}
+		}
 	}
 	
 	public org.eclipse.jetty.server.Request getBaseRequest() {

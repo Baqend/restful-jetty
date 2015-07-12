@@ -32,23 +32,23 @@ public class RestClient extends HttpClient {
 	private final ConverterService converterService;
 	private final URI baseURI;
 	
-	public RestClient(String baseURI, ConverterService converterService) {
-        this(baseURI, converterService, null);
+	public RestClient(String baseURI, boolean useHttp2, ConverterService converterService) {
+        this(baseURI, useHttp2, converterService, null);
 	}
 
-    public RestClient(String baseURI, ConverterService converterService, String trustStorePath) {
-        //super(new HttpClientTransportOverSPDY(factory.newSPDYClient(SPDY.V3)), null);
-        super(trustStorePath != null? new SslContextFactory(trustStorePath): new SslContextFactory());
+    public RestClient(String baseURI, boolean useHttp2, ConverterService converterService, String trustStorePath) {
+        super(
+            /*useHttp2? new HttpClientTransportOverHTTP2(new HTTP2Client()): new HttpClientTransportOverHTTP(), */
+        	trustStorePath != null? new SslContextFactory(trustStorePath): new SslContextFactory()
+        );
 
         this.baseURI = URI.create(baseURI);
         this.converterService = converterService;
-
-        //setExecutor(executor);
     }
 
     @Inject
     public RestClient(ConverterService converterService) {
-        this("", converterService, null);
+        this("", false, converterService, null);
     }
 
     @Override
