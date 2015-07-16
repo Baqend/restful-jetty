@@ -48,5 +48,8 @@
     <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty.http2:http2-common:9.3.0.v20150612" level="project" />
     <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty.http2:http2-hpack:9.3.0.v20150612" level="project" />
     <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty:jetty-alpn-server:9.3.0.v20150612" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty.http2:http2-client:9.3.0.v20150612" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty:jetty-alpn-client:9.3.0.v20150612" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty.http2:http2-http-client-transport:9.3.0.v20150612" level="project" />
   </component>
 </module>

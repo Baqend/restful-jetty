@@ -5,16 +5,20 @@ import info.orestes.rest.conversion.Context;
 import info.orestes.rest.conversion.Converter;
 import info.orestes.rest.conversion.MediaType;
 
+import java.util.Objects;
+
 @Accept({MediaType.TEXT_ALL, MediaType.APPLICATION_JAVASCRIPT, MediaType.TEXT_PLAIN})
 public class StringStringConverter extends Converter<String, String> {
 	
 	@Override
 	public String toFormat(Context context, String source, Class<?>[] genericParams) {
+		Objects.requireNonNull(source);
 		return source;
 	}
 	
 	@Override
 	public String toObject(Context context, String source, Class<?>[] genericParams) {
+		Objects.requireNonNull(source);
 		return source;
 	}
 }

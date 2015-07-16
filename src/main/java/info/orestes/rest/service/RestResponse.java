@@ -14,6 +14,7 @@ import org.eclipse.jetty.util.log.Logger;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -64,7 +65,9 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
 		}
 
 		try {
-			sendBody(entity, responseType);
+            sendBody(entity, responseType);
+        } catch (IOException e) {
+            LOG.debug(e);
 		} catch (Exception e) {
 			sendError(RestException.of(e));
 		}
@@ -92,6 +95,7 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
 	}
 
 	@Override
+    @SuppressWarnings("deprecation")
 	public void sendError(RestException error) {
 		if (error instanceof InternalServerError && !error.isRemote()) {
 			LOG.warn(error);
@@ -101,7 +105,7 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
 
 		try {
 			resetBuffer();
-            request.getBaseRequest().getResponse().setStatusWithReason(error.getStatusCode(), error.getReason());
+            setStatus(error.getStatusCode(), error.getReason());
 			setHeader(HttpHeader.EXPIRES.asString(), null);
 			setHeader(HttpHeader.LAST_MODIFIED.asString(),null);
 			setHeader(HttpHeader.CONTENT_TYPE.asString(),null);
@@ -112,12 +116,16 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
 				return;
 			}
 
-		    sendBody(error, new EntityType<RestException>(RestException.class));
-        } catch (Exception e) {
-			e.addSuppressed(error);
+            try (PrintWriter writer = getWriter()) {
+                sendBody(error, new EntityType<RestException>(RestException.class));
+            }
+        } catch (IOException e) {
+			LOG.debug(e);
+		} catch (Exception e) {
+            e.addSuppressed(error);
             LOG.warn(e);
         }
-	}
+    }
 
 	private void sendBody(Object entity, EntityType<?> type) throws IOException, RestException {
 		List<MediaType> mediaTypes = parseMediaTypes(request.getHeader(HttpHeader.ACCEPT.asString()));

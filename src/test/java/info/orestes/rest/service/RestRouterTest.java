@@ -1,9 +1,12 @@
 package info.orestes.rest.service;
 
+import info.orestes.rest.SendError;
 import info.orestes.rest.conversion.ConverterService;
+import info.orestes.rest.error.RestException;
 import info.orestes.rest.service.PathElement.Type;
 import info.orestes.rest.util.Module;
 import org.eclipse.jetty.http.HttpURI;
+import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.util.MultiMap;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -34,7 +37,18 @@ public class RestRouterTest {
 	public void setUp() {
 		Module module = new Module();
 		module.bind(ConverterService.class, ConverterService.class);
-		router = new RestRouter(module);
+		router = new RestRouter(module) {
+			@Override
+			protected RestResponse createResponse(Request baseRequest, RestRequest request, HttpServletResponse response) {
+				return new RestResponse(request, response) {
+					@Override
+					public void sendError(RestException error) {
+						throw new SendError(error);
+					}
+				};
+			}
+		};
+
 		for (List<RestMethod> group : groups) {
 			router.addAll(group);
 		}
@@ -48,7 +62,13 @@ public class RestRouterTest {
 			int value = 1;
 			for (PathElement el : method.getSignature()) {
 				if (el.getType() != Type.PATH) {
-					params.put(el.getName(), new String[] { "value" + value++ });
+					if (el.getValueType() == String.class) {
+						params.put(el.getName(), new String[] { "value" + ++value });
+					} else if (el.getValueType() == Integer.class) {
+						params.put(el.getName(), new String[] { String.valueOf(++value) });
+					} else if (el.getValueType() == Boolean.class) {
+						params.put(el.getName(), new String[] { String.valueOf(++value % 2 == 1) });
+					}
 				}
 			}
 			
@@ -169,7 +189,7 @@ public class RestRouterTest {
 				assertSame(path + " was mismatched", expected, request.getRestMethod());
 				
 				for (Entry<String, String[]> entry : params.entrySet()) {
-					assertEquals(entry.getValue()[0], String.valueOf(request.getArgument(entry.getKey())));
+					assertEquals(entry.getValue()[0], request.getArgument(entry.getKey()).toString());
 				}
 			}
 		});
@@ -177,7 +197,7 @@ public class RestRouterTest {
 		org.eclipse.jetty.server.Request req = mock(org.eclipse.jetty.server.Request.class);
 		HttpServletResponse res = mock(HttpServletResponse.class);
 		
-		HttpURI uri = new HttpURI(path);
+		HttpURI uri = new HttpURI("http://example.com" + path);
 		MultiMap<String> p = new MultiMap<>();
 		when(req.getHttpURI()).thenReturn(uri);
 		when(req.getMethod()).thenReturn(action);
@@ -189,6 +209,8 @@ public class RestRouterTest {
 			router.stop();
 		} catch (Exception e) {
 			throw new RuntimeException(e);
+		} catch (SendError e) {
+			throw new RuntimeException(e.getCause());
 		}
 
         verify(res, never()).setStatus(RestResponse.SC_NO_CONTENT);

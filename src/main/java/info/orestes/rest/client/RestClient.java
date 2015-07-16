@@ -13,22 +13,6 @@ public class RestClient extends HttpClient {
 	
 	public static final MediaType ALL = MediaType.parse(MediaType.ALL);
 
-//  SPDY CODE:
-//    public static final QueuedThreadPool executor;
-//    public static final SPDYClient.Factory factory;
-//
-//    static {
-//        executor = new QueuedThreadPool();
-//        executor.setName(executor.getName() + "-client");
-//
-//        factory = new SPDYClient.Factory(executor);
-//        try {
-//            factory.start();
-//        } catch (Exception e) {
-//            throw new RuntimeException(e);
-//        }
-//    }
-
 	private final ConverterService converterService;
 	private final URI baseURI;
 	

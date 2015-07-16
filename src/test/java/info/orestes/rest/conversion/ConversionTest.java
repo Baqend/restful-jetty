@@ -1,5 +1,6 @@
 package info.orestes.rest.conversion;
 
+import info.orestes.rest.SendError;
 import info.orestes.rest.error.*;
 import info.orestes.rest.service.*;
 import info.orestes.rest.service.RestRouter.Route;
@@ -7,6 +8,7 @@ import info.orestes.rest.util.Module;
 import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.http.HttpURI;
+import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.util.MultiMap;
 import org.junit.Before;
@@ -360,7 +362,17 @@ public class ConversionTest {
             protected List<Route> getRoutes(int parts) {
                 return Collections.singletonList(route);
             }
-        };
+
+			@Override
+			protected RestResponse createResponse(Request baseRequest, RestRequest request, HttpServletResponse response) {
+				return new RestResponse(request, response) {
+					@Override
+					public void sendError(RestException error) {
+						throw new SendError(error);
+					}
+				};
+			}
+		};
         handler.setHandler(callback);
 		handler.start();
 
@@ -372,7 +384,12 @@ public class ConversionTest {
         when(req.getMethod()).thenReturn("GET");
         when(req.getQueryParameters()).thenReturn(p);
         when(req.getResponse()).thenReturn(res);
-        handler.handle(uri.getPath(), req, request, response);
+
+		try {
+			handler.handle(uri.getPath(), req, request, response);
+		} catch (SendError e) {
+			throw (RestException) e.getCause();
+		}
 
 		response.getWriter().close();
 
@@ -539,4 +556,5 @@ public class ConversionTest {
 			return status;
 		}
 	}
+
 }

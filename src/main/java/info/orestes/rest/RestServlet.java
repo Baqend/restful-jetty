@@ -352,31 +352,28 @@ public abstract class RestServlet extends GenericServlet {
 	 *             if an I/O error occures
 	 */
 	public void service(Request request, Response response) throws RestException, IOException {
-        CompletableFuture<?> result = (CompletableFuture<?>) request.getAttribute(ASYNC_RESULT);
-
-        if (result == null) {
-            switch (request.getMethod()) {
-                case "DELETE":
-                    result = doDeleteAsync(request, response);
-                    break;
-                case "GET":
-                    result = doGetAsync(request, response);
-                    break;
-                case "HEAD":
-                    result = doHeadAsync(request, response);
-                    break;
-                case "OPTIONS":
-                    result = doOptionsAsync(request, response);
-                    break;
-                case "POST":
-                    result = doPostAsync(request, response);
-                    break;
-                case "PUT":
-                    result = doPutAsync(request, response);
-                    break;
-                default:
-                    notSupported(request, response);
-            }
+        CompletableFuture<Void> result = null;
+        switch (request.getMethod()) {
+            case "DELETE":
+                result = doDeleteAsync(request, response);
+                break;
+            case "GET":
+                result = doGetAsync(request, response);
+                break;
+            case "HEAD":
+                result = doHeadAsync(request, response);
+                break;
+            case "OPTIONS":
+                result = doOptionsAsync(request, response);
+                break;
+            case "POST":
+                result = doPostAsync(request, response);
+                break;
+            case "PUT":
+                result = doPutAsync(request, response);
+                break;
+            default:
+                notSupported(request, response);
         }
 
         if (result != null) {
@@ -390,10 +387,17 @@ public abstract class RestServlet extends GenericServlet {
                 }
             } else {
                 AsyncContext context = request.startAsync(request, response);
-
                 if (request.getDispatcherType() == DispatcherType.REQUEST) {
-                    request.setAttribute(ASYNC_RESULT, result);
-                    result.whenComplete((empty, error) -> context.dispatch());
+                    result.whenComplete((empty, error) -> {
+                        if (error != null) {
+                            if (error instanceof CompletionException)
+                                error = error.getCause();
+
+                            response.sendError(RestException.of(error));
+                        }
+
+                        context.complete();
+                    });
                 }
             }
         }

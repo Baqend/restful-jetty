@@ -1,6 +1,7 @@
 package info.orestes.rest.conversion;
 
 import info.orestes.rest.error.BadRequest;
+import info.orestes.rest.error.InternalServerError;
 import info.orestes.rest.error.RestException;
 import info.orestes.rest.error.UnsupportedMediaType;
 import info.orestes.rest.service.EntityType;
@@ -446,7 +447,7 @@ public class ConverterService {
 			
 			converter.getFormat().write(context, converter.toFormat(context, source.cast(entity), genericParams));
 		} catch (RuntimeException e) {
-			throw new IOException("The body can't be processed", e);
+			throw new InternalServerError("The body can't be processed", e);
 		}
 	}
 	

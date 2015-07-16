@@ -1,5 +1,6 @@
 package info.orestes.rest.conversion;
 
+import info.orestes.rest.error.InternalServerError;
 import info.orestes.rest.error.RestException;
 
 import org.junit.BeforeClass;
@@ -17,7 +18,7 @@ public class ConverterStringTest extends ConverterTestHelper {
 		assertConvertEquals(Boolean.class, MediaType.TEXT_ALL, true);
 	}
 
-    @Test(expected = RuntimeException.class)
+    @Test(expected = InternalServerError.class)
 	public final void testNullAsBoolean() throws RestException {
 		assertConvertEquals(Boolean.class, MediaType.TEXT_ALL, null);
 	}
@@ -27,7 +28,7 @@ public class ConverterStringTest extends ConverterTestHelper {
 		assertConvertEquals(Byte.class, MediaType.TEXT_ALL, (byte) 45);
 	}
 
-	@Test(expected = RuntimeException.class)
+	@Test(expected = InternalServerError.class)
 	public final void testNullAsByte() throws RestException {
 		assertConvertEquals(Byte.class, MediaType.TEXT_ALL, null);
 	}
@@ -37,7 +38,7 @@ public class ConverterStringTest extends ConverterTestHelper {
 		assertConvertEquals(Character.class, MediaType.TEXT_ALL, 'c');
 	}
 
-	@Test(expected = RuntimeException.class)
+	@Test(expected = InternalServerError.class)
 	public final void testNullAsCharacter() throws RestException {
 		assertConvertEquals(Character.class, MediaType.TEXT_ALL, null);
 	}
@@ -47,7 +48,7 @@ public class ConverterStringTest extends ConverterTestHelper {
 		assertConvertEquals(Double.class, MediaType.TEXT_ALL, 56.9384598734);
 	}
 
-	@Test(expected = RuntimeException.class)
+	@Test(expected = InternalServerError.class)
 	public final void testNullAsDouble() throws RestException {
 		assertConvertEquals(Double.class, MediaType.TEXT_ALL, null);
 	}
@@ -57,7 +58,7 @@ public class ConverterStringTest extends ConverterTestHelper {
 		assertConvertEquals(Float.class, MediaType.TEXT_ALL, 56.9384598734f);
 	}
 
-	@Test(expected = RuntimeException.class)
+	@Test(expected = InternalServerError.class)
 	public final void testNullAsFloat() throws RestException {
 		assertConvertEquals(Float.class, MediaType.TEXT_ALL, null);
 	}
@@ -67,7 +68,7 @@ public class ConverterStringTest extends ConverterTestHelper {
 		assertConvertEquals(Integer.class, MediaType.TEXT_ALL, 73658);
 	}
 
-	@Test(expected = RuntimeException.class)
+	@Test(expected = InternalServerError.class)
 	public final void testNullAsInteger() throws RestException {
 		assertConvertEquals(Integer.class, MediaType.TEXT_ALL, null);
 	}
@@ -77,7 +78,7 @@ public class ConverterStringTest extends ConverterTestHelper {
 		assertConvertEquals(Long.class, MediaType.TEXT_ALL, 7365893645768734l);
 	}
 
-	@Test(expected = RuntimeException.class)
+	@Test(expected = InternalServerError.class)
 	public final void testNullAsLong() throws RestException {
 		assertConvertEquals(Long.class, MediaType.TEXT_ALL, null);
 	}
@@ -87,7 +88,7 @@ public class ConverterStringTest extends ConverterTestHelper {
 		assertConvertEquals(Short.class, MediaType.TEXT_ALL, (short) 7346);
 	}
 
-	@Test(expected = RuntimeException.class)
+	@Test(expected = InternalServerError.class)
 	public final void testShortAsNull() throws RestException {
 		assertConvertEquals(Short.class, MediaType.TEXT_ALL, null);
 	}
@@ -97,7 +98,7 @@ public class ConverterStringTest extends ConverterTestHelper {
 		assertConvertEquals(String.class, MediaType.TEXT_ALL, "A test String");
 	}
 
-	@Test(expected = RuntimeException.class)
+	@Test(expected = InternalServerError.class)
 	public final void testNullAsString() throws RestException {
 		assertConvertEquals(String.class, MediaType.TEXT_ALL, null);
 	}

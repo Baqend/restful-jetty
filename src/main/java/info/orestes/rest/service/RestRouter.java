@@ -38,15 +38,21 @@ public class RestRouter extends HandlerWrapper {
 	@Override
 	public void handle(String path, Request request, HttpServletRequest req, HttpServletResponse res)
 			throws IOException, ServletException {
-        // jetty decodes the path param
-		path = request.getHttpURI().getPath();
-
         RestRequest restRequest = (RestRequest) request.getAttribute(REST_REQUEST);
         RestResponse restResponse = (RestResponse) request.getAttribute(REST_RESPONSE);
         if (restRequest == null) {
 			HttpURI uri = request.getHttpURI();
 
-			Map<String, String> matrix = uri.getParam() == null ? null : createMap(uri.getParam().split(";"));
+			// jetty decodes the path param
+			path = request.getHttpURI().getPath();
+
+			Map<String, String> matrix = null;
+			int paramsIndex = path.indexOf(";");
+			if (paramsIndex != -1) {
+				matrix = createMap(path.substring(paramsIndex + 1).split(";"));
+				path = path.substring(0, paramsIndex);
+			}
+
 			Map<String, String> query = uri.getQuery() == null ? null : createMap(uri.getQuery().split("&"));
 			
 			List<String> pathParts = new ArrayList<>();
@@ -71,12 +77,11 @@ public class RestRouter extends HandlerWrapper {
 						params.putAllValues(matches);
 					}
 
-					restRequest = new RestRequest(request, req, route, converterService);
-					restResponse = new RestResponse(restRequest, res);
+					restRequest = creatRequest(request, req, route);
+					restResponse = createResponse(request, restRequest, res);
 
 					request.setAttribute(REST_REQUEST, restRequest);
 					request.setAttribute(REST_RESPONSE, restResponse);
-
 					try {
 						restRequest.setMatches(matches);
 						break;
@@ -93,6 +98,14 @@ public class RestRouter extends HandlerWrapper {
 			super.handle(path, request, restRequest, restResponse);
 			request.setHandled(true);
 		}
+	}
+
+	protected RestRequest creatRequest(Request baseRequest, HttpServletRequest req, Route route) {
+		return new RestRequest(baseRequest, req, route, converterService);
+	}
+
+	protected RestResponse createResponse(Request baseRequest, RestRequest request, HttpServletResponse response) {
+		return new RestResponse(request, response);
 	}
 
 	protected Map<String, String> createMap(String[] params) {
