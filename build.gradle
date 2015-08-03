@@ -1,6 +1,6 @@
 plugins {
     id 'com.jfrog.bintray' version "1.1"
-    id 'net.researchgate.release' version '2.0.2'
+    id 'net.researchgate.release' version '2.1.1'
 }
 
 apply plugin: 'java'
@@ -36,7 +36,7 @@ group = "com.baqend"
 distTar.compression "GZIP"
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.3'
+    gradleVersion = '2.5'
 }
 
 task javadocJar(type: Jar) {
@@ -57,9 +57,14 @@ release {
     preTagCommitMessage = "pre tag commit:"
     tagCommitMessage = "creating tag:"
     newVersionCommitMessage = "new version commit:"
+    git {
+        requireBranch = 'master'
+        pushToRemote = 'github'
+        pushToCurrentBranch = false
+    }
 }
 
-createReleaseTag.dependsOn bintray
+afterReleaseBuild.dependsOn bintrayUpload
 
 bintray {
     user = project.properties.get('bintray_user')
