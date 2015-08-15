@@ -4,9 +4,10 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class Module {
 	private final Map<Class<?>, Constructor<?>> constructors = new HashMap<>();
@@ -26,46 +27,64 @@ public class Module {
 	
 	public <T> void bindInstance(Class<T> interf, T binding) {
 		Objects.requireNonNull(binding);
-		instances.put(interf, binding);
+		resolve(interf, binding);
 	}
 	
 	@SuppressWarnings("unchecked")
 	public <T> T moduleInstance(Class<T> cls) {
+        if (constructors.containsKey(cls)) {
+            Class<?> subClass = constructors.get(cls).getDeclaringClass();
+            cls = (Class<T>) subClass.asSubclass(cls);
+        }
+
 		T instance = (T) instances.get(cls);
 		
 		if (instance == null) {
 			Constructor<? extends T> constr = (Constructor<? extends T>) constructors.get(cls);
 			
 			if (constr == null) {
-				throw new RuntimeException("No binding defined for " + cls);
+                constr = getInjectableConstructor(cls);
 			}
 			
 			if (instances.containsKey(cls)) {
 				throw new RuntimeException("Cycle dependency detected. Can not initialize " + cls);
 			}
 			
-			instance = create(constr);
+			instance = create(cls, constr);
 		}
 		
 		return instance;
 	}
+
+	/**
+	 * Returns all instances of the cls including subtypes
+	 * @param cls The base class of all returning instances
+	 * @param <T> The type of the class
+	 * @return List of instances
+	 */
+	public <T> List<? extends T> getCurrentInstances(Class<T> cls) {
+		return instances.values().stream()
+			.filter(i -> cls.isAssignableFrom(i.getClass()))
+			.map(cls::cast)
+			.collect(Collectors.toList());
+	}
 	
-	private <I> I create(Constructor<I> constructor) {
-		resolve(constructor, null);
-		I instance = inject(constructor);
-		resolve(constructor, instance);
+	private <T> T create(Class<T> cls, Constructor<? extends T> constructor) {
+		resolve(cls, null);
+		T instance = inject(constructor);
+		resolve(cls, instance);
 		
 		return instance;
 	}
 	
-	private <T> void resolve(Constructor<T> constructor, T instance) {
-		for (Entry<Class<?>, Constructor<?>> entry : constructors.entrySet()) {
-			if (entry.getValue().equals(constructor)) {
-				if (instances.get(entry.getKey()) == null) {
-					instances.put(entry.getKey(), instance);
-				}
+	private <T> void resolve(Class<T> cls, T instance) {
+        if (instances.get(cls) == null) {
+			instances.put(cls, instance);
+
+			if (instance != null) {
+				instances.put(instance.getClass(), instance);
 			}
-		}
+        }
 	}
 	
 	public <T> T inject(Class<T> cls) {

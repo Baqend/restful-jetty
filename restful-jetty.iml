@@ -23,33 +23,33 @@
     <orderEntry type="library" exported="" name="Gradle: org.ow2.asm:asm-tree:5.0.1" level="project" />
     <orderEntry type="library" exported="" name="Gradle: org.ow2.asm:asm-commons:5.0.1" level="project" />
     <orderEntry type="library" exported="" name="Gradle: javax.websocket:javax.websocket-api:1.0" level="project" />
-    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty:jetty-server:9.3.0.v20150612" level="project" />
-    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty:jetty-client:9.3.0.v20150612" level="project" />
-    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty.websocket:javax-websocket-server-impl:9.3.0.v20150612" level="project" />
-    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty.websocket:javax-websocket-client-impl:9.3.0.v20150612" level="project" />
-    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty:jetty-servlets:9.3.0.v20150612" level="project" />
-    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty:jetty-http:9.3.0.v20150612" level="project" />
-    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty:jetty-io:9.3.0.v20150612" level="project" />
-    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty:jetty-annotations:9.3.0.v20150612" level="project" />
-    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty.websocket:websocket-server:9.3.0.v20150612" level="project" />
-    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty.websocket:websocket-client:9.3.0.v20150612" level="project" />
-    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty:jetty-continuation:9.3.0.v20150612" level="project" />
-    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty:jetty-util:9.3.0.v20150612" level="project" />
-    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty:jetty-plus:9.3.0.v20150612" level="project" />
-    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty:jetty-webapp:9.3.0.v20150612" level="project" />
-    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty.websocket:websocket-common:9.3.0.v20150612" level="project" />
-    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty.websocket:websocket-servlet:9.3.0.v20150612" level="project" />
-    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty:jetty-servlet:9.3.0.v20150612" level="project" />
-    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty:jetty-jndi:9.3.0.v20150612" level="project" />
-    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty:jetty-xml:9.3.0.v20150612" level="project" />
-    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty.websocket:websocket-api:9.3.0.v20150612" level="project" />
-    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty:jetty-security:9.3.0.v20150612" level="project" />
-    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty.http2:http2-server:9.3.0.v20150612" level="project" />
-    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty.http2:http2-common:9.3.0.v20150612" level="project" />
-    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty.http2:http2-hpack:9.3.0.v20150612" level="project" />
-    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty:jetty-alpn-server:9.3.0.v20150612" level="project" />
-    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty.http2:http2-client:9.3.0.v20150612" level="project" />
-    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty:jetty-alpn-client:9.3.0.v20150612" level="project" />
-    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty.http2:http2-http-client-transport:9.3.0.v20150612" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty:jetty-server:9.3.2.v20150730" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty.websocket:javax-websocket-server-impl:9.3.2.v20150730" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty:jetty-servlets:9.3.2.v20150730" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty.http2:http2-server:9.3.2.v20150730" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty:jetty-alpn-server:9.3.2.v20150730" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty:jetty-client:9.3.2.v20150730" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty:jetty-alpn-client:9.3.2.v20150730" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty.http2:http2-http-client-transport:9.3.2.v20150730" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty.websocket:javax-websocket-client-impl:9.3.2.v20150730" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty:jetty-http:9.3.2.v20150730" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty:jetty-io:9.3.2.v20150730" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty:jetty-annotations:9.3.2.v20150730" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty.websocket:websocket-server:9.3.2.v20150730" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty:jetty-continuation:9.3.2.v20150730" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty:jetty-util:9.3.2.v20150730" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty.http2:http2-common:9.3.2.v20150730" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty.http2:http2-client:9.3.2.v20150730" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty.websocket:websocket-client:9.3.2.v20150730" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty:jetty-plus:9.3.2.v20150730" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty:jetty-webapp:9.3.2.v20150730" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty.websocket:websocket-common:9.3.2.v20150730" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty.websocket:websocket-servlet:9.3.2.v20150730" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty:jetty-servlet:9.3.2.v20150730" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty.http2:http2-hpack:9.3.2.v20150730" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty:jetty-jndi:9.3.2.v20150730" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty:jetty-xml:9.3.2.v20150730" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty.websocket:websocket-api:9.3.2.v20150730" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: org.eclipse.jetty:jetty-security:9.3.2.v20150730" level="project" />
   </component>
 </module>
