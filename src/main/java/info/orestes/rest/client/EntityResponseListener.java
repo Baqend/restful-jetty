@@ -67,7 +67,7 @@ public abstract class EntityResponseListener<E> extends ResponseListener<E> {
         if (result.isSucceeded()) {
             try {
                 E entity = readEntity(result.getResponse(),
-                    buffer.length > 0 ? new ByteArrayInputStream(buffer) : null);
+                    buffer.length > 0 ? new ByteArrayInputStream(buffer, 0, bufferOffset) : null);
                 onComplete(new EntityResult<E>(result.getRequest(), result.getResponse(), entity));
             } catch (Exception e) {
                 onComplete(new EntityResult<E>(result.getRequest(), result.getResponse(), e));
