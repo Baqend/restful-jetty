@@ -1,24 +1,25 @@
 package info.orestes.rest.client;
 
 import info.orestes.rest.service.EntityType;
-
 import org.eclipse.jetty.client.HttpContentResponse;
 import org.eclipse.jetty.client.api.Response;
 
-public class EntityResponse<T> extends HttpContentResponse {
+import java.util.stream.Stream;
 
-    private final T entity;
+public class EntityStreamResponse<T> extends HttpContentResponse {
+
+    private final Stream<T> entities;
     private final EntityType<T> entityType;
 
-    public EntityResponse(Response response, EntityType<T> entityType, T entity) {
+    public EntityStreamResponse(Response response, EntityType<T> entityType, Stream<T> entities) {
         super(response, null, null, null);
 
         this.entityType = entityType;
-        this.entity = entity;
+        this.entities = entities;
     }
 
-    public T getEntity() {
-        return entity;
+    public Stream<T> getEntity() {
+        return entities;
     }
 
     public EntityType<T> getEntityType() {

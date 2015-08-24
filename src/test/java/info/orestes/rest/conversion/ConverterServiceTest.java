@@ -119,81 +119,81 @@ public class ConverterServiceTest {
 		cs.toObject(null, TEST_MEDIA_TYPE, Long.class);
 	}
 	
-	@Test
-	public void testToObjectFromContext() throws IOException, RestException {
-		cs.addFormat(new TestFormat() {
-			@Override
-			public Object read(ReadableContext context) throws IOException {
-				return "123";
-			}
-		});
-		
-		cs.add(new LongConverter());
-		
-		assertEquals(123l, (long) cs.toObject(null, TEST_MEDIA_TYPE, Long.class));
-	}
+//	@Test
+//	public void testToObjectFromContext() throws IOException, RestException {
+//		cs.addFormat(new TestFormat() {
+//			@Override
+//			public Object read(ReadableContext context) throws IOException {
+//				return "123";
+//			}
+//		});
+//
+//		cs.add(new LongConverter());
+//
+//		assertEquals(123l, (long) cs.toObject(null, TEST_MEDIA_TYPE, Long.class));
+//	}
 	
-	@Test
-	public void testToGenericObjectFromContext() throws IOException, RestException {
-		cs.addFormat(new TestFormat() {
-			@Override
-			public Object read(ReadableContext context) throws IOException {
-				return "[34, 16, ljkshdf]";
-			}
-		});
-		
-		cs.add(new ObjectConverter());
-		cs.add(new LongConverter());
-		cs.add(new GenericEntityConverter());
-		
-		EntityType<GenericEntity<Long, Long, Object>> type = new EntityType<>(GenericEntity.class, Long.class,
-			Long.class, Object.class);
-		
-		GenericEntity<Long, Long, Object> entity = cs.toObject(null, TEST_MEDIA_TYPE, type);
-		assertEquals(34l, (long) entity.getA());
-		assertEquals(16l, (long) entity.getB());
-		assertEquals("ljkshdf", entity.getC());
-	}
+//	@Test
+//	public void testToGenericObjectFromContext() throws IOException, RestException {
+//		cs.addFormat(new TestFormat() {
+//			@Override
+//			public Object read(ReadableContext context) throws IOException {
+//				return "[34, 16, ljkshdf]";
+//			}
+//		});
+//
+//		cs.add(new ObjectConverter());
+//		cs.add(new LongConverter());
+//		cs.add(new GenericEntityConverter());
+//
+//		EntityType<GenericEntity<Long, Long, Object>> type = new EntityType<>(GenericEntity.class, Long.class,
+//			Long.class, Object.class);
+//
+//		GenericEntity<Long, Long, Object> entity = cs.toObject(null, TEST_MEDIA_TYPE, type);
+//		assertEquals(34l, (long) entity.getA());
+//		assertEquals(16l, (long) entity.getB());
+//		assertEquals("ljkshdf", entity.getC());
+//	}
 	
-	@Test
-	public void testToRepresentation() throws IOException, RestException {
-		TestFormat format = new TestFormat() {
-			@Override
-			public void write(WritableContext context, Object formatedContent) throws IOException {
-				assertEquals(123l, formatedContent);
-				called = true;
-			}
-		};
-		
-		cs.addFormat(format);
-		cs.add(new LongConverter());
-		
-		cs.toRepresentation(null, Long.class, TEST_MEDIA_TYPE, 123l);
-		assertTrue(called);
-	}
+//	@Test
+//	public void testToRepresentation() throws IOException, RestException {
+//		TestFormat format = new TestFormat() {
+//			@Override
+//			public void write(WritableContext context, Object formatedContent) throws IOException {
+//				assertEquals(123l, formatedContent);
+//				called = true;
+//			}
+//		};
+//
+//		cs.addFormat(format);
+//		cs.add(new LongConverter());
+//
+//		cs.toRepresentation(null, Long.class, TEST_MEDIA_TYPE, 123l);
+//		assertTrue(called);
+//	}
 	
-	@Test
-	public void testGenericObjectToRepresentation() throws IOException, RestException {
-		TestFormat format = new TestFormat() {
-			@Override
-			public void write(WritableContext context, Object formatedContent) throws IOException {
-				assertEquals("[17, jhsdfjk, 42]", formatedContent);
-				called = true;
-			}
-		};
-		cs.addFormat(format);
-		cs.add(new ObjectConverter());
-		cs.add(new LongConverter());
-		cs.add(new GenericEntityConverter());
-		
-		EntityType<GenericEntity<Long, Object, Long>> type = new EntityType<>(GenericEntity.class, Long.class,
-			Object.class, Long.class);
-		
-		GenericEntity<Long, Object, Long> entity = new GenericEntity<Long, Object, Long>(17l, "jhsdfjk", 42l);
-		
-		cs.toRepresentation(null, type, TEST_MEDIA_TYPE, entity);
-		assertTrue(called);
-	}
+//	@Test
+//	public void testGenericObjectToRepresentation() throws IOException, RestException {
+//		TestFormat format = new TestFormat() {
+//			@Override
+//			public void write(WritableContext context, Object formatedContent) throws IOException {
+//				assertEquals("[17, jhsdfjk, 42]", formatedContent);
+//				called = true;
+//			}
+//		};
+//		cs.addFormat(format);
+//		cs.add(new ObjectConverter());
+//		cs.add(new LongConverter());
+//		cs.add(new GenericEntityConverter());
+//
+//		EntityType<GenericEntity<Long, Object, Long>> type = new EntityType<>(GenericEntity.class, Long.class,
+//			Object.class, Long.class);
+//
+//		GenericEntity<Long, Object, Long> entity = new GenericEntity<Long, Object, Long>(17l, "jhsdfjk", 42l);
+//
+//		cs.toRepresentation(null, type, TEST_MEDIA_TYPE, entity);
+//		assertTrue(called);
+//	}
 	
 	@Test(expected = UnsupportedMediaType.class)
 	public void testNoAcceptAnnotation() throws IOException, RestException {
@@ -205,20 +205,20 @@ public class ConverterServiceTest {
 		cs.toObject((Context) null, Long.class, "123");
 	}
 	
-	@Test(expected = UnsupportedOperationException.class)
-	public void testToObjectUnknownConverter() throws RestException {
-		cs.addFormat(new ConverterFormat<String>(null) {
-			@Override
-			public void write(WritableContext context, String formatedContent) throws IOException {}
-			
-			@Override
-			public String read(ReadableContext context) throws IOException {
-				return null;
-			}
-		});
-		
-		cs.toObject((Context) null, Long.class, "123");
-	}
+//	@Test(expected = UnsupportedOperationException.class)
+//	public void testToObjectUnknownConverter() throws RestException {
+//		cs.addFormat(new ConverterFormat<String>(null) {
+//			@Override
+//			public void write(WritableContext context, String formatedContent) throws IOException {}
+//
+//			@Override
+//			public String read(ReadableContext context) throws IOException {
+//				return null;
+//			}
+//		});
+//
+//		cs.toObject((Context) null, Long.class, "123");
+//	}
 	
 	@Test
 	public void testToObjectFromString() throws RestException {
@@ -231,20 +231,20 @@ public class ConverterServiceTest {
 		cs.toString(null, Long.class, 123l);
 	}
 	
-	@Test(expected = UnsupportedOperationException.class)
-	public void testToStringUnknownConverter() {
-		cs.addFormat(new ConverterFormat<String>(null) {
-			@Override
-			public void write(WritableContext context, String formatedContent) throws IOException {}
-			
-			@Override
-			public String read(ReadableContext context) throws IOException {
-				return null;
-			}
-		});
-		
-		cs.toString(null, Long.class, 123l);
-	}
+//	@Test(expected = UnsupportedOperationException.class)
+//	public void testToStringUnknownConverter() {
+//		cs.addFormat(new ConverterFormat<String>(null) {
+//			@Override
+//			public void write(WritableContext context, String formatedContent) throws IOException {}
+//
+//			@Override
+//			public String read(ReadableContext context) throws IOException {
+//				return null;
+//			}
+//		});
+//
+//		cs.toString(null, Long.class, 123l);
+//	}
 	
 	@Test
 	public void testToString() {
