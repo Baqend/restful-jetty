@@ -24,8 +24,8 @@ public class RestRequest extends HttpRequest {
 
     @Override
     public Request content(ContentProvider content, String contentType) {
-        if (content instanceof EntityContent) {
-            EntityContent<?> entityContent = ((EntityContent<?>) content);
+        if (content instanceof EntityContentProvider) {
+            EntityContentProvider<?> entityContent = ((EntityContentProvider<?>) content);
 
             entityContent.setRequest(this);
 
@@ -120,7 +120,6 @@ public class RestRequest extends HttpRequest {
 
             header(HttpHeader.ACCEPT.asString(), accepted.toString());
         }
-
         super.send(listener);
     }
 

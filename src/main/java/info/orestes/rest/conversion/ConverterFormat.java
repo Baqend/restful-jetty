@@ -8,6 +8,7 @@ import info.orestes.rest.util.ClassUtil;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.stream.Stream;
 
 /**
@@ -167,5 +168,27 @@ public abstract class ConverterFormat<F> {
          * @return true if there is a next element, false otherwise.
          */
         boolean hasNext() throws IOException;
+
+        default Iterator<T> asIterator() {
+            return new Iterator<T>() {
+                @Override
+                public boolean hasNext() {
+                    try {
+                        return EntityReader.this.hasNext();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+
+                @Override
+                public T next() {
+                    try {
+                        return EntityReader.this.readNext();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            };
+        }
     }
 }
