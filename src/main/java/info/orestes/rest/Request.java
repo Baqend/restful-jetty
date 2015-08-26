@@ -50,14 +50,4 @@ public interface Request extends ReadableContext, HttpServletRequest {
      * @throws RestException if a exception occurred while parsing the request body
      */
     public <E> E readEntity() throws RestException;
-
-
-    /**
-     * Reads the converted entities from the request into the returned stream.
-     *
-     * @param <E> The content type.
-     * @return The stream with all the entities.
-     * @throws RestException If a exception occurred while parsing the request body
-     */
-    public <E> Stream<E> readEntityStream() throws RestException, IOException;
 }

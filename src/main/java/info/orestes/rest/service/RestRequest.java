@@ -8,6 +8,7 @@ import info.orestes.rest.conversion.MediaType;
 import info.orestes.rest.conversion.ReadableContext;
 import info.orestes.rest.error.BadRequest;
 import info.orestes.rest.error.RestException;
+import info.orestes.rest.error.UnsupportedMediaType;
 import info.orestes.rest.service.RestRouter.Route;
 import org.eclipse.jetty.server.HttpInput;
 
@@ -89,61 +90,57 @@ public class RestRequest extends HttpServletRequestWrapper implements Request {
     @Override
     @SuppressWarnings("unchecked")
     public <E> E readEntity() throws RestException {
-        EntityType<E> requestType = (EntityType<E>) getRestMethod().getRequestType();
+        E result = null;
+        MediaType mediaType = MediaType.parse(getContentType());
+        EntityType<?> type = getRestMethod().getRequestType();
 
-        if (requestType != null) {
-            try {
-                MediaType mediaType = MediaType.parse(getContentType());
-                return converterService.toObject(this, mediaType, requestType);
-            } catch (RestException e) {
-                throw e;
-            } catch (Exception e) {
-                throw new BadRequest("The requested entity is not valid.", e);
-            }
-        } else {
-            return null;
+        if (Stream.class.equals(type.getRawType())) {
+
+            EntityType<?> entityType = new EntityType<>(type.getActualTypeArguments()[0]);
+            result = (E) readStream(mediaType, entityType);
+
+        } else if (type != null) {
+
+            result = readSingleEntity(mediaType, (EntityType<E>) type);
+        }
+        return result;
+    }
+
+    /**
+     * Reads a single entity from the underlying inputstream.
+     *
+     * @param mediaType The type of the data in the inputstream.
+     * @param type      The type of the entity.
+     * @param <E>       The type if the entity.
+     * @return The parsed and converted entity.
+     * @throws RestException
+     */
+    private <E> E readSingleEntity(MediaType mediaType, EntityType<E> type) throws RestException {
+        EntityType<E> requestType = type;
+        try {
+            return converterService.toObject(this, mediaType, requestType);
+        } catch (RestException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new BadRequest("The requested entity is not valid.", e);
         }
     }
 
-    @Override
-    public <E> Stream<E> readEntityStream() throws RestException, IOException {
-
-
-        MediaType mediaType = MediaType.parse(getContentType());
-
-
-        EntityType<Stream<E>> sendType = (EntityType<Stream<E>>) getRestMethod().getRequestType();
-        EntityType<E> entityType = new EntityType<E>(sendType.getActualTypeArguments()[0]);
+    /**
+     * Reads a stream of entities from the underlying inputstream.
+     *
+     * @param mediaType  The type of the data in the inputstream.
+     * @param entityType The type of the entities.
+     * @param <E>        The type of the entities.
+     * @return The stream of entities.
+     * @throws UnsupportedMediaType
+     */
+    private <E> Stream<E> readStream(MediaType mediaType, EntityType<E> entityType) throws UnsupportedMediaType {
 
         EntityReader<E> reader = getConverterService().newEntityReader(this, entityType, mediaType);
 
         int characteristics = Spliterator.ORDERED;
         Spliterator<E> split = Spliterators.spliteratorUnknownSize(reader.asIterator(), characteristics);
         return StreamSupport.stream(split, false);
-    }
-
-    private class ServletReadContext implements ReadableContext {
-        private final Response response;
-        private final BufferedReader reader;
-
-        private ServletReadContext(Response response, ServletInputStream in) throws IOException {
-            this.response = response;
-            reader = new BufferedReader(new InputStreamReader(in, "UTF-8"));
-        }
-
-        @Override
-        public BufferedReader getReader() throws IOException {
-            return reader;
-        }
-
-        @Override
-        public <T> T getArgument(String name) {
-            return response.getArgument(name);
-        }
-
-        @Override
-        public void setArgument(String name, Object value) {
-            response.setArgument(name, value);
-        }
     }
 }
