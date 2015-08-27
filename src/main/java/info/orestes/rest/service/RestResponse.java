@@ -68,18 +68,41 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
             return;
         }
 
-        EntityType<?> responseType = request.getRestMethod().getResponseType();
-        if (responseType == null) {
+        EntityType<?> type = request.getRestMethod().getResponseType();
+        if (type == null) {
             throw new IllegalStateException("A response entity was set, but not declared in the specification.");
         }
 
+
         try {
-            sendBody(entity, responseType);
+            if (Stream.class.equals(type.getRawType())) {
+                if (!(entity instanceof Stream)) {
+                    throw new IllegalArgumentException(
+                        "Expected to send a stream. Object was: " + entity.getClass().getSimpleName());
+                }
+                EntityType<Object> entityType = new EntityType<Object>(type.getActualTypeArguments()[0]);
+                sendStream((Stream<Object>) entity, entityType);
+
+            } else {
+                sendBody(entity, type);
+            }
         } catch (IOException e) {
             LOG.debug(e);
         } catch (Exception e) {
             sendError(RestException.of(e));
         }
+
+
+    }
+
+    private MediaType getMediaType(EntityType<?> responseType) throws NotAcceptable {
+        List<MediaType> mediaTypes = parseMediaTypes(request.getHeader(HttpHeader.ACCEPT.asString()));
+        ConverterService converterService = request.getConverterService();
+        MediaType mediaType = converterService.getPreferedMediaType(mediaTypes, responseType.getRawType());
+        if (mediaType == null) {
+            throw new NotAcceptable("The requested response media types are not supported.");
+        }
+        return mediaType;
     }
 
     @SuppressWarnings("unchecked")
@@ -136,83 +159,73 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
         }
     }
 
-    @Override
-    public <T> void sendStream(Stream<T> objectStream) throws RestException, IOException {
-        EntityType<Stream<T>> responseType = (EntityType<Stream<T>>) request.getRestMethod().getResponseType();
-        if (responseType == null) {
-            throw new IllegalStateException("A response entity was set, but not declared in the specification.");
-        }
+    /**
+     * Sends the given stream using the underlying outputstream.
+     *
+     * @param objectStream The entities to stream / send.
+     * @param entityType   The type of the entities.
+     * @param <T>          The type of the entities.
+     * @throws RestException
+     * @throws IOException
+     */
+    public <T> void sendStream(Stream<T> objectStream, EntityType<T> entityType) throws RestException, IOException {
+        MediaType mediaType = getMediaType(entityType);
+        setContentType(mediaType.toString());
+        setCharacterEncoding("utf-8");
 
-        List<MediaType> mediaTypes = parseMediaTypes(request.getHeader(HttpHeader.ACCEPT.asString()));
+        Iterator<T> iterator = objectStream.iterator();
 
-        ConverterService converterService = request.getConverterService();
-        EntityType<T> entityType = new EntityType<T>(responseType.getActualTypeArguments()[0]);
-        MediaType mediaType = converterService.getPreferedMediaType(mediaTypes, entityType.getRawType());
-
-        if (mediaType != null) {
-            setContentType(mediaType.toString());
-            setCharacterEncoding("utf-8");
-
-            Iterator<T> iterator = objectStream.iterator();
-
-            AsyncContext context = request.startAsync(request, this);
-            ServletOutputStream outputStream = getOutputStream();
-            ServletWriteContext writeContext = new ServletWriteContext();
-            EntityWriter<T> entityWriter = converterService.newEntityWriter(writeContext, entityType, mediaType);
+        AsyncContext context = request.startAsync(request, this);
+        ServletOutputStream outputStream = getOutputStream();
+        ServletWriteContext writeContext = new ServletWriteContext();
+        EntityWriter<T> entityWriter = request.getConverterService()
+            .newEntityWriter(writeContext, entityType, mediaType);
 
 
-            outputStream.setWriteListener(new WriteListener() {
-                @Override
-                public void onWritePossible() throws IOException {
-                    while (outputStream.isReady()) {
-                        if (iterator.hasNext()) {
-                            T elem = iterator.next();
+        outputStream.setWriteListener(new WriteListener() {
+            @Override
+            public void onWritePossible() throws IOException {
+                while (outputStream.isReady()) {
+                    if (iterator.hasNext()) {
+                        T elem = iterator.next();
 
-                            try {
-                                entityWriter.writeNext(elem);
+                        try {
+                            entityWriter.writeNext(elem);
 
-                                writeToJetty();
-                            } catch (RestException e) {
-                                sendError(e);
-                            }
-                        } else {
-                            entityWriter.close();
                             writeToJetty();
-                            context.complete();
-                            break;
+                        } catch (RestException e) {
+                            sendError(e);
                         }
+                    } else {
+                        entityWriter.close();
+                        writeToJetty();
+                        context.complete();
+                        break;
                     }
                 }
+            }
 
-                private void writeToJetty() throws IOException {
-                    writeContext.getWriter().flush();
-                    writeContext.getBuffer().writeTo(outputStream);
-                    writeContext.getBuffer().reset();
-                }
+            private void writeToJetty() throws IOException {
+                writeContext.getWriter().flush();
+                writeContext.getBuffer().writeTo(outputStream);
+                writeContext.getBuffer().reset();
+            }
 
-                @Override
-                public void onError(Throwable t) {
-                    sendError(RestException.of(t));
-                }
-            });
-
-
-        } else {
-            throw new NotAcceptable("The requested response media types are not supported.");
-        }
+            @Override
+            public void onError(Throwable t) {
+                sendError(RestException.of(t));
+            }
+        });
     }
 
     private void sendBody(Object entity, EntityType<?> type) throws IOException, RestException {
-        List<MediaType> mediaTypes = parseMediaTypes(request.getHeader(HttpHeader.ACCEPT.asString()));
-
-        ConverterService converterService = request.getConverterService();
-        MediaType mediaType = converterService.getPreferedMediaType(mediaTypes, type.getRawType());
+        MediaType mediaType = getMediaType(type);
 
         if (mediaType != null) {
             setContentType(mediaType.toString());
             setCharacterEncoding("utf-8");
 
-            converterService.toRepresentation(this, type, mediaType, entity);
+            request.getConverterService().toRepresentation(this, type, mediaType, entity);
         } else {
             throw new NotAcceptable("The requested response media types are not supported.");
         }

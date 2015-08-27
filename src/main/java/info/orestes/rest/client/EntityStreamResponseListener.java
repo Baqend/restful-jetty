@@ -93,25 +93,7 @@ public abstract class EntityStreamResponseListener<E> extends ResponseListener<E
         ConverterFormat.EntityReader<E> entityReader;
         entityReader = entityContext.getEntityReader(getEntityType(), response);
 
-        Iterator<E> source = new Iterator<E>() {
-            @Override
-            public boolean hasNext() {
-                try {
-                    return entityReader.hasNext();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-
-            @Override
-            public E next() {
-                try {
-                    return entityReader.readNext();
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        };
+        Iterator<E> source = entityReader.asIterator();
 
         int characteristics = Spliterator.ORDERED;
         Stream<E> resultStream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(source, characteristics),
