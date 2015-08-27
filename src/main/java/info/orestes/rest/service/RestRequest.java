@@ -90,20 +90,27 @@ public class RestRequest extends HttpServletRequestWrapper implements Request {
     @Override
     @SuppressWarnings("unchecked")
     public <E> E readEntity() throws RestException {
-        E result = null;
-        MediaType mediaType = MediaType.parse(getContentType());
         EntityType<?> type = getRestMethod().getRequestType();
-
-        if (Stream.class.equals(type.getRawType())) {
-
-            EntityType<?> entityType = new EntityType<>(type.getActualTypeArguments()[0]);
-            result = (E) readStream(mediaType, entityType);
-
-        } else if (type != null) {
-
-            result = readSingleEntity(mediaType, (EntityType<E>) type);
+        if (type == null) {
+            return null;
         }
-        return result;
+
+        try {
+            MediaType mediaType = MediaType.parse(getContentType());
+
+            if (Stream.class.equals(type.getRawType())) {
+
+                EntityType<?> entityType = new EntityType<>(type.getActualTypeArguments()[0]);
+                return (E) readStream(mediaType, entityType);
+
+            } else {
+                return readSingleEntity(mediaType, (EntityType<E>) type);
+            }
+        } catch (RestException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new BadRequest("The requested entity is not valid.", e);
+        }
     }
 
     /**
@@ -115,15 +122,9 @@ public class RestRequest extends HttpServletRequestWrapper implements Request {
      * @return The parsed and converted entity.
      * @throws RestException
      */
-    private <E> E readSingleEntity(MediaType mediaType, EntityType<E> type) throws RestException {
+    private <E> E readSingleEntity(MediaType mediaType, EntityType<E> type) throws RestException, IOException {
         EntityType<E> requestType = type;
-        try {
-            return converterService.toObject(this, mediaType, requestType);
-        } catch (RestException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new BadRequest("The requested entity is not valid.", e);
-        }
+        return converterService.toObject(this, mediaType, requestType);
     }
 
     /**
