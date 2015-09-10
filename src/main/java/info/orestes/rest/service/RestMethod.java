@@ -188,9 +188,8 @@ public class RestMethod {
 
     public boolean isForceSSL() { return forceSSL; }
 
-	@Override
-	public String toString() {
-		String result = getAction() + " ";
+	public String getSignatureAsString() {
+		String result = "";
 
 		Type lastType = null;
 		for (PathElement el : getSignature()) {
@@ -206,10 +205,15 @@ public class RestMethod {
 					result += (lastType == Type.QUERY ? '&' : '?') + el.toString();
 					break;
 			}
-			
+
 			lastType = el.getType();
 		}
-		
+
 		return result;
+	}
+
+	@Override
+	public String toString() {
+		return getAction() + " " + getSignatureAsString();
 	}
 }

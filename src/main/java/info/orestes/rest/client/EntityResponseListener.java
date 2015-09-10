@@ -1,22 +1,15 @@
 package info.orestes.rest.client;
 
-import info.orestes.rest.conversion.ConverterFormat;
-import info.orestes.rest.conversion.ConverterFormat.EntityReader;
-import info.orestes.rest.conversion.ConverterService;
-import info.orestes.rest.conversion.MediaType;
-import info.orestes.rest.conversion.ReadableContext;
-import info.orestes.rest.error.RestException;
 import info.orestes.rest.service.EntityType;
 import org.eclipse.jetty.client.api.Response;
-import org.eclipse.jetty.client.api.Response.Listener.Adapter;
 import org.eclipse.jetty.client.api.Result;
 import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpMethod;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.util.Optional;
 
 public abstract class EntityResponseListener<E> extends ResponseListener<E> {
 
@@ -79,13 +72,10 @@ public abstract class EntityResponseListener<E> extends ResponseListener<E> {
     }
 
     private E readEntity(Response response, InputStream entityStream) throws Exception {
-        Optional<EntityContext> entityContext = Optional.ofNullable(entityStream)
-            .map(stream -> new EntityContext(getRequest(), entityStream));
+        EntityContext entityContext = entityStream != null? new EntityContext(getRequest(), entityStream): null;
 
-        if (entityContext.isPresent() && response.getStatus() >= 200 && response.getStatus() < 300) {
-
-            return entityContext.get().getEntityReader(getEntityType(), response).read();
-
+        if (entityContext != null && response.getStatus() >= 200 && response.getStatus() < 300) {
+            return entityContext.getEntityReader(getEntityType(), response).read();
         } else if (response.getStatus() >= 400) {
             return handleResponseError(response, entityContext);
         }
