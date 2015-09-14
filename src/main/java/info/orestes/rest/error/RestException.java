@@ -99,7 +99,13 @@ public class RestException extends ServletException {
      * @return the throwable itself if it is an RestException otherwise wrapped by an {@link InternalServerError}
      */
     public static RestException of(Throwable t) {
-        return t instanceof RestException? (RestException) t: new InternalServerError(t);
+        if (t instanceof RestException)
+			return (RestException) t;
+
+		if (t.getCause() instanceof RestException)
+			return ((RestException) t.getCause());
+
+		return new InternalServerError(t);
     }
 
     /**
