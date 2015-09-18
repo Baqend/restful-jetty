@@ -22,6 +22,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -181,7 +182,6 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
         EntityWriter<T> entityWriter = request.getConverterService()
             .newEntityWriter(writeContext, entityType, mediaType);
 
-
         outputStream.setWriteListener(new WriteListener() {
             @Override
             public void onWritePossible() throws IOException {
@@ -237,7 +237,7 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
 
         public ServletWriteContext() {
             this.buffer = new ByteArrayOutputStream(8 * 1024);
-            this.writer = new PrintWriter(new OutputStreamWriter(this.buffer));
+            this.writer = new PrintWriter(new OutputStreamWriter(this.buffer, Charset.forName("utf-8")));
         }
 
         public ByteArrayOutputStream getBuffer() {
