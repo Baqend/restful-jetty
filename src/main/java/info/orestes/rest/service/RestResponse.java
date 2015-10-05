@@ -200,6 +200,7 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
                         entityWriter.close();
                         writeToJetty();
                         context.complete();
+                        objectStream.close();
                         break;
                     }
                 }
@@ -213,6 +214,7 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
 
             @Override
             public void onError(Throwable t) {
+                objectStream.close();
                 sendError(RestException.of(t));
             }
         });
