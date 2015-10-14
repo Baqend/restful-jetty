@@ -2,6 +2,7 @@ package info.orestes.rest.service;
 
 import info.orestes.rest.Request;
 import info.orestes.rest.Response;
+import info.orestes.rest.conversion.ContentType;
 import info.orestes.rest.conversion.ConverterFormat.EntityReader;
 import info.orestes.rest.conversion.ConverterService;
 import info.orestes.rest.conversion.MediaType;
@@ -96,15 +97,13 @@ public class RestRequest extends HttpServletRequestWrapper implements Request {
         }
 
         try {
-            MediaType mediaType = MediaType.parse(getContentType());
+            ContentType contentType = ContentType.parse(getContentType());
 
             if (Stream.class.equals(type.getRawType())) {
-
                 EntityType<?> entityType = new EntityType<>(type.getActualTypeArguments()[0]);
-                return (E) readStream(mediaType, entityType);
-
+                return (E) readStream(contentType, entityType);
             } else {
-                return readSingleEntity(mediaType, (EntityType<E>) type);
+                return readSingleEntity(contentType, (EntityType<E>) type);
             }
         } catch (RestException e) {
             throw e;
@@ -116,29 +115,27 @@ public class RestRequest extends HttpServletRequestWrapper implements Request {
     /**
      * Reads a single entity from the underlying inputstream.
      *
-     * @param mediaType The type of the data in the inputstream.
+     * @param contentType The type of the data in the inputstream.
      * @param type      The type of the entity.
      * @param <E>       The type if the entity.
      * @return The parsed and converted entity.
      * @throws RestException
      */
-    private <E> E readSingleEntity(MediaType mediaType, EntityType<E> type) throws RestException, IOException {
-        EntityType<E> requestType = type;
-        return converterService.toObject(this, mediaType, requestType);
+    private <E> E readSingleEntity(ContentType contentType, EntityType<E> type) throws RestException, IOException {
+        return converterService.toObject(this, contentType, type);
     }
 
     /**
      * Reads a stream of entities from the underlying inputstream.
      *
-     * @param mediaType  The type of the data in the inputstream.
+     * @param contentType  The type of the data in the inputstream.
      * @param entityType The type of the entities.
      * @param <E>        The type of the entities.
      * @return The stream of entities.
      * @throws UnsupportedMediaType
      */
-    private <E> Stream<E> readStream(MediaType mediaType, EntityType<E> entityType) throws UnsupportedMediaType {
-
-        EntityReader<E> reader = getConverterService().newEntityReader(this, entityType, mediaType);
+    private <E> Stream<E> readStream(ContentType contentType, EntityType<E> entityType) throws UnsupportedMediaType {
+        EntityReader<E> reader = getConverterService().newEntityReader(this, entityType, contentType);
 
         int characteristics = Spliterator.ORDERED;
         Spliterator<E> split = Spliterators.spliteratorUnknownSize(reader.asIterator(), characteristics);

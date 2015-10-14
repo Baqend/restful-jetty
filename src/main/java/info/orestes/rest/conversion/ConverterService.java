@@ -201,7 +201,7 @@ public class ConverterService {
     /**
      * Returns a converter which was registered for the given media type and java type.
      *
-     * @param mediaType     The media type to get the {@link Converter} for
+     * @param mimeType     The mime type to get the {@link Converter} for
      * @param type          The java type to get the {@link Converter} for
      * @param genericParams If the java type is generic, the used types to convert the generic java type
      * @param <F>           The base class of the format
@@ -212,8 +212,9 @@ public class ConverterService {
      *                                       declared by the java type
      */
     @SuppressWarnings("unchecked")
-    private <T, F> Converter<T, F> getConverter(MediaType mediaType, Class<?> type, Class<?>[] genericParams) throws UnsupportedMediaType {
-        Converter<?, ?> converter = getCompatibleConverter(mediaType, type);
+    private <T, F> Converter<T, F> getConverter(MimeType mimeType, Class<?> type, Class<?>[] genericParams) throws
+        UnsupportedMediaType {
+        Converter<?, ?> converter = getCompatibleConverter(mimeType, type);
 
         check(converter, type, genericParams);
 
@@ -221,16 +222,16 @@ public class ConverterService {
     }
 
     @SuppressWarnings("unchecked")
-    private <T, F> Converter<T, F> getCompatibleConverter(MediaType mediaType, Class<?> type) {
+    private <T, F> Converter<T, F> getCompatibleConverter(MimeType mimeType, Class<?> type) {
         Map<MediaType, Converter<?, ?>> acceptTypes = accept.get(type);
         if (acceptTypes != null) {
-            Converter<?, ?> converter = acceptTypes.get(mediaType);
+            Converter<?, ?> converter = acceptTypes.get(mimeType);
             if (converter != null) {
                 return (Converter<T, F>) converter;
             }
 
             for (Map.Entry<MediaType, Converter<?, ?>> entry : acceptTypes.entrySet()) {
-                if (mediaType.isCompatible(entry.getKey())) {
+                if (mimeType.isCompatible(entry.getKey())) {
                     return (Converter<T, F>) entry.getValue();
                 }
             }
@@ -251,7 +252,7 @@ public class ConverterService {
      * @throws RestException                 if an exception occurred while decoding the value
      * @throws IOException                   if an unexpected exception occurred while reading or decoding the value
      */
-    public <T> T toObject(ReadableContext context, MediaType source, Class<T> target) throws IOException, RestException {
+    public <T> T toObject(ReadableContext context, MimeType source, Class<T> target) throws IOException, RestException {
         return toObject(context, source, target, EntityType.EMPTY_GENERIC_ARRAY);
     }
 
@@ -267,7 +268,7 @@ public class ConverterService {
      * @throws RestException                 if an exception occurred while decoding the value
      * @throws IOException                   if an unexpected exception occurred while reading or decoding the value
      */
-    public <T> T toObject(ReadableContext context, MediaType source, EntityType<T> target) throws IOException, RestException {
+    public <T> T toObject(ReadableContext context, MimeType source, EntityType<T> target) throws IOException, RestException {
         return toObject(context, source, target.getRawType(), target.getActualTypeArguments());
     }
 
@@ -286,7 +287,7 @@ public class ConverterService {
      * @throws RestException                 if an exception occurred while decoding the value
      * @throws IOException                   if an unexpected exception occurred while reading or decoding the value
      */
-    private <T, F> T toObject(ReadableContext context, MediaType source, Class<T> target, Class<?>[] genericParams) throws IOException, RestException {
+    private <T, F> T toObject(ReadableContext context, MimeType source, Class<T> target, Class<?>[] genericParams) throws IOException, RestException {
         try {
             EntityType<T> entityType = new EntityType<>(target, genericParams);
             Converter<T, F> converter = getConverter(source, target, genericParams);
@@ -309,7 +310,8 @@ public class ConverterService {
      * @throws RestException                 if an exception occurred while encoding the value
      * @throws IOException                   if an unexpected exception occurred while writing or encoding the value
      */
-    public <T> void toRepresentation(WritableContext context, Class<T> source, MediaType target, Object entity) throws IOException, RestException {
+    public <T> void toRepresentation(WritableContext context, Class<T> source, MimeType target, Object entity) throws
+        IOException, RestException {
         toRepresentation(context, entity, source, EntityType.EMPTY_GENERIC_ARRAY, target);
     }
 
@@ -325,7 +327,8 @@ public class ConverterService {
      * @throws RestException                 if an exception occurred while encoding the value
      * @throws IOException                   if an unexpected exception occurred while writing or encoding the value
      */
-    public <T> void toRepresentation(WritableContext context, EntityType<T> source, MediaType target, Object entity) throws IOException, RestException {
+    public <T> void toRepresentation(WritableContext context, EntityType<T> source, MimeType target, Object entity) throws
+        IOException, RestException {
         toRepresentation(context, entity, source.getRawType(), source.getActualTypeArguments(), target);
     }
 
@@ -338,7 +341,7 @@ public class ConverterService {
      * @param <T>        The type argument of the entities.
      * @return An entity writer that can write multiple entities.
      */
-    public <T> EntityWriter<T> newEntityWriter(WritableContext context, EntityType<T> entityType, MediaType target) throws UnsupportedMediaType {
+    public <T> EntityWriter<T> newEntityWriter(WritableContext context, EntityType<T> entityType, MimeType target) throws UnsupportedMediaType {
         Converter<T, Object> converter = getConverter(target, entityType.getRawType(),
             entityType.getActualTypeArguments());
         return converter.getFormat().newEntityWriter(context, entityType, converter);
@@ -353,7 +356,8 @@ public class ConverterService {
      * @param <T>        The type argument of the entities.
      * @return An entity reader that can read multiple entities.
      */
-    public <T> EntityReader<T> newEntityReader(ReadableContext context, EntityType<T> entityType, MediaType source) throws UnsupportedMediaType {
+    public <T> EntityReader<T> newEntityReader(ReadableContext context, EntityType<T> entityType, MimeType source) throws
+        UnsupportedMediaType {
         Converter<T, Object> converter = getConverter(source, entityType.getRawType(),
             entityType.getActualTypeArguments());
         return converter.getFormat().newEntityReader(context, entityType, converter);
@@ -374,7 +378,8 @@ public class ConverterService {
      * @throws RestException                 if an exception occurred while encoding the value
      * @throws IOException                   if an unexpected exception occurred while writing or encoding the value
      */
-    private <T, F> void toRepresentation(WritableContext context, Object entity, Class<T> source, Class<?>[] genericParams, MediaType target) throws IOException, RestException {
+    private <T, F> void toRepresentation(WritableContext context, Object entity, Class<T> source, Class<?>[]
+        genericParams, MimeType target) throws IOException, RestException {
         try {
             EntityType<T> entityType = new EntityType<>(source, genericParams);
             Converter<T, F> converter = getConverter(target, source, genericParams);

@@ -1,18 +1,17 @@
 package info.orestes.rest.client;
 
 import info.orestes.rest.conversion.ConverterFormat;
+import info.orestes.rest.error.RestException;
 import info.orestes.rest.error.UnsupportedMediaType;
 import info.orestes.rest.service.EntityType;
+import info.orestes.rest.service.RestResponse;
 import org.eclipse.jetty.client.api.Response;
 import org.eclipse.jetty.client.api.Result;
 import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpMethod;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
@@ -36,7 +35,7 @@ public abstract class EntityStreamResponseListener<E> extends ResponseListener<E
 
     private boolean hasError = false;
 
-    private EntityContext entityContext;
+    private InputStream inputStream;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -56,9 +55,8 @@ public abstract class EntityStreamResponseListener<E> extends ResponseListener<E
         if (hasContent) {
             try {
                 PipedOutputStream pipeOutput = new PipedOutputStream();
-                PipedInputStream pipeInput = new PipedInputStream(pipeOutput, 1024 * 1024);
+                inputStream = new PipedInputStream(pipeOutput, 1024 * 1024);
                 channel = Channels.newChannel(pipeOutput);
-                entityContext = new EntityContext(getRequest(), new InputStreamReader(pipeInput, "utf-8"));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -86,8 +84,8 @@ public abstract class EntityStreamResponseListener<E> extends ResponseListener<E
     }
 
     private Stream<E> generateStreamAsync(Response response) throws UnsupportedMediaType {
-        ConverterFormat.EntityReader<E> entityReader;
-        entityReader = entityContext.getEntityReader(getEntityType(), response);
+        EntityContext entityContext = new EntityContext(getRequest(), getContentType(), inputStream);
+        ConverterFormat.EntityReader<E> entityReader = entityContext.getEntityReader(getEntityType());
 
         Iterator<E> source = entityReader.asIterator();
 
@@ -116,11 +114,8 @@ public abstract class EntityStreamResponseListener<E> extends ResponseListener<E
 
         if (result.isSucceeded()) {
             if (hasError) {
-                try {
-                    handleResponseError(result.getResponse(), entityContext);
-                } catch (Exception e) {
-                    onComplete(new EntityResult<>(result.getRequest(), result.getResponse(), e));
-                }
+                RestException e = handleError(getRequest(), result.getResponse(), inputStream);
+                onComplete(new EntityResult<>(result.getRequest(), result.getResponse(), e));
             }
         } else {
             onComplete(new EntityResult<>(result.getRequest(), result.getRequestFailure(), result.getResponse(),

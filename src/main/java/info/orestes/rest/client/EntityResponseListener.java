@@ -34,7 +34,6 @@ public abstract class EntityResponseListener<E> extends ResponseListener<E> {
         }
 
         HttpFields headers = response.getHeaders();
-
         long length = headers.getLongField(HttpHeader.CONTENT_LENGTH.asString());
         if (length > 0) {
             buffer = new byte[(int) length];
@@ -72,12 +71,11 @@ public abstract class EntityResponseListener<E> extends ResponseListener<E> {
     }
 
     private E readEntity(Response response, InputStream entityStream) throws Exception {
-        EntityContext entityContext = entityStream != null? new EntityContext(getRequest(), entityStream): null;
-
-        if (entityContext != null && response.getStatus() >= 200 && response.getStatus() < 300) {
-            return entityContext.getEntityReader(getEntityType(), response).read();
+        if (entityStream != null && response.getStatus() >= 200 && response.getStatus() < 300) {
+            EntityContext entityContext = new EntityContext(getRequest(), getContentType(), entityStream);
+            return entityContext.getEntityReader(getEntityType()).read();
         } else if (response.getStatus() >= 400) {
-            return handleResponseError(response, entityContext);
+            throw handleError(getRequest(), response, entityStream);
         }
 
         return null;

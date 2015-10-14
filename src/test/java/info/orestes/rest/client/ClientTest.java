@@ -128,24 +128,16 @@ public class ClientTest {
 		assertTrue(countDownLatch.await(5, TimeUnit.SECONDS));
 	}
 	
-	@Test
+	@Test(expected = IllegalArgumentException.class)
 	public void testUnsupportedRequest() throws InterruptedException {
 		setupStringHandler("Test string.");
-		final CountDownLatch countDownLatch = new CountDownLatch(1);
-		
+
 		Request request = client.newRequest("/");
 		request.content(new EntityContent<>(Iterator.class, Collections.emptyIterator()));
-		request.send(new EntityResponseListener<String>(String.class) {
-			@Override
-			public void onComplete(EntityResult<String> result) {
-				assertTrue(result.isFailed());
-				assertTrue(result.getFailure() instanceof UnsupportedMediaType);
-				
-				countDownLatch.countDown();
-			}
-		});
-		
-		assertTrue(countDownLatch.await(5, TimeUnit.SECONDS));
+        request.send(new EntityResponseListener<String>(String.class) {
+            @Override
+            public void onComplete(EntityResult<String> result) {}
+        });
 	}
 	
 	@Test

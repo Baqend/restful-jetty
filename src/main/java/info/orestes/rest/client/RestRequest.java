@@ -1,5 +1,6 @@
 package info.orestes.rest.client;
 
+import info.orestes.rest.conversion.ContentType;
 import info.orestes.rest.conversion.MediaType;
 import info.orestes.rest.error.RestException;
 import info.orestes.rest.service.EntityType;
@@ -30,12 +31,7 @@ public class RestRequest extends HttpRequest {
             entityContent.setRequest(this);
 
             if (contentType != null) {
-                entityContent.setContentType(MediaType.parse(contentType));
-            } else {
-                MediaType type = entityContent.getContentType();
-                if (type != null) {
-                    contentType = type.toString();
-                }
+                entityContent.setContentType(ContentType.parse(contentType));
             }
         }
 

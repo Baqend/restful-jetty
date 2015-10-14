@@ -1,9 +1,12 @@
 package info.orestes.rest.client;
 
+import info.orestes.rest.conversion.ContentType;
 import info.orestes.rest.conversion.ConverterService;
 import info.orestes.rest.conversion.MediaType;
+import info.orestes.rest.error.UnsupportedMediaType;
 import info.orestes.rest.service.EntityType;
 import org.eclipse.jetty.client.api.ContentProvider;
+import org.eclipse.jetty.client.api.ContentProvider.Typed;
 
 import java.util.Arrays;
 import java.util.List;
@@ -11,17 +14,30 @@ import java.util.List;
 /**
  * Created by erikwitt on 26.08.15.
  */
-public abstract class EntityContentProvider<E> implements ContentProvider {
+public abstract class EntityContentProvider<E> implements ContentProvider, Typed {
     private static final List<MediaType> ALL = Arrays.asList(MediaType.parse(MediaType.ALL));
 
     private final EntityType<E> entityType;
-    private MediaType contentType;
+    private ContentType contentType;
     private RestRequest request;
     private ConverterService converterService;
 
-    public EntityContentProvider(EntityType<E> entityType, MediaType contentType) {
+    public EntityContentProvider(EntityType<E> entityType, ContentType contentType) {
         this.entityType = entityType;
         this.contentType = contentType;
+    }
+
+    public ContentType getCType() {
+        if (contentType == null && getConverterService() != null) {
+            MediaType mimeType = getConverterService().getPreferedMediaType(ALL, getEntityType().getRawType());
+            if (mimeType == null) {
+                throw new IllegalArgumentException("The media type " + getEntityType() + " is not supported");
+            } else {
+                contentType = new ContentType(mimeType.getType(), mimeType.getSubtype());
+            }
+        }
+
+        return contentType;
     }
 
     /**
@@ -29,12 +45,8 @@ public abstract class EntityContentProvider<E> implements ContentProvider {
      *
      * @return The content type of the entity
      */
-    public MediaType getContentType() {
-        if (contentType == null && getConverterService() != null) {
-            contentType = getConverterService().getPreferedMediaType(ALL, getEntityType().getRawType());
-        }
-
-        return contentType;
+    public String getContentType() {
+        return getCType().toString();
     }
 
     /**
@@ -70,7 +82,7 @@ public abstract class EntityContentProvider<E> implements ContentProvider {
      *
      * @param contentType The Content-Type of the entity
      */
-    public void setContentType(MediaType contentType) {
+    public void setContentType(ContentType contentType) {
         this.contentType = contentType;
     }
 

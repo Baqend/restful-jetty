@@ -1,18 +1,15 @@
 package info.orestes.rest.client;
 
-import info.orestes.rest.conversion.ConverterService;
-import info.orestes.rest.conversion.MediaType;
+import info.orestes.rest.conversion.ContentType;
 import info.orestes.rest.conversion.WritableContext;
 import info.orestes.rest.service.EntityType;
-import org.eclipse.jetty.client.api.ContentProvider;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 import java.util.NoSuchElementException;
 
 /**
@@ -23,7 +20,7 @@ public class EntityContent<E> extends EntityContentProvider<E> {
     private ByteBuffer buffer;
 
 
-    public EntityContent(EntityType<E> entityType, E entity, MediaType contentType) {
+    public EntityContent(EntityType<E> entityType, E entity, ContentType contentType) {
         super(entityType, contentType);
         this.entity = entity;
     }
@@ -32,7 +29,7 @@ public class EntityContent<E> extends EntityContentProvider<E> {
         this(entityType, entity, null);
     }
 
-    public EntityContent(Class<E> type, E entity, MediaType contentType) {
+    public EntityContent(Class<E> type, E entity, ContentType contentType) {
         this(new EntityType<E>(type), entity, contentType);
     }
 
@@ -57,7 +54,7 @@ public class EntityContent<E> extends EntityContentProvider<E> {
     public ByteBuffer getBuffer() {
         if (buffer == null) {
             EntityWriter writer = new EntityWriter();
-            buffer = writer.write(getEntityType(), getContentType(), getEntity());
+            buffer = writer.write(getEntityType(), getCType(), getEntity());
         }
 
         return buffer;
@@ -99,9 +96,9 @@ public class EntityContent<E> extends EntityContentProvider<E> {
     public class EntityWriter implements WritableContext {
         private PrintWriter writer;
 
-        public ByteBuffer write(EntityType<?> entityType, MediaType contentType, Object entity) {
+        public ByteBuffer write(EntityType<?> entityType, ContentType contentType, Object entity) {
             try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-                writer = new PrintWriter(out);
+                writer = new PrintWriter(new OutputStreamWriter(out, contentType.getCharset()));
                 getRequest().getClient().getConverterService().toRepresentation(this, entityType, contentType, entity);
                 writer.flush();
 

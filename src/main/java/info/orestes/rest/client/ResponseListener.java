@@ -1,5 +1,7 @@
 package info.orestes.rest.client;
 
+import info.orestes.rest.Request;
+import info.orestes.rest.conversion.ContentType;
 import info.orestes.rest.conversion.ConverterFormat.EntityReader;
 import info.orestes.rest.conversion.ConverterService;
 import info.orestes.rest.conversion.MediaType;
@@ -10,11 +12,16 @@ import info.orestes.rest.service.EntityType;
 import org.eclipse.jetty.client.api.Response;
 import org.eclipse.jetty.client.api.Response.Listener.Adapter;
 import org.eclipse.jetty.http.HttpHeader;
+import org.eclipse.jetty.http.HttpMethod;
 
+import javax.swing.text.AbstractDocument.Content;
 import java.io.*;
 
 public abstract class ResponseListener<E> extends Adapter {
+    private static final EntityType<RestException> ERROR_TYPE = new EntityType<>(RestException.class);
+
     private final EntityType<E> entityType;
+    private ContentType contentType;
     private RestRequest request;
 
     public ResponseListener(Class<E> type) {
@@ -29,6 +36,10 @@ public abstract class ResponseListener<E> extends Adapter {
         return entityType;
     }
 
+    public ContentType getContentType() {
+        return contentType;
+    }
+
     public RestRequest getRequest() {
         return request;
     }
@@ -37,55 +48,32 @@ public abstract class ResponseListener<E> extends Adapter {
         this.request = request;
     }
 
-    protected E handleResponseError(Response response, EntityContext entityContext) throws RestException {
-        RestException exception = null;
+    @Override
+    public void onHeaders(Response response) {
+        super.onHeaders(response);
 
-        if (entityContext != null) {
-            try {
-                exception = entityContext.getErrorReader(response).read();
-            } catch (Exception suppressed) {
-                exception = getRestException(response);
-                exception.addSuppressed(suppressed);
-            }
+        if (response.getRequest().getMethod().equals(HttpMethod.HEAD.asString())) {
+            // skip content handling on head requests
+            return;
         }
 
-        if (exception == null) {
-            exception = getRestException(response);
-        }
-
-        exception.setRemote(true);
-
-        throw exception;
-    }
-
-    protected RestException getRestException(Response response) {
-        return RestException.create(response.getStatus(), response.getReason(), null);
-    }
-
-    protected static MediaType getMediaType(Response response) throws UnsupportedMediaType {
         String cType = response.getHeaders().get(HttpHeader.CONTENT_TYPE);
         if (cType != null) {
-            return MediaType.parse(cType);
-        } else {
-            throw new UnsupportedMediaType("No Content-Type is provided in the response.");
+            contentType = ContentType.parse(cType);
         }
     }
 
     public static class EntityContext implements ReadableContext {
-        private static final EntityType<RestException> errorType = new EntityType<>(RestException.class);
-
         private final RestRequest request;
         private final ConverterService converterService;
         private final BufferedReader reader;
+        private final ContentType contentType;
 
-        public EntityContext(RestRequest request, Reader reader) {
-            this.reader = new BufferedReader(reader);
+        public EntityContext(RestRequest request, ContentType contentType, InputStream stream) {
+            this.reader = new BufferedReader(new InputStreamReader(stream, contentType.getCharset()));
             this.request = request;
-            converterService = request.getClient().getConverterService();
-        }
-
-        public EntityContext(RestRequest request, InputStream stream) {
-            this(request, new InputStreamReader(stream));
+            this.contentType = contentType;
+            this.converterService = request.getClient().getConverterService();
         }
 
         @SuppressWarnings("unchecked")
@@ -104,12 +92,35 @@ public abstract class ResponseListener<E> extends Adapter {
             return reader;
         }
 
-        public <T> EntityReader<T> getEntityReader(EntityType<T> entityType, Response response) throws UnsupportedMediaType {
-            return converterService.newEntityReader(this, entityType, getMediaType(response));
+        public <T> EntityReader<T> getEntityReader(EntityType<T> entityType) throws UnsupportedMediaType {
+            return converterService.newEntityReader(this, entityType, contentType);
+        }
+    }
+
+    public static RestException handleError(RestRequest request, Response response, InputStream inputStream) {
+        RestException exception = null;
+
+        if (inputStream != null) {
+            try {
+                ContentType contentType = ContentType.parse(response.getHeaders().get(HttpHeader.CONTENT_TYPE));
+                EntityContext context = new EntityContext(request, contentType, inputStream);
+                exception = context.getEntityReader(ERROR_TYPE).read();
+            } catch (Exception suppressed) {
+                exception = getRestException(response);
+                exception.addSuppressed(suppressed);
+            }
         }
 
-        public EntityReader<RestException> getErrorReader(Response response) throws UnsupportedMediaType {
-            return converterService.newEntityReader(this, errorType, getMediaType(response));
+        if (exception == null) {
+            exception = getRestException(response);
         }
+
+        exception.setRemote(true);
+
+        return exception;
+    }
+
+    private static RestException getRestException(Response response) {
+        return RestException.create(response.getStatus(), response.getReason(), null);
     }
 }

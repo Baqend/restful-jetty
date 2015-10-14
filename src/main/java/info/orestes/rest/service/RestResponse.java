@@ -1,6 +1,7 @@
 package info.orestes.rest.service;
 
 import info.orestes.rest.Response;
+import info.orestes.rest.conversion.ContentType;
 import info.orestes.rest.conversion.ConverterFormat.EntityWriter;
 import info.orestes.rest.conversion.ConverterService;
 import info.orestes.rest.conversion.MediaType;
@@ -23,6 +24,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -96,14 +98,16 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
 
     }
 
-    private MediaType getMediaType(EntityType<?> responseType) throws NotAcceptable {
+    private ContentType getContentType(EntityType<?> responseType) throws NotAcceptable {
         List<MediaType> mediaTypes = parseMediaTypes(request.getHeader(HttpHeader.ACCEPT.asString()));
         ConverterService converterService = request.getConverterService();
         MediaType mediaType = converterService.getPreferedMediaType(mediaTypes, responseType.getRawType());
+
         if (mediaType == null) {
             throw new NotAcceptable("The requested response media types are not supported.");
         }
-        return mediaType;
+
+        return new ContentType(mediaType.getType(), mediaType.getSubtype());
     }
 
     @SuppressWarnings("unchecked")
@@ -143,7 +147,7 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
             setHeader(HttpHeader.LAST_MODIFIED.asString(), null);
             setHeader(HttpHeader.CONTENT_TYPE.asString(), null);
             setHeader(HttpHeader.CONTENT_LENGTH.asString(), null);
-            setHeader(HttpHeader.CACHE_CONTROL.asString(), "must-revalidate, no-cache, no-store");
+            setHeader(HttpHeader.CACHE_CONTROL.asString(), "no-cache, no-store, max-age=0");
 
             if (request.getMethod().equals("HEAD")) {
                 return;
@@ -170,9 +174,8 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
      * @throws IOException
      */
     public <T> void sendStream(Stream<T> objectStream, EntityType<T> entityType) throws RestException, IOException {
-        MediaType mediaType = getMediaType(entityType);
-        setContentType(mediaType.toString());
-        setCharacterEncoding("utf-8");
+        ContentType contentType = getContentType(entityType);
+        setContentType(contentType.toString());
 
         Iterator<T> iterator = objectStream.iterator();
 
@@ -180,7 +183,7 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
         ServletOutputStream outputStream = getOutputStream();
         ServletWriteContext writeContext = new ServletWriteContext();
         EntityWriter<T> entityWriter = request.getConverterService()
-            .newEntityWriter(writeContext, entityType, mediaType);
+            .newEntityWriter(writeContext, entityType, contentType);
 
         outputStream.setWriteListener(new WriteListener() {
             @Override
@@ -221,16 +224,10 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
     }
 
     private void sendBody(Object entity, EntityType<?> type) throws IOException, RestException {
-        MediaType mediaType = getMediaType(type);
+        ContentType contentType = getContentType(type);
 
-        if (mediaType != null) {
-            setContentType(mediaType.toString());
-            setCharacterEncoding("utf-8");
-
-            request.getConverterService().toRepresentation(this, type, mediaType, entity);
-        } else {
-            throw new NotAcceptable("The requested response media types are not supported.");
-        }
+        setContentType(contentType.toString());
+        request.getConverterService().toRepresentation(this, type, contentType, entity);
     }
 
     private class ServletWriteContext implements WritableContext {
@@ -239,7 +236,7 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
 
         public ServletWriteContext() {
             this.buffer = new ByteArrayOutputStream(8 * 1024);
-            this.writer = new PrintWriter(new OutputStreamWriter(this.buffer, Charset.forName("utf-8")));
+            this.writer = new PrintWriter(new OutputStreamWriter(this.buffer, StandardCharsets.UTF_8));
         }
 
         public ByteArrayOutputStream getBuffer() {

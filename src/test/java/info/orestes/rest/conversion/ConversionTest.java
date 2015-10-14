@@ -396,8 +396,7 @@ public class ConversionTest {
 		if (res.getStatus() >= 400) {
             throw RestException.create(res.getStatus(), null, null);
         } else if (response.getReader().ready()) {
-			assertEquals(MediaType.TEXT_PLAIN, response.getContentType());
-			assertEquals("utf-8", response.getCharacterEncoding());
+			assertEquals("text/plain;charset=UTF-8", response.getContentType());
             assertEquals(HttpStatus.OK_200, response.getStatus());
 
             Class<O> cls = (Class<O>) method.getResponseType().getRawType();
@@ -492,16 +491,6 @@ public class ConversionTest {
         @Override
 		public String getContentType() {
 			return contentType;
-		}
-
-		@Override
-		public String getCharacterEncoding() {
-			return characterEncoding;
-		}
-
-		@Override
-		public void setCharacterEncoding(String charset) {
-			characterEncoding = charset;
 		}
 
 		@Override
