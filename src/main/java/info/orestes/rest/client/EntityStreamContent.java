@@ -3,11 +3,19 @@ package info.orestes.rest.client;
 import info.orestes.rest.conversion.ContentType;
 import info.orestes.rest.conversion.ConverterFormat.EntityWriter;
 import info.orestes.rest.conversion.WritableContext;
+import info.orestes.rest.error.RestException;
 import info.orestes.rest.error.UnsupportedMediaType;
 import info.orestes.rest.service.EntityType;
+import org.eclipse.jetty.io.RuntimeIOException;
 
 import java.io.*;
 import java.nio.*;
+import java.nio.channels.ByteChannel;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.FileAttribute;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
@@ -16,71 +24,114 @@ import java.util.stream.Stream;
  */
 public class EntityStreamContent<E> extends EntityContentProvider<E> {
 
-    private final Iterator<E> objects;
+    private Stream<E> objects;
+    private int bufferSize = 4096;
+    private EntityWriteContext context = new EntityWriteContext();
 
-    public EntityStreamContent(EntityType<E> entityType, Stream<E> objects, ContentType targetType) {
-        super(entityType, targetType);
-        this.objects = objects.iterator();
+    public EntityStreamContent(Class<E> type, Stream<E> objects) {
+        this(new EntityType<>(type), objects);
     }
 
     public EntityStreamContent(EntityType<E> entityType, Stream<E> objects) {
-        super(entityType, null);
-        this.objects = objects.iterator();
+        this(entityType, objects, null);
     }
 
-    public EntityStreamContent(Class<E> type, Stream<E> objects) {
-        super(new EntityType<>(type), null);
-        this.objects = objects.iterator();
+    public EntityStreamContent(EntityType<E> entityType, Stream<E> objects, ContentType targetType) {
+        super(entityType, targetType);
+
+        this.objects = objects;
     }
 
     @Override
     public long getLength() {
-        return -1;
+        return context.getLength();
     }
 
     @Override
     public Iterator<ByteBuffer> iterator() {
-        EntityWriteContext context = new EntityWriteContext();
-        EntityWriter<E> entityWriter;
-        try {
-            entityWriter = getConverterService().newEntityWriter(context, getEntityType(), getCType());
-        } catch (UnsupportedMediaType unsupportedMediaType) {
-            throw new RuntimeException(unsupportedMediaType);
-        }
-
-        return new Iterator<ByteBuffer>() {
-            @Override
-            public boolean hasNext() {
-                return objects.hasNext();
-            }
-
-            @Override
-            public ByteBuffer next() {
-                try {
-                    entityWriter.writeNext(objects.next());
-                    if (!objects.hasNext()) {
-                        entityWriter.close();
-                    }
-
-                    context.getWriter().flush();
-                    byte[] copy = context.getBuffer().toByteArray();
-                    context.getBuffer().reset();
-
-                    return ByteBuffer.wrap(copy);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        };
+        context.getLength();
+        return context;
     }
 
-    public class EntityWriteContext implements WritableContext {
+    class EntityWriteContext implements WritableContext, Iterator<ByteBuffer>, Closeable {
 
-        private final ByteArrayOutputStream buffer = new ByteArrayOutputStream(8 * 1024);
-        private final PrintWriter writer = new PrintWriter(new OutputStreamWriter(buffer, getCType().getCharset()));
+        private final Path tmpFile;
+        private PrintWriter writer;
+        private ReadableByteChannel channel;
+        private ByteBuffer byteBuffer = ByteBuffer.allocateDirect(bufferSize);
+        private long fileSize = -1;
+        private long position;
 
-        public ByteArrayOutputStream getBuffer() {
-            return buffer;
+        private EntityWriteContext() {
+            try {
+                tmpFile = Files.createTempFile("entity-stream", "");
+            } catch (IOException e) {
+                throw new RuntimeIOException(e);
+            }
+        }
+
+        private void fillBuffer() {
+            if (fileSize == -1) {
+                try {
+                    writer = new PrintWriter(Files.newBufferedWriter(tmpFile, getCType().getCharset()));
+
+                    try (EntityWriter<E> entityWriter = getConverterService().newEntityWriter(context, getEntityType(), getCType())) {
+                        for (Iterator<E> iterator = objects.iterator(); iterator.hasNext(); )
+                            entityWriter.writeNext(iterator.next());
+                    } finally {
+                        writer.flush();
+                        writer.close();
+                        writer = null;
+                        objects = null;
+                    }
+
+                    fileSize = Files.size(tmpFile);
+                } catch (RestException | IOException e) {
+                    throw new RuntimeIOException(e);
+                }
+            }
+        }
+
+        @Override
+        public boolean hasNext() {
+            return position < getLength();
+        }
+
+        @Override
+        public ByteBuffer next() {
+            try {
+                if (channel == null) {
+                    channel = Files.newByteChannel(tmpFile, StandardOpenOption.READ);
+                }
+
+                byteBuffer.clear();
+                long read = channel.read(byteBuffer);
+                if (read < 0)
+                    throw new NotActiveException();
+
+                if (!hasNext())
+                    close();
+
+                position += read;
+                byteBuffer.flip();
+                return byteBuffer;
+            } catch (IOException e) {
+                try {
+                    close();
+                } catch (IOException e1) {
+                    e.addSuppressed(e1);
+                }
+
+                throw new RuntimeIOException(e);
+            }
+        }
+
+        public long getLength() {
+            if (fileSize == -1) {
+                fillBuffer();
+            }
+
+            return fileSize;
         }
 
         @Override
@@ -97,6 +148,14 @@ public class EntityStreamContent<E> extends EntityContentProvider<E> {
         @Override
         public void setArgument(String name, Object value) {
             getRequest().attribute(name, value);
+        }
+
+        @Override
+        public void close() throws IOException {
+            if (channel != null)
+                channel.close();
+
+            Files.deleteIfExists(tmpFile);
         }
     }
 }
