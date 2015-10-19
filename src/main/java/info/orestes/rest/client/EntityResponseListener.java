@@ -1,5 +1,6 @@
 package info.orestes.rest.client;
 
+import info.orestes.rest.error.RestException;
 import info.orestes.rest.service.EntityType;
 import org.eclipse.jetty.client.api.Response;
 import org.eclipse.jetty.client.api.Result;
@@ -56,17 +57,25 @@ public abstract class EntityResponseListener<E> extends ResponseListener<E> {
 
     @Override
     public final void onComplete(Result result) {
+        InputStream data = buffer.length > 0 ? new ByteArrayInputStream(buffer, 0, bufferOffset) : null;
+
         if (result.isSucceeded()) {
             try {
-                E entity = readEntity(result.getResponse(),
-                    buffer.length > 0 ? new ByteArrayInputStream(buffer, 0, bufferOffset) : null);
+                E entity = readEntity(result.getResponse(), data);
                 onComplete(new EntityResult<E>(result.getRequest(), result.getResponse(), entity));
             } catch (Exception e) {
                 onComplete(new EntityResult<E>(result.getRequest(), result.getResponse(), e));
             }
         } else {
-            onComplete(new EntityResult<E>(result.getRequest(), result.getRequestFailure(), result.getResponse(),
-                result.getResponseFailure()));
+            if (result.getResponse().getStatus() > 0) {
+                //early response failure while uploading
+                RestException e = handleError(getRequest(), result.getResponse(), data);
+                e.addSuppressed(result.getFailure());
+                onComplete(new EntityResult<E>(result.getRequest(), result.getResponse(), e));
+            } else {
+                onComplete(new EntityResult<E>(result.getRequest(), result.getRequestFailure(), result.getResponse(),
+                    result.getResponseFailure()));
+            }
         }
     }
 
