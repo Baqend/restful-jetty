@@ -4,7 +4,6 @@ import org.junit.Test;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
 import static org.junit.Assert.*;
 
@@ -31,7 +30,7 @@ public class ContentTypeTest {
 		
 		assertEquals("text", t1.getType());
 		assertEquals("plain", t1.getSubtype());
-		assertEquals(StandardCharsets.ISO_8859_1, t1.getCharset());
+		assertNull(t1.getCharset());
 		
 		assertEquals("text", t2.getType());
 		assertEquals("plain", t2.getSubtype());
