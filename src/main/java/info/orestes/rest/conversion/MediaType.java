@@ -1,7 +1,5 @@
 package info.orestes.rest.conversion;
 
-import java.util.Objects;
-
 /**
  * This class represents a HTTP media type which can be prioritized by a quality
  * factor q
@@ -13,7 +11,6 @@ public class MediaType extends MimeType implements Comparable<MediaType> {
 	
 	public static final String TEXT_ALL = "text/*;q=0.8";
 	public static final String TEXT_PLAIN = "text/plain;q=0.8";
-	public static final String APPLICATION_JAVASCRIPT = "application/javascript;q=0.8";
 	public static final String ALL = "*/*";
     public static final String JSON = "application/json";
 

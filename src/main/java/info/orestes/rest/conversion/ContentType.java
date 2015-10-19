@@ -30,9 +30,6 @@ public class ContentType extends MimeType {
 
     protected ContentType(String contentType) {
         super(contentType);
-
-        if (charset == null)
-            charset = StandardCharsets.ISO_8859_1;
     }
 
     @Override
@@ -84,7 +81,7 @@ public class ContentType extends MimeType {
 
     @Override
     public String toString() {
-        return super.toString() + ";charset=" + getCharset();
+        return super.toString() + (getCharset() != null? ";charset=" + getCharset(): "");
     }
 
 }

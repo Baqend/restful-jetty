@@ -3,11 +3,11 @@ package info.orestes.rest.client;
 import info.orestes.rest.conversion.ContentType;
 import info.orestes.rest.conversion.ConverterService;
 import info.orestes.rest.conversion.MediaType;
-import info.orestes.rest.error.UnsupportedMediaType;
 import info.orestes.rest.service.EntityType;
 import org.eclipse.jetty.client.api.ContentProvider;
 import org.eclipse.jetty.client.api.ContentProvider.Typed;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
@@ -33,7 +33,7 @@ public abstract class EntityContentProvider<E> implements ContentProvider, Typed
             if (mimeType == null) {
                 throw new IllegalArgumentException("The media type " + getEntityType() + " is not supported");
             } else {
-                contentType = new ContentType(mimeType.getType(), mimeType.getSubtype());
+                contentType = new ContentType(mimeType.getType(), mimeType.getSubtype(), StandardCharsets.UTF_8);
             }
         }
 
