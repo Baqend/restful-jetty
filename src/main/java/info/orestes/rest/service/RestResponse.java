@@ -23,7 +23,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -228,6 +227,25 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
 
         setContentType(contentType.toString());
         request.getConverterService().toRepresentation(this, type, contentType, entity);
+    }
+
+    @Override
+    public void sendRedirect(String location) throws IOException {
+        sendRedirect(SC_MOVED_TEMPORARILY, location);
+    }
+
+    @Override
+    public void sendRedirect(int sc, String location) throws IOException {
+        if ((sc < HttpServletResponse.SC_MULTIPLE_CHOICES) || (sc >= HttpServletResponse.SC_BAD_REQUEST))
+            throw new IllegalArgumentException("Not a 3xx redirect code");
+
+        if (location == null)
+            throw new IllegalArgumentException();
+
+        resetBuffer();
+        setHeader(HttpHeader.LOCATION.asString(), location);
+        setStatus(sc);
+        getOutputStream().close();
     }
 
     private class ServletWriteContext implements WritableContext {

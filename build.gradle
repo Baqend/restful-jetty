@@ -61,7 +61,7 @@ release {
     git {
         requireBranch = 'master'
         pushToRemote = 'github'
-        pushToCurrentBranch = true
+        pushToCurrentBranch = false
     }
 }
 

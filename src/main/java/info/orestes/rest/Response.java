@@ -2,12 +2,10 @@ package info.orestes.rest;
 
 import info.orestes.rest.conversion.ConverterService;
 import info.orestes.rest.conversion.WritableContext;
-import info.orestes.rest.error.NotAcceptable;
 import info.orestes.rest.error.RestException;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.stream.Stream;
 
 /*
  * {@inheritDoc}
@@ -28,4 +26,12 @@ public interface Response extends WritableContext, HttpServletResponse {
      * @param e The error which is occurred while handling the request
      */
     public void sendError(RestException e);
+
+    /**
+     * Sends a redirect with the specified status and location
+     *
+     * @param sc The redirect statrus code
+     * @param location The location set in to the Location Header field
+     */
+    public void sendRedirect(int sc, String location)  throws IOException;
 }
