@@ -60,8 +60,7 @@ release {
     buildTasks = ['assemble']
     git {
         requireBranch = 'master'
-        pushToRemote = 'github'
-        pushToCurrentBranch = false
+        pushToRemote = 'origin'
     }
 }
 
