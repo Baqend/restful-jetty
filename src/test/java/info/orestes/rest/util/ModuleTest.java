@@ -2,7 +2,7 @@ package info.orestes.rest.util;
 
 import org.junit.Test;
 
-import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -166,13 +166,13 @@ public class ModuleTest {
         InjectableConstr injectableConstr = module.moduleInstance(InjectableConstr.class);
         assertNotNull(injectableConstr);
 
-        List<?> instances = module.getCurrentInstances(Object.class);
+        Set<?> instances = module.getCurrentInstances(Object.class);
         assertTrue(instances.remove(module));
 
         assertEquals(2, instances.size());
 
         assertTrue(instances.remove(injectableConstr));
-        assertSame(injectableConstr.getObject(), instances.get(0));
+        assertTrue(instances.contains(injectableConstr.getObject()));
     }
 
     public static class DefaultConstructorConstr {}
