@@ -1,10 +1,8 @@
 package info.orestes.rest.client;
 
-import info.orestes.rest.Request;
 import info.orestes.rest.conversion.ContentType;
 import info.orestes.rest.conversion.ConverterFormat.EntityReader;
 import info.orestes.rest.conversion.ConverterService;
-import info.orestes.rest.conversion.MediaType;
 import info.orestes.rest.conversion.ReadableContext;
 import info.orestes.rest.error.RestException;
 import info.orestes.rest.error.UnsupportedMediaType;
@@ -14,7 +12,6 @@ import org.eclipse.jetty.client.api.Response.Listener.Adapter;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpMethod;
 
-import javax.swing.text.AbstractDocument.Content;
 import java.io.*;
 
 public abstract class ResponseListener<E> extends Adapter {
@@ -66,11 +63,11 @@ public abstract class ResponseListener<E> extends Adapter {
     public static class EntityContext implements ReadableContext {
         private final RestRequest request;
         private final ConverterService converterService;
-        private final BufferedReader reader;
+        private final Reader reader;
         private final ContentType contentType;
 
         public EntityContext(RestRequest request, ContentType contentType, InputStream stream) {
-            this.reader = new BufferedReader(new InputStreamReader(stream, contentType.getCharset()));
+            this.reader = new InputStreamReader(stream, contentType.getCharset());
             this.request = request;
             this.contentType = contentType;
             this.converterService = request.getClient().getConverterService();
@@ -88,7 +85,7 @@ public abstract class ResponseListener<E> extends Adapter {
         }
 
         @Override
-        public BufferedReader getReader() throws IOException {
+        public Reader getReader() throws IOException {
             return reader;
         }
 

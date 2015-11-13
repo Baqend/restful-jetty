@@ -4,10 +4,7 @@ import info.orestes.rest.conversion.ContentType;
 import info.orestes.rest.conversion.WritableContext;
 import info.orestes.rest.service.EntityType;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -94,11 +91,11 @@ public class EntityContent<E> extends EntityContentProvider<E> {
     }
 
     public class EntityWriter implements WritableContext {
-        private PrintWriter writer;
+        private Writer writer;
 
         public ByteBuffer write(EntityType<?> entityType, ContentType contentType, Object entity) {
             try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-                writer = new PrintWriter(new OutputStreamWriter(out, contentType.getCharset()));
+                writer = new OutputStreamWriter(out, contentType.getCharset());
                 getRequest().getClient().getConverterService().toRepresentation(this, entityType, contentType, entity);
                 writer.flush();
 
@@ -123,7 +120,7 @@ public class EntityContent<E> extends EntityContentProvider<E> {
         }
 
         @Override
-        public PrintWriter getWriter() throws IOException {
+        public Writer getWriter() throws IOException {
             return writer;
         }
     }

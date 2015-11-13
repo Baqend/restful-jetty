@@ -1,7 +1,7 @@
 package info.orestes.rest.conversion;
 
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.Writer;
 
 /**
  * A writable {@link Context} that can be used by a {@link ConverterFormat} to
@@ -11,7 +11,16 @@ import java.io.PrintWriter;
  * 
  */
 public interface WritableContext extends Context {
-	
+
+	public static WritableContext wrap(Writer writer) {
+		return new Abstract() {
+			@Override
+			public Writer getWriter() throws IOException {
+				return writer;
+			}
+		};
+	}
+
 	/**
 	 * Returns a writer where the content can be written to
 	 * 
@@ -19,6 +28,7 @@ public interface WritableContext extends Context {
 	 * @throws IOException
 	 *             if an I/O error occurred
 	 */
-	public PrintWriter getWriter() throws IOException;
-	
+	public Writer getWriter() throws IOException;
+
+	abstract class Abstract extends SimpleContext implements WritableContext {}
 }

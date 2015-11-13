@@ -4,18 +4,11 @@ import info.orestes.rest.error.RestException;
 import info.orestes.rest.service.EntityType;
 import info.orestes.rest.util.Module;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.PipedReader;
-import java.io.PipedWriter;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
+import static org.junit.Assert.*;
 
 public class ConverterTestHelper {
 	
@@ -37,8 +30,6 @@ public class ConverterTestHelper {
 	}
 	
 	protected WritableContext out = new WritableContext() {
-		private final PrintWriter printWriter = new PrintWriter(writer);
-		
 		@Override
 		public void setArgument(String name, Object value) {
 			outArguments.put(name, value);
@@ -51,14 +42,12 @@ public class ConverterTestHelper {
 		}
 		
 		@Override
-		public PrintWriter getWriter() throws IOException {
-			return printWriter;
+		public Writer getWriter() throws IOException {
+			return writer;
 		}
 	};
 	
 	protected ReadableContext in = new ReadableContext() {
-		private final BufferedReader bufferedReader = new BufferedReader(reader);
-		
 		@Override
 		public void setArgument(String name, Object value) {
 			inArguments.put(name, value);
@@ -71,8 +60,8 @@ public class ConverterTestHelper {
 		}
 		
 		@Override
-		public BufferedReader getReader() throws IOException {
-			return bufferedReader;
+		public Reader getReader() throws IOException {
+			return reader;
 		}
 	};
 	
