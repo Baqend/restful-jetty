@@ -4,9 +4,9 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class Module {
@@ -62,11 +62,11 @@ public class Module {
 	 * @param <T> The type of the class
 	 * @return List of instances
 	 */
-	public <T> List<? extends T> getCurrentInstances(Class<T> cls) {
+	public <T> Set<? extends T> getCurrentInstances(Class<T> cls) {
 		return instances.values().stream()
 			.filter(i -> cls.isAssignableFrom(i.getClass()))
 			.map(cls::cast)
-			.collect(Collectors.toList());
+			.collect(Collectors.toSet());
 	}
 	
 	private <T> T create(Class<T> cls, Constructor<? extends T> constructor) {
