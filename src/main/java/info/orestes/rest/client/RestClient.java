@@ -17,14 +17,20 @@ public class RestClient extends HttpClient {
 	private final URI baseURI;
 	
 	public RestClient(String baseURI, boolean useHttp2, ConverterService converterService) {
-        this(baseURI, useHttp2, converterService, null);
+        this(baseURI, useHttp2, converterService, null, null);
 	}
 
-    public RestClient(String baseURI, boolean useHttp2, ConverterService converterService, String trustStorePath) {
+    public RestClient(String baseURI, boolean useHttp2, ConverterService converterService, String trustStorePath,
+					  String trustStorePassword) {
         super(
             /*useHttp2? new HttpClientTransportOverHTTP2(new HTTP2Client()): new HttpClientTransportOverHTTP(), */
-        	trustStorePath != null? new SslContextFactory(trustStorePath): new SslContextFactory()
+        	trustStorePath != null? new SslContextFactory(): null
         );
+
+		if (trustStorePath != null) {
+			getSslContextFactory().setTrustStorePath(trustStorePath);
+			getSslContextFactory().setTrustStorePassword(trustStorePassword);
+		}
 
         this.baseURI = URI.create(baseURI);
         this.converterService = converterService;
@@ -32,7 +38,7 @@ public class RestClient extends HttpClient {
 
     @Inject
     public RestClient(ConverterService converterService) {
-        this("", false, converterService, null);
+        this("", false, converterService);
     }
 
     @Override
