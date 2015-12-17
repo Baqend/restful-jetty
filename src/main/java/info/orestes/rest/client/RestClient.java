@@ -24,7 +24,7 @@ public class RestClient extends HttpClient {
 					  String trustStorePassword) {
         super(
             /*useHttp2? new HttpClientTransportOverHTTP2(new HTTP2Client()): new HttpClientTransportOverHTTP(), */
-        	trustStorePath != null? new SslContextFactory(): null
+        	new SslContextFactory()
         );
 
 		if (trustStorePath != null) {
