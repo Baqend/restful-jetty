@@ -384,6 +384,7 @@ public class ConversionTest {
         when(req.getMethod()).thenReturn("GET");
         when(req.getQueryParameters()).thenReturn(p);
         when(req.getResponse()).thenReturn(res);
+        when(req.getContextPath()).thenReturn("/");
 
 		try {
 			handler.handle(uri.getPath(), req, request, response);

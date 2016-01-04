@@ -44,7 +44,12 @@ public class RestRouter extends HandlerWrapper {
 			HttpURI uri = request.getHttpURI();
 
 			// jetty decodes the path param
-			path = request.getHttpURI().getPath();
+			path = uri.getPath();
+
+            String contextPath = request.getContextPath();
+            if (contextPath.endsWith("/"))
+                contextPath = contextPath.substring(0, contextPath.length() - 1);
+			path = path.substring(contextPath.length());
 
 			Map<String, String> matrix = null;
 			int paramsIndex = path.indexOf(";");

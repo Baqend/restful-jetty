@@ -202,6 +202,7 @@ public class RestRouterTest {
 		when(req.getHttpURI()).thenReturn(uri);
 		when(req.getMethod()).thenReturn(action);
 		when(req.getQueryParameters()).thenReturn(p);
+		when(req.getContextPath()).thenReturn("/");
 		
 		try {
 			router.start();

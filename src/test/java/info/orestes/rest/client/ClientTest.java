@@ -54,7 +54,7 @@ public class ClientTest {
 		
 		ConverterService converterService = module.moduleInstance(ConverterService.class);
 		
-		client = new RestClient("http://localhost:" + TEST_PORT + "/", false, converterService);
+		client = new RestClient("http://localhost:" + TEST_PORT, false, converterService);
 		client.start();
 	}
 	

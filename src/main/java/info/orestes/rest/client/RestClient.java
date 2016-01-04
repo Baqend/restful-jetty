@@ -54,7 +54,7 @@ public class RestClient extends HttpClient {
 	@Override
 	public RestRequest newRequest(String path) {
 		RestRequest request = newRequest(baseURI);
-		request.path(path);
+		request.path(request.getPath() + path);
 		return request;
 	}
 	
