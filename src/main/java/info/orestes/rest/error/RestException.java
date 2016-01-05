@@ -28,7 +28,10 @@ public class RestException extends ServletException {
 			if (RestException.class.isAssignableFrom(cls)) {
 				Class<? extends RestException> exception = cls.asSubclass(RestException.class);
 				errorMap.put(exception.getName(), exception);
-				
+
+				if (!errorMap.containsKey(exception.getSimpleName()))
+					errorMap.put(exception.getSimpleName(), exception);
+
 				HttpError error = exception.getAnnotation(HttpError.class);
 				if (error != null && exception.getSuperclass().equals(RestException.class)) {
 					errorMap.put(error.status(), exception);
@@ -44,7 +47,15 @@ public class RestException extends ServletException {
 	public static Class<? extends RestException> getExceptionClass(String className) {
 		return errorMap.get(className);
 	}
-	
+
+	/**
+	 * Constructs a RestException subclass which represents the given http error reason/code
+	 * @param className The full qualified or simple class name of the error
+	 * @param statusCode The status code of the error
+	 * @param message The message of the error
+	 * @param throwable The optional cause of the exception
+     * @return The best matching ExceptionClass which represents the error
+     */
 	public static RestException create(String className, int statusCode, String message, Throwable throwable) {
 		Class<? extends RestException> exClass = getExceptionClass(className);
 		if (exClass != null) {

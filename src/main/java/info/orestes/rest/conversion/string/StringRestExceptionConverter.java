@@ -25,8 +25,9 @@ public class StringRestExceptionConverter extends Converter<RestException, Strin
 		printWriter.println(source.getMessage());
 		printWriter.println();
 		printWriter.println();
-		
-		source.printStackTrace(printWriter);
+
+		if (isDebugEnabled())
+			source.printStackTrace(printWriter);
 		
 		return result.toString();
 	}

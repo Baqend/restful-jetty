@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.stream.Stream;
 
 /**
  * <p> This ConverterService is used to transform request arguments and request entities between java types and
@@ -36,6 +35,7 @@ public class ConverterService {
     private final Module module;
     private final Map<Class<?>, Map<MediaType, Converter<?, ?>>> accept = new HashMap<>();
     private final Map<Class<?>, ConverterFormat<?>> formats = new HashMap<>();
+    private boolean debugEnabled = false;
 
     /**
      * Checks if the {@link Converter} can handle a java object of the given type with the given generic arguments.
@@ -107,6 +107,23 @@ public class ConverterService {
                 throw new RuntimeException("The format handler " + cls.getName() + " can not be loaded.", e);
             }
         }
+    }
+
+    /**
+     * Indicates if the debug mode is enabled for all converters.
+     * @return <code>true</code> if debugging is enabled
+     */
+    public boolean isDebugEnabled() {
+        return debugEnabled;
+    }
+
+    /**
+     * Enables the debug mode for all converters. Converters such es the error converter can attach
+     * extended output to their formats
+     * @param debugEnabled Enables the debug mode
+     */
+    public void setDebugEnabled(boolean debugEnabled) {
+        this.debugEnabled = debugEnabled;
     }
 
     /**

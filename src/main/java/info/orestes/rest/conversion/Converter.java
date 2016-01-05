@@ -78,7 +78,15 @@ public abstract class Converter<T, F> {
 	public ConverterFormat<F> getFormat() {
 		return format;
 	}
-	
+
+    /**
+     * Indicates if the debug mode is enabled
+     * @return <code>true</code> if the debug mode is enabled
+     */
+	public boolean isDebugEnabled() {
+        return getFormat().getConverterService().isDebugEnabled();
+    }
+
 	/**
 	 * This helper method can be used by a {@link Converter} implementation to
 	 * convert other java types to our format
