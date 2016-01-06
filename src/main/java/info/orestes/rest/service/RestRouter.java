@@ -47,9 +47,12 @@ public class RestRouter extends HandlerWrapper {
 			path = uri.getPath();
 
             String contextPath = request.getContextPath();
-            if (contextPath.endsWith("/"))
-                contextPath = contextPath.substring(0, contextPath.length() - 1);
-			path = path.substring(contextPath.length());
+			if (contextPath != null) {
+				if (contextPath.endsWith("/"))
+					contextPath = contextPath.substring(0, contextPath.length() - 1);
+
+				path = path.substring(contextPath.length());
+			}
 
 			Map<String, String> matrix = null;
 			int paramsIndex = path.indexOf(";");
