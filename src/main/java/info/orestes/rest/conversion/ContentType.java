@@ -30,6 +30,9 @@ public class ContentType extends MimeType {
 
     protected ContentType(String contentType) {
         super(contentType);
+
+        if (charset == null)
+            charset = StandardCharsets.UTF_8;
     }
 
     @Override
