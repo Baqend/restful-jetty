@@ -30,8 +30,9 @@ public class ContentTypeTest {
 		
 		assertEquals("text", t1.getType());
 		assertEquals("plain", t1.getSubtype());
-		assertNull(t1.getCharset());
-		
+		assertEquals(StandardCharsets.UTF_8, t1.getCharset());
+
+
 		assertEquals("text", t2.getType());
 		assertEquals("plain", t2.getSubtype());
 		assertEquals(StandardCharsets.UTF_8, t2.getCharset());
