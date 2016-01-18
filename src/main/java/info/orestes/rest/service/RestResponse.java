@@ -9,6 +9,7 @@ import info.orestes.rest.conversion.WritableContext;
 import info.orestes.rest.error.InternalServerError;
 import info.orestes.rest.error.NotAcceptable;
 import info.orestes.rest.error.RestException;
+import info.orestes.rest.error.ServiceUnavailable;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.util.log.Log;
@@ -133,7 +134,7 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
     @Override
     @SuppressWarnings("deprecation")
     public void sendError(RestException error) {
-        if (error instanceof InternalServerError && !error.isRemote()) {
+        if ((error instanceof InternalServerError || error instanceof ServiceUnavailable) && !error.isRemote()) {
             LOG.warn(error);
         } else {
             LOG.debug(error);
@@ -147,6 +148,10 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
             setHeader(HttpHeader.CONTENT_TYPE.asString(), null);
             setHeader(HttpHeader.CONTENT_LENGTH.asString(), null);
             setHeader(HttpHeader.CACHE_CONTROL.asString(), "no-cache, no-store, max-age=0");
+
+            if (error.isRemote()) {
+                setHeader("Application-Error", "1");
+            }
 
             if (request.getMethod().equals("HEAD")) {
                 return;
