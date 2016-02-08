@@ -1,45 +1,44 @@
 package info.orestes.rest.client;
 
 import info.orestes.rest.conversion.ConverterService;
-import info.orestes.rest.conversion.MediaType;
 import info.orestes.rest.util.Inject;
 import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.HttpClientTransport;
 import org.eclipse.jetty.client.HttpConversation;
+import org.eclipse.jetty.client.http.HttpClientTransportOverHTTP;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 import java.net.URI;
 
 public class RestClient extends HttpClient {
 	
-	public static final MediaType ALL = MediaType.parse(MediaType.ALL);
-
 	private final ConverterService converterService;
 	private final URI baseURI;
-	
-	public RestClient(String baseURI, boolean useHttp2, ConverterService converterService) {
-        this(baseURI, useHttp2, converterService, null, null);
+
+	@Inject
+	public RestClient(ConverterService converterService) {
+		this("", converterService);
 	}
 
-    public RestClient(String baseURI, boolean useHttp2, ConverterService converterService, String trustStorePath,
-					  String trustStorePassword) {
-        super(
-            /*useHttp2? new HttpClientTransportOverHTTP2(new HTTP2Client()): new HttpClientTransportOverHTTP(), */
-        	new SslContextFactory()
-        );
+	public RestClient(String baseURI, ConverterService converterService) {
+        this(baseURI, converterService, new SslContextFactory());
+	}
 
-		if (trustStorePath != null) {
-			getSslContextFactory().setTrustStorePath(trustStorePath);
-			getSslContextFactory().setTrustStorePassword(trustStorePassword);
-		}
-
-        this.baseURI = URI.create(baseURI);
-        this.converterService = converterService;
+    public RestClient(String baseURI, ConverterService converterService, SslContextFactory sslContextFactory) {
+        this(baseURI, converterService, sslContextFactory, new HttpClientTransportOverHTTP());
     }
 
-    @Inject
-    public RestClient(ConverterService converterService) {
-        this("", false, converterService);
-    }
+	public RestClient(String baseURI, ConverterService converterService, SslContextFactory sslContextFactory, HttpClientTransport httpClientTransport) {
+		/*useHttp2? new HttpClientTransportOverHTTP2(new HTTP2Client()): new HttpClientTransportOverHTTP(), */
+
+		super(
+            new HttpClientTransportOverHTTP(),
+			new SslContextFactory()
+		);
+
+		this.baseURI = URI.create(baseURI);
+		this.converterService = converterService;
+	}
 
     @Override
 	protected RestRequest newHttpRequest(HttpConversation conversation, URI uri) {
