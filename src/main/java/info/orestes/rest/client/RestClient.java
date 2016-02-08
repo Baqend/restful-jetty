@@ -12,7 +12,7 @@ import java.net.URI;
 
 public class RestClient extends HttpClient {
 	
-	private final ConverterService converterService;
+	private ConverterService converterService;
 	private final URI baseURI;
 
 	@Inject
@@ -32,8 +32,8 @@ public class RestClient extends HttpClient {
 		/*useHttp2? new HttpClientTransportOverHTTP2(new HTTP2Client()): new HttpClientTransportOverHTTP(), */
 
 		super(
-            new HttpClientTransportOverHTTP(),
-			new SslContextFactory()
+            httpClientTransport,
+			sslContextFactory
 		);
 
 		this.baseURI = URI.create(baseURI);
@@ -60,4 +60,11 @@ public class RestClient extends HttpClient {
 	public ConverterService getConverterService() {
 		return converterService;
 	}
+
+    public void setConverterService(ConverterService converterService) {
+        if (isStarted())
+            throw new IllegalStateException();
+
+        this.converterService = converterService;
+    }
 }
