@@ -3,54 +3,64 @@ plugins {
     id 'net.researchgate.release' version '2.2.1'
 }
 
-apply plugin: 'java'
-apply plugin: 'maven'
-apply plugin: 'java-library-distribution'
-apply plugin: 'net.researchgate.release'
-apply plugin: 'com.jfrog.bintray'
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'maven'
+    apply plugin: 'java-library-distribution'
 
-repositories {
-    mavenCentral()
-}
+    repositories {
+        mavenCentral()
+    }
 
-dependencies {
-    compile (
-            'org.eclipse.jetty:jetty-server:9.3.6.v20151106',
-            'org.eclipse.jetty.websocket:javax-websocket-server-impl:9.3.6.v20151106',
-            'org.eclipse.jetty:jetty-servlets:9.3.6.v20151106',
-            'org.eclipse.jetty.http2:http2-server:9.3.6.v20151106',
-            'org.eclipse.jetty:jetty-alpn-server:9.3.6.v20151106',
-            'org.eclipse.jetty:jetty-client:9.3.6.v20151106',
-            'org.eclipse.jetty:jetty-alpn-client:9.3.6.v20151106',
-            'org.eclipse.jetty.http2:http2-http-client-transport:9.3.6.v20151106',
-            'org.eclipse.jetty.websocket:javax-websocket-client-impl:9.3.6.v20151106'
-    )
-    testCompile (
-            'junit:junit:4.11',
-            'org.mockito:mockito-all:1.9.5'
-    )
-}
+    dependencies {
+        testCompile(
+                'junit:junit:4.11',
+                'org.mockito:mockito-all:1.9.5'
+        )
+    }
 
-group = "com.baqend"
+    group = "com.baqend"
 
-distTar.compression "GZIP"
+    distTar.compression "GZIP"
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '2.5'
-}
+    task wrapper(type: Wrapper) {
+        gradleVersion = '2.5'
+    }
 
-task javadocJar(type: Jar) {
-    classifier = 'javadoc'
-    from javadoc
-}
+    task javadocJar(type: Jar) {
+        classifier = 'javadoc'
+        from javadoc
+    }
 
-task sourcesJar(type: Jar) {
-    classifier = 'sources'
-    from sourceSets.main.allSource
-}
+    task sourcesJar(type: Jar) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+    }
 
-artifacts {
-    archives javadocJar, sourcesJar
+    artifacts {
+        archives javadocJar, sourcesJar
+    }
+
+    bintray {
+        user = project.properties.get('bintray_user')
+        key = project.properties.get('bintray_api_key')
+
+        configurations = ['archives'] //When uploading configuration files
+        dryRun = false //Whether to run this as dry-run, without deploying
+        publish = true //If version should be auto published after an upload
+        pkg {
+            repo = 'maven'
+            userOrg = 'baqend' //An optional organization name when the repo belongs to one of the user's orgs
+            name = project.name
+            desc = 'A restfull layer ontop of jetty server'
+            websiteUrl = 'https://github.com/Baqend/restful-jetty'
+            issueTrackerUrl = 'https://github.com/Baqend/restful-jetty/issues'
+            vcsUrl = 'git@github.com:Baqend/restful-jetty.git'
+            licenses = ['MIT']
+            labels = ['REST', 'jetty', 'server']
+            publicDownloadNumbers = true
+        }
+    }
 }
 
 release {
@@ -64,26 +74,7 @@ release {
     }
 }
 
-afterReleaseBuild.dependsOn bintrayUpload
+afterReleaseBuild.dependsOn 'restful-jetty:bintrayUpload', 'restful-jetty-server:bintrayUpload'
 
-bintray {
-    user = project.properties.get('bintray_user')
-    key = project.properties.get('bintray_api_key')
 
-    configurations = ['archives'] //When uploading configuration files
-    dryRun = false //Whether to run this as dry-run, without deploying
-    publish = true //If version should be auto published after an upload
-    pkg {
-        repo = 'maven'
-        userOrg = 'baqend' //An optional organization name when the repo belongs to one of the user's orgs
-        name = 'restful-jetty'
-        desc = 'A restfull layer ontop of jetty server'
-        websiteUrl = 'https://github.com/Baqend/restful-jetty'
-        issueTrackerUrl = 'https://github.com/Baqend/restful-jetty/issues'
-        vcsUrl = 'git@github.com:Baqend/restful-jetty.git'
-        licenses = ['MIT']
-        labels = ['REST', 'jetty', 'server']
-        publicDownloadNumbers = true
-    }
-}
 

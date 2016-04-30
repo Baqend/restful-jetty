@@ -1,0 +1,8 @@
+dependencies {
+    compile(
+            'org.eclipse.jetty:jetty-client:9.3.6.v20151106',
+            'org.eclipse.jetty.websocket:javax-websocket-client-impl:9.3.6.v20151106',
+            'org.apache.tika:tika-core:1.12'
+    )
+}
+
