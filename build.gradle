@@ -1,13 +1,21 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.6'
+    }
+}
+
 plugins {
     id 'net.researchgate.release' version '2.2.1'
 }
 
 subprojects {
-    id 'com.jfrog.bintray' version "1.1"
-
     apply plugin: 'java'
     apply plugin: 'maven'
     apply plugin: 'java-library-distribution'
+    apply plugin: 'com.jfrog.bintray'
 
     repositories {
         mavenCentral()
