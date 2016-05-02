@@ -1,6 +1,8 @@
 package info.orestes.rest.error;
 
-@HttpError(status = 503)
+import org.eclipse.jetty.http.HttpStatus;
+
+@HttpError(status = HttpStatus.SERVICE_UNAVAILABLE_503)
 public class ServiceUnavailable extends RestException {
 
     public ServiceUnavailable(String message) {

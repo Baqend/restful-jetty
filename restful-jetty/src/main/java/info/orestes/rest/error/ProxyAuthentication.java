@@ -1,8 +1,10 @@
 package info.orestes.rest.error;
 
 
+import org.eclipse.jetty.http.HttpStatus;
+
 @SuppressWarnings("serial")
-@HttpError(status = 407)
+@HttpError(status = HttpStatus.PROXY_AUTHENTICATION_REQUIRED_407)
 public class ProxyAuthentication extends RestException {
 	
 	public ProxyAuthentication(String message, Throwable rootCause) {

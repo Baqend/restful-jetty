@@ -1,7 +1,9 @@
 package info.orestes.rest.error;
 
+import org.eclipse.jetty.http.HttpStatus;
+
 @SuppressWarnings("serial")
-@HttpError(status = 402)
+@HttpError(status = HttpStatus.PAYMENT_REQUIRED_402)
 public class PaymentRequired extends RestException {
 	
 	public PaymentRequired(String message, Throwable rootCause) {

@@ -1,7 +1,9 @@
 package info.orestes.rest.error;
 
+import org.eclipse.jetty.http.HttpStatus;
+
 @SuppressWarnings("serial")
-@HttpError(status = 500)
+@HttpError(status = HttpStatus.INTERNAL_SERVER_ERROR_500)
 public class InternalServerError extends RestException {
 	
 	public InternalServerError(String message) {

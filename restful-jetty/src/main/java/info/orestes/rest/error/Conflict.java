@@ -1,7 +1,9 @@
 package info.orestes.rest.error;
 
+import org.eclipse.jetty.http.HttpStatus;
+
 @SuppressWarnings("serial")
-@HttpError(status = 409)
+@HttpError(status = HttpStatus.CONFLICT_409)
 public class Conflict extends RestException {
 	
 	public Conflict(String message) {

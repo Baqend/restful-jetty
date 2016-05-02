@@ -1,7 +1,9 @@
 package info.orestes.rest.error;
 
+import org.eclipse.jetty.http.HttpStatus;
+
 @SuppressWarnings("serial")
-@HttpError(status = 415)
+@HttpError(status = HttpStatus.UNSUPPORTED_MEDIA_TYPE_415)
 public class UnsupportedMediaType extends RestException {
 	
 	public UnsupportedMediaType(String message) {
