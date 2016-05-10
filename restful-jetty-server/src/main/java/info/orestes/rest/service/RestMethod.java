@@ -2,6 +2,7 @@ package info.orestes.rest.service;
 
 import info.orestes.rest.RestServlet;
 import info.orestes.rest.service.PathElement.Type;
+import org.eclipse.jetty.util.URIUtil;
 import org.eclipse.jetty.util.UrlEncoded;
 
 import java.util.Collections;
@@ -19,6 +20,7 @@ public class RestMethod {
 	
 	private final List<PathElement> signature;
 	private final int dynamicSignatureIndex;
+	private final boolean hasDynamicPath;
 	private final Class<? extends RestServlet> target;
 	
 	private final Map<String, PathElement> arguments;
@@ -30,6 +32,21 @@ public class RestMethod {
     private final EntityType<?> requestType;
     private final EntityType<?> responseType;
 
+	/**
+	 * A rest method represents a single routable path plus its dynamic components like required and optional query and matrix parameters
+	 * @param name The unique name of the method
+	 * @param description A short description of the method
+	 * @param longDescription A detailed multiline description of the method
+	 * @param action The HTTP action of the method, i.e. GET, POST, PUT, DELETE etc.
+	 * @param signature The signature of the methods described by one or more path elements
+	 * @param target The target RestServlet which handle the method
+	 * @param requestHeader Optional request headers which can be applied to the method
+	 * @param responseHeader Optional Response headers which the method will return
+	 * @param expectedResults The expected status codes which will be returned by this method
+	 * @param requestType The entity type of the request body, or null if the method does not expect any request body
+     * @param responseType The entity type of the response body, or null if the method does not expect any response body
+     * @param forceSSL A flag, that indicates that the method should only be invoked over a secure encrypted connection
+     */
     public RestMethod(String name, String description, String[] longDescription, String action, List<PathElement> signature,
 		Class<? extends RestServlet> target, Map<String, HeaderElement> requestHeader, Map<String,
         HeaderElement> responseHeader, Map<Integer, String> expectedResults, EntityType<?> requestType,
@@ -49,6 +66,7 @@ public class RestMethod {
 
 		int required = 0;
 		int dynamicIndex = 0;
+		boolean hasWildCard = false;
 
 		HashMap<String, PathElement> args = new HashMap<>();
 		for (PathElement element : signature) {
@@ -60,12 +78,17 @@ public class RestMethod {
 				required++;
 			}
 
-			if (element.getType().compareTo(Type.VARIABLE) <= 0) {
+			if (element.getType().compareTo(Type.WILDCARD) <= 0) {
 				dynamicIndex++;
+			}
+
+			if (element.getType() == Type.WILDCARD) {
+				hasWildCard = true;
 			}
 		}
 
 		dynamicSignatureIndex = dynamicIndex;
+		hasDynamicPath = hasWildCard;
 		requiredArguments = required;
 		arguments = Collections.unmodifiableMap(args);
 	}
@@ -81,6 +104,7 @@ public class RestMethod {
 					builder.append(element.getName());
 					break;
 				case VARIABLE:
+                case WILDCARD:
 					String[] value = paramaters.get(element.getName());
 
 					if (value == null || value.length < 1) {
@@ -89,7 +113,7 @@ public class RestMethod {
 					}
 
 					builder.append('/');
-					builder.append(UrlEncoded.encodeString(value[0]));
+					builder.append(URIUtil.encodePath(value[0]));
 					break;
 				case MATRIX:
 				case QUERY:
@@ -150,6 +174,10 @@ public class RestMethod {
 		return signature.subList(dynamicSignatureIndex, signature.size());
 	}
 
+	public boolean hasDynamicPath() {
+		return hasDynamicPath;
+	}
+
 	public List<PathElement> getPathSignature() {
 		return signature;
 	}
@@ -196,6 +224,7 @@ public class RestMethod {
 			switch (el.getType()) {
 				case PATH:
 				case VARIABLE:
+				case WILDCARD:
 					result += '/' + el.toString();
 					break;
 				case MATRIX:

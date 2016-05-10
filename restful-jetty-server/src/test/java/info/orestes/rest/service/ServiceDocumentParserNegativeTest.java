@@ -183,6 +183,41 @@ public class ServiceDocumentParserNegativeTest {
                 "203 count");
     }
 
+    @Test(expected = ServiceDocumentParserException.class)
+    public final void testPathAfterWildcard() {
+        parse(
+                "#test : Test",
+                "##Test : method",
+				"@test: String the remaining path",
+                "GET /*test/bla info.orestes.rest.Testing1(String)",
+                "Content-MD5: String Q2hlY2sgSW50ZWdyaXR5IQ== ",
+                "203 count");
+    }
+
+    @Test(expected = ServiceDocumentParserException.class)
+    public final void testVariableAfterWildcard() {
+        parse(
+                "#test : Test",
+                "##Test : method",
+				"@test: String the remaining path",
+				"@bla: String additional arg",
+                "GET /*test/:bla info.orestes.rest.Testing1(String)",
+                "Content-MD5: String Q2hlY2sgSW50ZWdyaXR5IQ== ",
+                "203 count");
+    }
+
+    @Test(expected = ServiceDocumentParserException.class)
+    public final void testWildcardAfterWildcard() {
+        parse(
+                "#test : Test",
+                "##Test : method",
+				"@bla: String the remaining path",
+				"@test: String the remaining path",
+                "GET /*test/*bla info.orestes.rest.Testing1(String)",
+                "Content-MD5: String Q2hlY2sgSW50ZWdyaXR5IQ== ",
+                "203 count");
+    }
+
 	private List<MethodGroup> parse(String... lines) {
 		StringBuilder builder = new StringBuilder();
 		

@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
 
+import static java.util.Collections.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
@@ -89,8 +90,20 @@ public class RestRouterTest {
 		
 		assertMethod(method, "OPTIONS", "/", new HashMap<String, String[]>());
 	}
-	
-	@Test
+
+    @Test
+    public void testWildcardRoutedOnMultipleDepths() {
+        RestMethod method = router.getMethods().stream().filter(m -> m.getName().equals("C5")).findFirst().get();
+
+        assertMethod(method, "PUT", "/wildcard/test1?b=43", singletonMap("remaining", new String[] {"test1"}));
+        assertMethod(method, "PUT", "/wildcard/test1/test2?b=22",singletonMap("remaining", new String[] {"test1/test2"}));
+        assertMethod(method, "PUT", "/wildcard/test1?b=13", singletonMap("remaining", new String[] {"test1"}));
+        assertMethod(null, "PUT", "/wildcard/test1;a=b?b=83", singletonMap("remaining", new String[] {"test1"}));
+        assertMethod(method, "PUT", "/wildcard/te%20st1/tes%3ft/te&st?a=b&b=98", singletonMap("remaining", new String[] {"te st1/tes?t/te&st"}));
+    }
+
+
+    @Test
 	public void testAllMethodsWithoutOptionalParams() {
 		for (RestMethod method : router.getMethods()) {
 			Map<String, String[]> params = new HashMap<>();
@@ -114,19 +127,26 @@ public class RestRouterTest {
 	
 	@Test
 	public void testURIEncoding() {
-		RestMethod method = groups.get(4).get(0);
+		//E1 : GET  /db/:ns/db_all;from=0;limit=?name=Franz+Kafka
+        RestMethod method = groups.get(4).get(0);
 		
 		Map<String, String[]> params = new HashMap<>();
-		params.put("ns", new String[] { "käse+=&br%20ot /;g=" });
+		params.put("ns", new String[] { "käse+=&br%20ot ;g=" });
 		params.put("name", new String[] { "käse+=&br%20ot /;g=" });
 		
 		String uri = method.createURI(params);
 		String ns = uri.substring(4, uri.indexOf("/db_all"));
 		String name = uri.substring(uri.indexOf("?name=") + 6);
-		
-		for (String seq : new String[] { "ä", "=", "&", " ", "/", ";", "e+", "r%20" }) {
-			assertEquals(-1, ns.indexOf(seq));
-			assertEquals(-1, name.indexOf(seq));
+
+		//paths and query arguments are encoded differently
+		for (String seq : new String[] { "ä", " ", "/", ";", "r%20" }) {
+			assertEquals("assert path not containing " + seq, -1, ns.indexOf(seq));
+			assertEquals("assert query not containing " + seq, -1, name.indexOf(seq));
+		}
+
+		for (String seq : new String[] { "=", "e+", "&" }) {
+			assertNotEquals("assert path containing " + seq, -1, ns.indexOf(seq));
+			assertEquals("assert query not containing " + seq, -1, name.indexOf(seq));
 		}
 		
 		assertMethod(method, method.getAction(), uri, params);
@@ -179,9 +199,19 @@ public class RestRouterTest {
 		
 		assertMethod(null, "GET", "/", null);
 	}
-	
-	protected void assertMethod(final RestMethod expected, final String action, final String path,
-			final Map<String, String[]> params) {
+
+    @Test
+    public void testDynamicRouteIsAddedToAllDepths() throws Exception {
+        RestMethod method = router.getMethods().stream().filter(m -> m.getName().equals("C5")).findFirst().get();
+
+        for (int i = 1; i < 20; ++i) {
+            boolean containsMethod = router.getRoutes(i).stream().anyMatch(r -> r.getMethod() == method);
+            assertEquals("routes of length " + (i + 1) + " contains wildcard route", i > 1, containsMethod);
+        }
+    }
+
+    protected void assertMethod(final RestMethod expected, final String action, final String path,
+                                final Map<String, String[]> params) {
 		
 		router.setHandler(new RestHandler() {
 			@Override
@@ -213,6 +243,12 @@ public class RestRouterTest {
 		} catch (SendError e) {
 			throw new RuntimeException(e.getCause());
 		}
+
+        if (expected != null) {
+            verify(req).setHandled(true);
+        } else {
+            verify(req, never()).setHandled(true);
+        }
 
         verify(res, never()).setStatus(RestResponse.SC_NO_CONTENT);
         verify(res, never()).setStatus(RestResponse.SC_OK);

@@ -3,7 +3,7 @@ package info.orestes.rest.service;
 public class PathElement {
 	
 	public static enum Type {
-		PATH, VARIABLE, MATRIX, QUERY
+		PATH, VARIABLE, WILDCARD, MATRIX, QUERY
 	}
 	
 	public static PathElement createPath(String path) {
@@ -12,6 +12,10 @@ public class PathElement {
 	
 	public static PathElement createVariable(String name, String description, Class<?> valueType) {
 		return new PathElement(Type.VARIABLE, name, description, valueType, false, null);
+	}
+
+	public static PathElement createWildcard(String name, String description) {
+		return new PathElement(Type.WILDCARD, name, description, String.class, false, null);
 	}
 	
 	public static PathElement createMatrix(String name, String description, boolean optional, Class<?> valueType,
@@ -73,6 +77,8 @@ public class PathElement {
 				return getName();
 			case VARIABLE:
 				return ":" + getName();
+			case WILDCARD:
+				return "*" + getName();
 			case MATRIX:
 			case QUERY:
 				String value = getDefaultValue() != null ? getDefaultValue() : "";

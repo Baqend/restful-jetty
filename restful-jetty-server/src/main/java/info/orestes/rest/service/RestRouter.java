@@ -10,6 +10,7 @@ import org.eclipse.jetty.http.HttpURI;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.HandlerWrapper;
 import org.eclipse.jetty.util.MultiMap;
+import org.eclipse.jetty.util.URIUtil;
 import org.eclipse.jetty.util.UrlEncoded;
 
 import javax.servlet.ServletException;
@@ -26,14 +27,14 @@ public class RestRouter extends HandlerWrapper {
 	private final Module module;
 	private final ConverterService converterService;
 	private final List<RestMethod> methods = new ArrayList<>();
-	@SuppressWarnings("unchecked")
-	private ArrayList<Route>[] routeLists = (ArrayList<Route>[]) new ArrayList<?>[10];
+	private final ArrayList<ArrayList<Route>> routeLists = new ArrayList<>(10);
+    private final List<Route> dynamicRoutes = new ArrayList<>(0);
 	
 	@Inject
 	public RestRouter(Module module) {
 		this.module = module;
 		this.converterService = module.moduleInstance(ConverterService.class);
-	}
+    }
 	
 	@Override
 	public void handle(String path, Request request, HttpServletRequest req, HttpServletResponse res)
@@ -67,10 +68,10 @@ public class RestRouter extends HandlerWrapper {
 			int next;
 			int offset = 1;
 			while ((next = path.indexOf('/', offset)) != -1) {
-				pathParts.add(UrlEncoded.decodeString(path, offset, next - offset, null));
+				pathParts.add(URIUtil.decodePath(path, offset, next - offset));
 				offset = next + 1;
 			}
-			pathParts.add(UrlEncoded.decodeString(path, offset, path.length() - offset, null));
+			pathParts.add(URIUtil.decodePath(path, offset, path.length() - offset));
 
 			for (Route route : getRoutes(pathParts.size())) {
 				String method = request.getMethod();
@@ -141,22 +142,32 @@ public class RestRouter extends HandlerWrapper {
 		if (isStarted()) {
 			throw new IllegalStateException("The router can not be modified while it is running");
 		}
-		
-		List<Route> list = getRoutes(method);
-		
-		boolean added = false;
-		Route route = new Route(method);
-		for (int i = 0; i < list.size(); i++) {
-			if (route.compareTo(list.get(i)) > 0) {
-				list.add(i, route);
-				added = true;
-				break;
-			}
-		}
-		
-		if (!added) {
-			list.add(route);
-		}
+
+        //expand the routes table to the required path size
+        int index = method.getFixedSignature().size() - 1;
+        while (routeLists.size() <= index) {
+            //copy all dynamic routes to all new routes since dynamic routes matches all paths of this size
+            routeLists.add(new ArrayList<>(dynamicRoutes));
+        }
+
+        Route route = new Route(method);
+
+        List<Route> routes = routeLists.get(index);
+        routes.add(route);
+        Collections.sort(routes);
+
+        if (route.isDynamic()) {
+            dynamicRoutes.add(route);
+            Collections.sort(dynamicRoutes);
+
+            //dynamic routes match all larger paths than this one,
+            //therefore add this route to all larger path routing tables
+            for (int i = index + 1; i < routeLists.size(); ++i) {
+                ArrayList<Route> largerRoutes = routeLists.get(i);
+                largerRoutes.add(route);
+                Collections.sort(largerRoutes);
+            }
+        }
 		
 		methods.add(method);
 	}
@@ -171,19 +182,28 @@ public class RestRouter extends HandlerWrapper {
 		if (isStarted()) {
 			throw new IllegalStateException("The router can not be modified while it is running");
 		}
-		
-		int index = methods.indexOf(method);
-		if (index != -1) {
-			methods.remove(index);
-			List<Route> list = getRoutes(method);
-			
-			for (Iterator<Route> iter = list.iterator(); iter.hasNext();) {
-				Route route = iter.next();
+
+        boolean removed = methods.remove(method);
+        if (removed) {
+            int index = method.getFixedSignature().size() - 1;
+            List<Route> list = routeLists.get(index);
+            Route route = null;
+            for (Iterator<Route> iter = list.iterator(); iter.hasNext();) {
+				route = iter.next();
 				if (route.getMethod() == method) {
 					iter.remove();
 					break;
 				}
 			}
+
+            if (route != null && route.isDynamic()) {
+                //remove the dynamic route from all larger routing tables
+                for (int i = index + 1; i < routeLists.size(); ++i) {
+                    ArrayList<Route> largerRoutes = routeLists.get(i);
+                    largerRoutes.remove(route);
+                }
+                dynamicRoutes.remove(route);
+            }
 		}
 	}
 	
@@ -198,47 +218,23 @@ public class RestRouter extends HandlerWrapper {
 			throw new IllegalStateException("The router can not be modified while it is running");
 		}
 		
-		Arrays.fill(routeLists, null);
+		routeLists.clear();
+        dynamicRoutes.clear();
 		methods.clear();
 	}
-	
-	protected List<Route> getRoutes(RestMethod method) {
-		int index = -1;
-		for (PathElement element : method.getSignature()) {
-			if (element.getType() == Type.PATH || element.getType() == Type.VARIABLE) {
-				index++;
-			}
-		}
-		
-		if (routeLists.length <= index) {
-			int newLength = routeLists.length * 2;
-			if (newLength <= index) {
-				newLength = index + 1;
-			}
-			
-			routeLists = Arrays.copyOf(routeLists, newLength);
-		}
-		
-		List<Route> list = routeLists[index];
-		if (list == null) {
-			list = routeLists[index] = new ArrayList<>();
-		}
-		
-		return list;
-	}
-	
+
 	protected List<Route> getRoutes(int parts) {
 		int index = parts - 1;
-		
-		if (index >= routeLists.length || routeLists[index] == null) {
-			return Collections.emptyList();
+
+        if (routeLists.size() <= index) {
+			return dynamicRoutes;
 		} else {
-			return routeLists[index];
+			return routeLists.get(index);
 		}
 	}
-	
+
 	public class Route implements Comparable<Route> {
-		
+
 		private final RestMethod method;
 		private final RestServlet servlet;
 
@@ -246,7 +242,11 @@ public class RestRouter extends HandlerWrapper {
 			this.method = method;
             this.servlet = module.inject(method.getTarget());
 		}
-		
+
+        public boolean isDynamic() {
+            return method.hasDynamicPath();
+        }
+
 		public RestMethod getMethod() {
 			return method;
 		}
@@ -272,13 +272,17 @@ public class RestRouter extends HandlerWrapper {
 				if (selfType != otherType) {
 					// fixed path wins against variables
 					if (selfType == Type.PATH) {
-						return 1;
+						return -1;
 					} else if (otherType == Type.PATH) {
-						return -1;
-					} else if (selfType == Type.VARIABLE) {
 						return 1;
-					} else if (otherType == Type.VARIABLE) {
+					} else if (selfType == Type.VARIABLE) {
 						return -1;
+					} else if (otherType == Type.VARIABLE) {
+						return 1;
+					} else if (selfType == Type.WILDCARD) {
+						return -1;
+					} else if (otherType == Type.WILDCARD) {
+						return 1;
 					} else {
 						// no further path or variables expected
 						break;
@@ -288,7 +292,7 @@ public class RestRouter extends HandlerWrapper {
 			
 			// if the path structure is identical the route with more required
 			// parameters wins e.g. will be matched first
-			return getMethod().getRequiredParamaters() - o.getMethod().getRequiredParamaters();
+			return o.getMethod().getRequiredParamaters() - getMethod().getRequiredParamaters();
 		}
 		
 		public Map<String, String> match(String action, List<String> pathParts, Map<String, String> matrix,
@@ -331,7 +335,19 @@ public class RestRouter extends HandlerWrapper {
 						
 						matches.put(el.getName(), value);
 						break;
-					case MATRIX:
+					case WILDCARD:
+                        // The matching path is longer than the requested path
+                        if (pathParts.size() <= parts) {
+                            return null;
+                        }
+
+                        //consume all remaining parts
+                        List<String> remainingParts = pathParts.subList(parts, pathParts.size());
+                        parts = pathParts.size();
+                        value = String.join("/", remainingParts);
+                        matches.put(el.getName(), value);
+                        break;
+                    case MATRIX:
 						if (matrix != null && matrix.containsKey(el.getName())) {
 							matches.put(el.getName(), matrix.get(el.getName()));
 							matrixCounter--;
@@ -359,5 +375,10 @@ public class RestRouter extends HandlerWrapper {
 			
 			return matches;
 		}
-	}
+
+        @Override
+        public String toString() {
+            return method.toString();
+        }
+    }
 }

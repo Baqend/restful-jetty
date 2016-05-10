@@ -1,6 +1,7 @@
 package info.orestes.rest.service;
 
 import info.orestes.rest.RestServlet;
+import info.orestes.rest.service.PathElement.Type;
 import org.eclipse.jetty.util.UrlEncoded;
 
 import java.io.*;
@@ -344,12 +345,14 @@ public class ServiceDocumentParser {
 		String path = completePath.substring(1, matrixIndex);
 		
 		List<PathElement> elements = new LinkedList<>();
-		for (String part : path.split("/")) {
-			elements.add(parsePathElement(part));
-		}
-		
-		if (!path.isEmpty() && path.endsWith("/")) {
-			elements.add(parsePathElement(""));
+		PathElement lastElement = null;
+		//call split with a negative value to keep trailing empty strings
+		for (String part : path.split("/", -1)) {
+			if (lastElement != null && lastElement.getType() == Type.WILDCARD)
+				throw new IOException("A wildcard path match must be the last part of a path definition in " + currentName);
+
+			lastElement = parsePathElement(part);
+			elements.add(lastElement);
 		}
 		
 		if (matrix != null) {
@@ -368,12 +371,17 @@ public class ServiceDocumentParser {
 	}
 	
 	private PathElement parsePathElement(String part) throws IOException {
-		if (part.length() > 0 && part.charAt(0) == ':') {
+		char firstChar = part.length() > 0? part.charAt(0): 0;
+		if (firstChar == ':' || firstChar == '*') {
 			String name = part.substring(1);
-			
+
 			ArgumentDefinition arg = getArgument(name);
-			
-			return PathElement.createVariable(arg.name, arg.description, arg.type);
+
+			if (firstChar == ':') {
+				return PathElement.createVariable(arg.name, arg.description, arg.type);
+			} else {
+				return PathElement.createWildcard(arg.name, arg.description);
+			}
 		} else {
 			return PathElement.createPath(part);
 		}

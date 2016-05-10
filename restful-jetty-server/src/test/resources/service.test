@@ -109,6 +109,16 @@ POST /?test=&id=33&name info.orestes.rest.Testing3
 PUT   /test?a=&b&c=44      info.orestes.rest.Testing3(Object)
 200 ok
 
+##C5 : Method C.4
+
+@remaining : String The remaining path
+@a : String The a arg
+@c : Integer The c arg
+@b : Integer The b arg
+
+PUT   /wildcard/*remaining?a=&b&c=44      info.orestes.rest.Testing3(Object)
+200 ok
+
 #group-d : Group D
 
 ##D1 : Method D.1

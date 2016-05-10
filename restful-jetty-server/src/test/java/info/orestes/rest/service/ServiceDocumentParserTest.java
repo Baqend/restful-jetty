@@ -347,6 +347,30 @@ public class ServiceDocumentParserTest {
 		asserRequestType(Object.class);
 		asserResponseType(null);
 	}
+
+	@Test
+	public void routeC5() {
+		assertLongDescritpion();
+		assertArgumentSize(4);
+
+		assertResultSize(1);
+
+		assertAction("PUT");
+
+		assertSignatureParts(2, 3);
+
+		assertPath(0, "wildcard");
+		assertWildCard(1, "remaining");
+		assertQuery(2, "a", true, String.class, null);
+		assertQuery(3, "b", false, Integer.class, null);
+		assertQuery(4, "c", true, Integer.class, "44");
+
+        assertFalse(method.isForceSSL());
+
+		asserTarget(Testing3.class);
+		asserRequestType(Object.class);
+		asserResponseType(null);
+	}
 	
 	@Test
 	public void routeD1() {
@@ -613,6 +637,10 @@ public class ServiceDocumentParserTest {
 	
 	private void assertPath(int index, String name) {
 		assertPathElement(index, Type.PATH, name, null, false, null, null);
+	}
+
+	private void assertWildCard(int index, String name) {
+		assertPathElement(index, Type.WILDCARD, name, "The " + name + " path", false, String.class, null);
 	}
 	
 	private void assertVariable(int index, String name, Class<?> valueType) {
