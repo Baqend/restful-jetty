@@ -2,6 +2,7 @@ package info.orestes.rest.conversion;
 
 import info.orestes.rest.conversion.format.TestFormat;
 import info.orestes.rest.conversion.testing.LongConverter;
+import info.orestes.rest.service.EntityType;
 import info.orestes.rest.util.Module;
 import org.apache.tika.mime.MediaType;
 import org.junit.After;
@@ -39,7 +40,7 @@ public class ContentNegotiationTest {
 	
 	@Test
 	public void testIncompatibleType() {
-		assertNull(cs.getPreferedMediaType(Arrays.asList(MediaType.parse("text/html")), String.class));
+		assertNull(cs.getPreferredMediaType(Arrays.asList(MediaType.parse("text/html")), EntityType.of(String.class)));
 	}
 	
 	@Test
@@ -116,6 +117,6 @@ public class ContentNegotiationTest {
 	}
 	
 	private void assertPrefered(MediaType expected, MediaType... mediaTypes) {
-		assertEquals(expected, cs.getPreferedMediaType(Arrays.asList(mediaTypes), Long.class));
+		assertEquals(expected, cs.getPreferredMediaType(Arrays.asList(mediaTypes), EntityType.of(Long.class)));
 	}
 }

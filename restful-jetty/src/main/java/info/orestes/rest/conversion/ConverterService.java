@@ -602,7 +602,21 @@ public class ConverterService {
      * @param type The type to handle
      * @return All supported {@link MediaType}s
      */
-    public Set<MediaType> getAcceptableMediaTypes(Class<?> type) {
+    public Set<MediaType> getAcceptableMediaTypes(EntityType<?> type) {
+        Set<MediaType> acceptableTypes = getAcceptableMediaTypes(type.getRawType());
+
+        if (type.getActualTypeArguments().length > 0) {
+            acceptableTypes = new HashSet<>(acceptableTypes);
+            for (Class<?> genericParams: type.getActualTypeArguments()) {
+                acceptableTypes.retainAll(getAcceptableMediaTypes(genericParams));
+            }
+            acceptableTypes = Collections.unmodifiableSet(acceptableTypes);
+        }
+
+        return acceptableTypes;
+    }
+
+    private Set<MediaType> getAcceptableMediaTypes(Class<?> type) {
         Map<MediaType, Converter<?, ?>> map = accept.get(type);
 
         if (map == null) {
@@ -620,7 +634,7 @@ public class ConverterService {
      * @param type               The type for which the media type is selected
      * @return The best matched media type or <code>null</code> if none of the acceptable media types is supported
      */
-    public MediaType getPreferedMediaType(List<MediaType> acceptedMediaTypes, Class<?> type) {
+    public MediaType getPreferredMediaType(List<MediaType> acceptedMediaTypes, EntityType<?> type) {
         Collections.sort(acceptedMediaTypes, MediaTypeNegotiation.qualityComparator());
 
         Set<MediaType> supportedMediaTypes = getAcceptableMediaTypes(type);

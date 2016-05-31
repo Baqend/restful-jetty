@@ -100,7 +100,7 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
     private MediaType getContentType(EntityType<?> responseType) throws NotAcceptable {
         List<MediaType> mediaTypes = parseMediaTypes(request.getHeader(HttpHeader.ACCEPT.asString()));
         ConverterService converterService = request.getConverterService();
-        MediaType mediaType = converterService.getPreferedMediaType(mediaTypes, responseType.getRawType());
+        MediaType mediaType = converterService.getPreferredMediaType(mediaTypes, responseType);
 
         if (mediaType == null) {
             throw new NotAcceptable("The requested response media types are not supported.");

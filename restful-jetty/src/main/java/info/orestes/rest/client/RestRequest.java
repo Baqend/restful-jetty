@@ -96,12 +96,12 @@ public class RestRequest extends HttpRequest {
             ResponseListener<?> responseListener = ((ResponseListener<?>) listener);
 
             responseListener.setRequest(this);
-            Class<?> entityType = responseListener.getEntityType().getRawType();
+            EntityType<?> entityType = responseListener.getEntityType();
 
             // if no response entity type is expected use preferred exception
             // media type
-            if (entityType.equals(Void.class)) {
-                entityType = RestException.class;
+            if (entityType.getRawType().equals(Void.class)) {
+                entityType = EntityType.of(RestException.class);
             }
 
             StringBuilder accepted = new StringBuilder();

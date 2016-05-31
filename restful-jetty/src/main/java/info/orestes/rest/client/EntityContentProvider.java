@@ -29,7 +29,7 @@ public abstract class EntityContentProvider<E> implements ContentProvider, Typed
 
     public MediaType getMediaType() {
         if (contentType == null && getConverterService() != null) {
-            MediaType mimeType = getConverterService().getPreferedMediaType(MediaTypeNegotiation.ANY, getEntityType().getRawType());
+            MediaType mimeType = getConverterService().getPreferredMediaType(MediaTypeNegotiation.ANY, getEntityType());
             if (mimeType == null) {
                 throw new IllegalArgumentException("The media type " + getEntityType() + " is not supported");
             } else {

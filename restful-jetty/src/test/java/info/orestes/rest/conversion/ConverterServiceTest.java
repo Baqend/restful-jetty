@@ -4,10 +4,7 @@ import info.orestes.rest.GenericEntity;
 import info.orestes.rest.conversion.ConverterService.Types;
 import info.orestes.rest.conversion.format.GenericTestFormat;
 import info.orestes.rest.conversion.format.TestFormat;
-import info.orestes.rest.conversion.testing.GenericEntityConverter;
-import info.orestes.rest.conversion.testing.GenericLongConverter;
-import info.orestes.rest.conversion.testing.LongConverter;
-import info.orestes.rest.conversion.testing.ObjectConverter;
+import info.orestes.rest.conversion.testing.*;
 import info.orestes.rest.error.RestException;
 import info.orestes.rest.error.UnsupportedMediaType;
 import info.orestes.rest.service.EntityType;
@@ -20,12 +17,14 @@ import org.mockito.MockitoAnnotations;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
 public class ConverterServiceTest {
     public static final String TEST_TYPE = "application/test.java-object";
     public static final MediaType TEST_MEDIA_TYPE = MediaType.parse(TEST_TYPE);
+    public static final EntityType<Long> longType = EntityType.of(Long.class);
 
     private ConverterService cs;
     private boolean called;
@@ -64,13 +63,13 @@ public class ConverterServiceTest {
     @Test
     public void testAdd() {
         assertEquals(0, cs.createServiceDocumentTypes().getEntityTypes().size());
-        assertNull(cs.getPreferedMediaType(Arrays.asList(MediaType.parse("*/*")), Long.class));
+        assertNull(cs.getPreferredMediaType(Arrays.asList(MediaType.parse("*/*")), longType));
 
         cs.addFormat(new TestFormat());
         cs.add(new LongConverter());
 
-        assertNull(cs.getPreferedMediaType(Arrays.asList(MediaType.parse("text/*")), Long.class));
-        assertEquals(TEST_MEDIA_TYPE, cs.getPreferedMediaType(Arrays.asList(TEST_MEDIA_TYPE), Long.class));
+        assertNull(cs.getPreferredMediaType(Arrays.asList(MediaType.parse("text/*")), longType));
+        assertEquals(TEST_MEDIA_TYPE, cs.getPreferredMediaType(Arrays.asList(TEST_MEDIA_TYPE), longType));
     }
 
     @Test
@@ -78,8 +77,8 @@ public class ConverterServiceTest {
         cs.addFormat(new TestFormat());
         cs.add(new LongConverter() {});
 
-        assertNull(cs.getPreferedMediaType(Arrays.asList(MediaType.parse("text/*")), Long.class));
-        assertEquals(TEST_MEDIA_TYPE, cs.getPreferedMediaType(Arrays.asList(TEST_MEDIA_TYPE), Long.class));
+        assertNull(cs.getPreferredMediaType(Arrays.asList(MediaType.parse("text/*")), longType));
+        assertEquals(TEST_MEDIA_TYPE, cs.getPreferredMediaType(Arrays.asList(TEST_MEDIA_TYPE), longType));
     }
 
     @Test
@@ -87,21 +86,34 @@ public class ConverterServiceTest {
         cs.addFormat(new TestFormat());
         cs.add(new GenericLongConverter<Long>() {});
 
-        assertNull(cs.getPreferedMediaType(Arrays.asList(MediaType.parse("text/*")), Long.class));
-        assertEquals(TEST_MEDIA_TYPE, cs.getPreferedMediaType(Arrays.asList(TEST_MEDIA_TYPE), Long.class));
+        assertNull(cs.getPreferredMediaType(Arrays.asList(MediaType.parse("text/*")), longType));
+        assertEquals(TEST_MEDIA_TYPE, cs.getPreferredMediaType(Arrays.asList(TEST_MEDIA_TYPE), longType));
+    }
+    @Test
+    public void testAddGenericConverter() {
+        assertEquals(0, cs.createServiceDocumentTypes().getEntityTypes().size());
+        assertNull(cs.getPreferredMediaType(Arrays.asList(MediaType.parse("*/*")), longType));
+
+        cs.addFormat(new TestFormat());
+        cs.add(new LongConverter());
+        cs.add(new ListConverter());
+
+        assertNull(cs.getPreferredMediaType(Arrays.asList(MediaType.parse("text/*")), EntityType.of(Long.class)));
+        assertEquals(TEST_MEDIA_TYPE, cs.getPreferredMediaType(Arrays.asList(TEST_MEDIA_TYPE), EntityType.of(List.class, Long.class)));
+        assertEquals(null, cs.getPreferredMediaType(Arrays.asList(TEST_MEDIA_TYPE), EntityType.of(List.class, Integer.class)));
     }
 
     @Test
     public void testLoadConverters() {
         assertEquals(0, cs.createServiceDocumentTypes().getEntityTypes().size());
-        assertNull(cs.getPreferedMediaType(Arrays.asList(MediaType.parse("*/*")), Long.class));
+        assertNull(cs.getPreferredMediaType(Arrays.asList(MediaType.parse("*/*")), longType));
 
         cs.loadConverters();
 
         assertEquals(MediaType.text("plain"),
-            cs.getPreferedMediaType(Arrays.asList(MediaType.parse("text/*")), Long.class));
+            cs.getPreferredMediaType(Arrays.asList(MediaType.parse("text/*")), longType));
         assertEquals(TEST_MEDIA_TYPE,
-            cs.getPreferedMediaType(Arrays.asList(MediaType.parse("application/*")), Long.class));
+            cs.getPreferredMediaType(Arrays.asList(MediaType.parse("application/*")), longType));
     }
 
     @Test(expected = UnsupportedMediaType.class)
@@ -265,8 +277,8 @@ public class ConverterServiceTest {
     }
 
     @Test(expected = UnsupportedMediaType.class)
-    public void testNoAcceptAnnotation() throws IOException, RestException {
-        cs.toRepresentation(null, String.class, TEST_MEDIA_TYPE, "test");
+    public void testToListOfUnsupportedGenericParamater() throws IOException, RestException {
+        cs.toRepresentation(null, new EntityType<>(List.class, Integer.class), TEST_MEDIA_TYPE, "[123]");
     }
 
     @Test(expected = UnsupportedOperationException.class)
@@ -418,9 +430,10 @@ public class ConverterServiceTest {
 
         assertEquals(Object.class, types.getEntityClassForName("Object"));
         assertEquals(GenericEntity.class, types.getEntityClassForName("GenericEntity"));
+        assertEquals(List.class, types.getEntityClassForName("List"));
 
         assertEquals(10, types.getArgumentTypes().size());
-        assertEquals(12, types.getEntityTypes().size());
+        assertEquals(13, types.getEntityTypes().size());
     }
 
 }
