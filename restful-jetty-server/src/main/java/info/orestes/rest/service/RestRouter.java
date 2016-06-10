@@ -79,11 +79,11 @@ public class RestRouter extends HandlerWrapper {
 				Map<String, String> matches = route.match(method, pathParts, matrix, query);
 				if (matches != null) {
 					if (!matches.isEmpty()) {
-						MultiMap<String> params = request.getQueryParameters();
-						if (params == null) {
-							request.setQueryParameters(params = new MultiMap<>());
-						}
+						//jetty use a constant Map in some cases therefore lets create always a new map
+                        MultiMap<String> params = request.getQueryParameters();
+                        params = params == null? new MultiMap<>(): new MultiMap<>(params);
 						params.putAllValues(matches);
+						request.setQueryParameters(params);
 					}
 
 					restRequest = creatRequest(request, req, route);
