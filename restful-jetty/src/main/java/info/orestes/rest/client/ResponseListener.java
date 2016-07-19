@@ -17,6 +17,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 public abstract class ResponseListener<E> extends Adapter {
     private static final EntityType<RestException> ERROR_TYPE = new EntityType<>(RestException.class);
@@ -71,7 +72,8 @@ public abstract class ResponseListener<E> extends Adapter {
         private final MediaType contentType;
 
         public EntityContext(RestRequest request, MediaType contentType, InputStream stream) {
-            this.reader = new InputStreamReader(stream, Charset.forName(contentType.getParameters().get("charset")));
+            String charset = contentType.getParameters().get("charset");
+            this.reader = new InputStreamReader(stream, charset == null? StandardCharsets.UTF_8: Charset.forName(charset));
             this.request = request;
             this.contentType = contentType;
             this.converterService = request.getClient().getConverterService();
