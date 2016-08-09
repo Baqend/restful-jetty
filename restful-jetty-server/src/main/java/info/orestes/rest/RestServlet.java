@@ -155,10 +155,8 @@ public abstract class RestServlet extends GenericServlet {
 	 */
 	public void doHead(Request request, Response response) throws RestException, IOException {
 		doGet(request, response);
-		
+
 		response.resetBuffer();
-		response.setContentLength(0);
-		response.getOutputStream().close();
 	}
 
 	/**
