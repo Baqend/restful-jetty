@@ -47,13 +47,16 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
         if (acceptHeader != null) {
             List<MediaType> mediaTypes = new ArrayList<>();
             for (String part : acceptHeader.split(",")) {
-                mediaTypes.add(MediaType.parse(part));
+                MediaType mediaType = MediaType.parse(part);
+                if (mediaType != null)
+                    mediaTypes.add(mediaType);
             }
 
-            return mediaTypes;
-        } else {
-            return ANY;
+            if (!mediaTypes.isEmpty())
+                return mediaTypes;
         }
+
+        return ANY;
     }
 
     public RestResponse(RestRequest request, HttpServletResponse response) {
