@@ -1,11 +1,11 @@
 dependencies {
     compile project (':restful-jetty')
     compile(
-            'org.eclipse.jetty:jetty-server:9.3.6.v20151106',
-            'org.eclipse.jetty.websocket:javax-websocket-server-impl:9.3.6.v20151106',
-            'org.eclipse.jetty:jetty-servlets:9.3.6.v20151106',
-            'org.eclipse.jetty.http2:http2-server:9.3.6.v20151106',
-            'org.eclipse.jetty:jetty-alpn-server:9.3.6.v20151106'
+            "org.eclipse.jetty:jetty-server:$JETTY_VERSION",
+            "org.eclipse.jetty.websocket:javax-websocket-server-impl:$JETTY_VERSION",
+            "org.eclipse.jetty:jetty-servlets:$JETTY_VERSION",
+            "org.eclipse.jetty.http2:http2-server:$JETTY_VERSION",
+            "org.eclipse.jetty:jetty-alpn-server:$JETTY_VERSION"
     )
 }
 
