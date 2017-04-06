@@ -102,7 +102,7 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
      * Returns the preferred content type for the client by parsing the accepted media types agains the available media types for the given response type
      * @param responseType The response type
      * @return The preferred conten type for the response type
-     * @throws NotAcceptable
+     * @throws NotAcceptable when there does not exists any acceptable media type that is supported for the response type
      */
     public MediaType getPreferredContentType(EntityType<?> responseType) throws NotAcceptable {
         return getContentType(parseMediaTypes(request.getHeader(HttpHeader.ACCEPT.asString())), responseType);
