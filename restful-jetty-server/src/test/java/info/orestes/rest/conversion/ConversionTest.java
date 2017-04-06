@@ -9,7 +9,6 @@ import org.apache.tika.mime.MediaType;
 import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.http.HttpURI;
-import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.util.MultiMap;
 import org.junit.Before;
@@ -146,7 +145,7 @@ public class ConversionTest {
 		assertTrue(responseEntity);
 	}
 
-	@Test(expected = BadRequest.class)
+	@Test
 	public final void testIllegalArguments() throws Exception {
 		RestMethod method = group.get(0);
 		HashMap<String, Object> args = new HashMap<>();
@@ -163,12 +162,14 @@ public class ConversionTest {
 		args.put("k", Double.toString(98238479923.782973499));
 		args.put("l", null);
 
-		handle(method, args, 123l, new RestHandler() {
+		String response = handle(method, args, 123l, new RestHandler() {
 			@Override
 			public void handle(RestRequest request, RestResponse response) throws IOException, RestException {
 				fail("Illegal argument");
 			}
 		});
+
+		assertTrue(response.contains("400 Bad Request"));
 	}
 
 	@Test
@@ -188,19 +189,38 @@ public class ConversionTest {
 		assertEquals(83456, responseEntity);
 	}
 
-	@Test(expected = NotAcceptable.class)
+	@Test
 	public final void testUnsupportedResponseType() throws Exception {
 		RestMethod method = group.get(1);
 		HashMap<String, Object> args = new HashMap<>();
 
 		doReturn("text+test/xhtml").when(request).getHeader("Accept");
 
-		handle(method, args, null, new RestHandler() {
+		String content = handle(method, args, null, new RestHandler() {
 			@Override
 			public void handle(RestRequest request, RestResponse response) throws IOException, RestException {
 				response.sendEntity("Test");
 			}
 		});
+
+		assertTrue(content.contains("406 Not Acceptable"));
+	}
+
+	@Test
+	public final void testUnsupportedResponseTypeOnSendError() throws Exception {
+		RestMethod method = group.get(1);
+		HashMap<String, Object> args = new HashMap<>();
+
+		doReturn("text+test/xhtml").when(request).getHeader("Accept");
+
+		String content = handle(method, args, null, new RestHandler() {
+			@Override
+			public void handle(RestRequest request, RestResponse response) throws IOException, RestException {
+				response.sendError(new BadRequest("Bad Request"));
+			}
+		});
+
+		assertTrue(content.contains("400 Bad Request"));
 	}
 
 	@Test
@@ -235,20 +255,22 @@ public class ConversionTest {
 		assertNull(responseEntity);
 	}
 
-	@Test(expected = UnsupportedMediaType.class)
+	@Test
 	public final void testUnsupportedRequestType() throws Exception {
 		RestMethod method = group.get(2);
 		HashMap<String, Object> args = new HashMap<>();
 
 		request.setContentType("test/html");
 
-		handle(method, args, null, new RestHandler() {
+		String content = handle(method, args, null, new RestHandler() {
 			@Override
 			public void handle(RestRequest request, RestResponse response) throws IOException, RestException {
 				request.readEntity();
                 fail("Request type not supported");
 			}
 		});
+
+		assertTrue(content.contains("415 Unsupported Media Type"));
 	}
 
 	@Test
@@ -268,31 +290,35 @@ public class ConversionTest {
 		assertNull(responseEntity);
 	}
 
-	@Test(expected = BadRequest.class)
+	@Test
 	public final void testRequestContentExpected() throws Exception {
 		RestMethod method = group.get(2);
 		HashMap<String, Object> args = new HashMap<>();
 
-		handle(method, args, null, new RestHandler() {
+		String content = handle(method, args, null, new RestHandler() {
 			@Override
 			public void handle(RestRequest request, RestResponse response) throws IOException, RestException {
 				assertNull(request.readEntity());
 			}
 		});
+
+		assertTrue(content.contains("400 Bad Request"));
 	}
 
-	@Test(expected = BadRequest.class)
+	@Test
 	public final void testInvalidRequestContent() throws Exception {
 		RestMethod method = group.get(2);
 		HashMap<String, Object> args = new HashMap<>();
 
-		handle(method, args, "This is not a number", new RestHandler() {
+		String content = handle(method, args, "This is not a number", new RestHandler() {
 			@Override
 			public void handle(RestRequest request, RestResponse response) throws IOException, RestException {
 				request.readEntity();
                 fail("invalid request content was sent.");
 			}
 		});
+
+		assertTrue(content.contains("400 Bad Request"));
 	}
 
 	@Test
@@ -312,12 +338,12 @@ public class ConversionTest {
 		assertNull(responseEntity);
 	}
 
-    @Test(expected = InternalServerError.class)
+    @Test
     public final void testResponseContentNotExpected() throws Exception {
         RestMethod method = group.get(3);
         HashMap<String, Object> args = new HashMap<>();
 
-        handle(method, args, null, new RestHandler() {
+        String content = handle(method, args, null, new RestHandler() {
             @Override
             public void handle(RestRequest request, RestResponse response) throws RestException {
                 assertNull(request.readEntity());
@@ -325,14 +351,16 @@ public class ConversionTest {
                 response.sendEntity(true);
             }
         });
+
+		assertTrue(content.contains("500 Internal Server Error"));
     }
 
-	@Test(expected = InternalServerError.class)
+	@Test
 	public final void testInvalidResponseContent() throws Exception {
 		RestMethod method = group.get(1);
 		HashMap<String, Object> args = new HashMap<>();
 
-		handle(method, args, null, new RestHandler() {
+		String content = handle(method, args, null, new RestHandler() {
             @Override
             public void handle(RestRequest request, RestResponse response) throws IOException, RestException {
                 assertNull(request.readEntity());
@@ -340,6 +368,8 @@ public class ConversionTest {
                 response.sendEntity("This is not a number");
             }
         });
+
+		assertTrue(content.contains("500 Internal Server Error"));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -362,16 +392,6 @@ public class ConversionTest {
             protected List<Route> getRoutes(int parts) {
                 return Collections.singletonList(route);
             }
-
-			@Override
-			protected RestResponse createResponse(Request baseRequest, RestRequest request, HttpServletResponse response) {
-				return new RestResponse(request, response) {
-					@Override
-					public void sendError(RestException error) {
-						throw new SendError(error);
-					}
-				};
-			}
 		};
         handler.setHandler(callback);
 		handler.start();
@@ -395,7 +415,10 @@ public class ConversionTest {
 		response.getWriter().close();
 
 		if (res.getStatus() >= 400) {
-            throw RestException.create(res.getStatus(), null, null);
+			throw RestException.create(res.getStatus(), null, null);
+		} else if (response.getStatus() >= 400) {
+			assertNotNull(response.getContentType());
+			return (O) converterService.toObject(response, MediaType.TEXT_PLAIN, String.class);
         } else if (response.getReader().ready()) {
 			assertEquals("text/plain; charset=UTF-8", response.getContentType());
             assertEquals(HttpStatus.OK_200, response.getStatus());
@@ -468,6 +491,7 @@ public class ConversionTest {
 		private String contentType;
 		private String characterEncoding;
         private int status;
+        private String reason;
 
         @Override
         public void resetBuffer() {
@@ -483,6 +507,12 @@ public class ConversionTest {
         public void setStatus(int status) {
             this.status = status;
         }
+
+		@Override
+		public void setStatus(int status, String reason) {
+			this.status = status;
+			this.reason = reason;
+		}
 
         @Override
         public void setHeader(String name, String value) {

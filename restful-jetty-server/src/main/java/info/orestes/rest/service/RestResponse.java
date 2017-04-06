@@ -80,7 +80,6 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
             throw new IllegalStateException("A response entity was set, but not declared in the specification.");
         }
 
-
         try {
             if (Stream.class.equals(type.getRawType())) {
                 if (!(entity instanceof Stream)) {
@@ -89,7 +88,6 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
                 }
                 EntityType<Object> entityType = new EntityType<Object>(type.getActualTypeArguments()[0]);
                 sendStream((Stream<Object>) entity, entityType);
-
             } else {
                 sendBody(entity, type);
             }
@@ -100,10 +98,19 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
         }
     }
 
-    private MediaType getContentType(EntityType<?> responseType) throws NotAcceptable {
-        List<MediaType> mediaTypes = parseMediaTypes(request.getHeader(HttpHeader.ACCEPT.asString()));
+    /**
+     * Returns the preferred content type for the client by parsing the accepted media types agains the available media types for the given response type
+     * @param responseType The response type
+     * @return The preferred conten type for the response type
+     * @throws NotAcceptable
+     */
+    public MediaType getPreferredContentType(EntityType<?> responseType) throws NotAcceptable {
+        return getContentType(parseMediaTypes(request.getHeader(HttpHeader.ACCEPT.asString())), responseType);
+    }
+
+    private MediaType getContentType(List<MediaType> preferredMediaTypes, EntityType<?> responseType) throws NotAcceptable {
         ConverterService converterService = request.getConverterService();
-        MediaType mediaType = converterService.getPreferredMediaType(mediaTypes, responseType);
+        MediaType mediaType = converterService.getPreferredMediaType(preferredMediaTypes, responseType);
 
         if (mediaType == null) {
             throw new NotAcceptable("The requested response media types are not supported.");
@@ -159,8 +166,17 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
                 return;
             }
 
+            EntityType<RestException> type = new EntityType<>(RestException.class);
+            MediaType contentType;
+
+            try {
+                contentType = getPreferredContentType(type);
+            } catch (NotAcceptable notAcceptable) {
+                contentType = getContentType(ANY, type);
+            }
+
             try (PrintWriter writer = getWriter()) {
-                sendBody(error, new EntityType<RestException>(RestException.class));
+                sendBody(error, type, contentType);
             }
         } catch (IOException e) {
             LOG.debug(e);
@@ -180,7 +196,7 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
      * @throws IOException if an io error occurred
      */
     public <T> void sendStream(Stream<T> objectStream, EntityType<T> entityType) throws RestException, IOException {
-        MediaType contentType = getContentType(entityType);
+        MediaType contentType = getPreferredContentType(entityType);
         setContentType(contentType.toString());
 
         Iterator<T> iterator = objectStream.iterator();
@@ -230,8 +246,11 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
     }
 
     private void sendBody(Object entity, EntityType<?> type) throws IOException, RestException {
-        MediaType contentType = getContentType(type);
+        MediaType contentType = getPreferredContentType(type);
+        sendBody(entity, type, contentType);
+    }
 
+    private void sendBody(Object entity, EntityType<?> type, MediaType contentType) throws IOException, RestException {
         setContentType(contentType.toString());
         request.getConverterService().toRepresentation(this, type, contentType, entity);
     }
