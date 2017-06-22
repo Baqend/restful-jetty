@@ -372,7 +372,16 @@ public class ServiceDocumentParser {
 	
 	private PathElement parsePathElement(String part) throws IOException {
 		char firstChar = part.length() > 0? part.charAt(0): 0;
-		if (firstChar == ':' || firstChar == '*') {
+		if (firstChar == '$') {
+			int from = part.indexOf('<');
+			int to = part.lastIndexOf('>');
+			String regexStr = part.substring(from + 1, to);
+			String name = part.substring(1, from);
+
+			ArgumentDefinition arg = getArgument(name);
+
+			return PathElement.createRegex(arg.name, arg.description, arg.type, Pattern.compile(regexStr));
+		} else if (firstChar == ':' || firstChar == '*') {
 			String name = part.substring(1);
 
 			ArgumentDefinition arg = getArgument(name);

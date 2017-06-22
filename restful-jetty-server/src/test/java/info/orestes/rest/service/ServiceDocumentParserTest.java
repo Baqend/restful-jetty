@@ -58,7 +58,7 @@ public class ServiceDocumentParserTest {
 
 	@Test
 	public void testGroups() {
-		assertSame(6, groups.size());
+		assertSame(7, groups.size());
 		
 		assertEquals("group-a", groups.get(0).getName());
 		assertEquals("Group A", groups.get(0).getDescription());
@@ -634,7 +634,44 @@ public class ServiceDocumentParserTest {
         assertResponseHeader("Accept-Language", String.class, "en-CA");
         assertResponseHeader("Cookie", String.class, "$Version=1; Skin=new;");
     }
-	
+
+    @Test
+    public void routeI1() {
+        assertArgumentSize(1);
+        assertResultSize(1);
+
+        assertAction("GET");
+
+        assertSignatureParts(2, 0);
+
+        assertPath(0, "hello");
+		assertRegexElement(1, "world", "\\.txt$", "World", false, String.class, null);
+        asserTarget(Testing3.class);
+        asserRequestType(Object.class);
+        asserResponseType(Object.class);
+
+        assertResult(200, "ok");
+    }
+
+    @Test
+    public void routeI2() {
+        assertArgumentSize(1);
+        assertResultSize(1);
+
+        assertAction("GET");
+
+        assertSignatureParts(3, 0);
+
+        assertPath(0, "hello");
+		assertRegexElement(1, "world", "^d.*o$", "World", false, String.class, null);
+		assertPath(2, "demo");
+        asserTarget(Testing3.class);
+        asserRequestType(Object.class);
+        asserResponseType(Object.class);
+
+        assertResult(200, "ok");
+    }
+
 	private void assertPath(int index, String name) {
 		assertPathElement(index, Type.PATH, name, null, false, null, null);
 	}
@@ -669,9 +706,9 @@ public class ServiceDocumentParserTest {
 		assertPathElement(index, Type.QUERY, name, description, optional, valueType, defaultValue);
 	}
 	
-	private void assertSignatureParts(int i, int j) {
-		assertEquals(i, method.getFixedSignature().size());
-		assertEquals(j, method.getDynamicSignature().size());
+	private void assertSignatureParts(int fixedSignatureSize, int dynamicSignatureSize) {
+		assertEquals(fixedSignatureSize, method.getFixedSignature().size());
+		assertEquals(dynamicSignatureSize, method.getDynamicSignature().size());
 	}
 	
 	private void assertPathElement(int index, Type type, String name, String description, boolean optional,
@@ -689,7 +726,21 @@ public class ServiceDocumentParserTest {
 			assertSame(element, method.getArguments().get(name));
 		}
 	}
-	
+
+	private void assertRegexElement(int index, String name, String regex, String description, boolean optional,
+			Class<?> valueType, String defaultValue) {
+		PathElement element = method.getSignature().get(index);
+
+		assertSame(Type.REGEX, element.getType());
+		assertEquals(name, element.getName());
+		assertEquals(regex, element.getRegex().toString());
+		assertEquals(description, element.getDescription());
+		assertEquals(optional, element.isOptional());
+		assertSame(valueType, element.getValueType());
+		assertEquals(defaultValue, element.getDefaultValue());
+		assertSame(element, method.getArguments().get(name));
+	}
+
 	private void assertResult(int statusCode, String description) {
 		assertTrue(method.getExpectedResults().containsKey(statusCode));
 		assertEquals(description, method.getExpectedResults().get(statusCode));

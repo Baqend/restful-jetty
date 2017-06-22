@@ -62,7 +62,9 @@ public class RestRouterTest {
 			
 			int value = 1;
 			for (PathElement el : method.getSignature()) {
-				if (el.getType() != Type.PATH) {
+				if (el.getType() == Type.REGEX) {
+					params.put(el.getName(), new String[] { el.getRegex().toString().equals("\\.txt$") ? "world.txt" : "demo" });
+				} else if (el.getType() != Type.PATH) {
 					if (el.getValueType() == String.class) {
 						params.put(el.getName(), new String[] { "value" + ++value });
 					} else if (el.getValueType() == Integer.class) {
@@ -102,6 +104,26 @@ public class RestRouterTest {
         assertMethod(method, "PUT", "/wildcard/te%20st1/tes%3ft/te&st?a=b&b=98", singletonMap("remaining", new String[] {"te st1/tes?t/te&st"}));
     }
 
+    @Test
+    public void testRegexRouted() {
+        RestMethod expected1 = router.getMethods().stream().filter(m -> m.getName().equals("I1")).findFirst().get();
+
+        assertMethod(expected1, "GET", "/hello/world.txt", singletonMap("world", new String[] {"world.txt"}));
+        assertMethod(expected1, "GET", "/hello/world.txt;a=b?b=83", singletonMap("world", new String[] {"world.txt"}));
+        assertMethod(null, "GET", "/hello/world.txt.tar", singletonMap("world", new String[] {"world.txt.tar"}));
+        assertMethod(expected1, "GET", "/hello/.txtworld.txt", singletonMap("world", new String[] {".txtworld.txt"}));
+
+        RestMethod expected2 = router.getMethods().stream().filter(m -> m.getName().equals("I2")).findFirst().get();
+
+        assertMethod(expected2, "GET", "/hello/deeeeeeeeemo/demo", singletonMap("world", new String[] {"deeeeeeeeemo"}));
+        assertMethod(expected2, "GET", "/hello/dododododo/demo;a=b?b=83", singletonMap("world", new String[] {"dododododo"}));
+        assertMethod(null, "GET", "/hello/world.txt.tar/demo", singletonMap("world", new String[] {"world.txt.tar"}));
+        assertMethod(null, "GET", "/hello//////demo", singletonMap("world", new String[] {"////"}));
+        assertMethod(expected2, "GET", "/hello/d....o/demo", singletonMap("world", new String[] {"d....o"}));
+        assertMethod(null, "GET", "/hello/demo", singletonMap("world", new String[] {"d....o"}));
+        assertMethod(null, "GET", "/hello/de/mo/demo", singletonMap("world", new String[] {"d....o"}));
+    }
+
 
     @Test
 	public void testAllMethodsWithoutOptionalParams() {
@@ -110,7 +132,9 @@ public class RestRouterTest {
 			
 			int value = 1;
 			for (PathElement el : method.getSignature()) {
-				if (el.getType() != Type.PATH && !el.isOptional()) {
+				if (el.getType() == Type.REGEX) {
+					params.put(el.getName(), new String[] { el.getRegex().toString().equals("\\.txt$") ? "world.txt" : "demo" });
+				} else if (el.getType() != Type.PATH && !el.isOptional()) {
 					if (el.getValueType() == String.class) {
 						params.put(el.getName(), new String[] { "value" + ++value });
 					} else if (el.getValueType() == Integer.class) {

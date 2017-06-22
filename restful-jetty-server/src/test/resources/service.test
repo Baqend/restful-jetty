@@ -109,7 +109,7 @@ POST /?test=&id=33&name info.orestes.rest.Testing3
 PUT   /test?a=&b&c=44      info.orestes.rest.Testing3(Object)
 200 ok
 
-##C5 : Method C.4
+##C5 : Method C.5
 
 @remaining : String The remaining path
 @a : String The a arg
@@ -263,3 +263,27 @@ Accept-Charset: String utf-8
 Accept-Encoding: String gzip, deflate
 Accept-Language: String en-CA
 Cookie: String $Version=1; Skin=new;
+
+
+#group-I : Group I
+
+##I1: Method I.1
+
+Testing regex variables
+
+@world : String World
+
+GET /hello/$world<\.txt$> info.orestes.rest.Testing3(Object):Object
+
+200 ok
+
+
+##I2: Method I.2
+
+Testing regex variables again
+
+@world : String World
+
+GET /hello/$world<^d.*o$>/demo info.orestes.rest.Testing3(Object):Object
+
+200 ok

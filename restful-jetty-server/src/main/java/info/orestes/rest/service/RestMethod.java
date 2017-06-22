@@ -104,6 +104,7 @@ public class RestMethod {
 					builder.append(element.getName());
 					break;
 				case VARIABLE:
+				case REGEX:
                 case WILDCARD:
 					String[] value = paramaters.get(element.getName());
 
