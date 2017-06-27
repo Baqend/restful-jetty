@@ -181,8 +181,8 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
         } catch (IOException e) {
             LOG.debug(e);
         } catch (Exception e) {
-            e.addSuppressed(error);
-            LOG.warn(e);
+            error.addSuppressed(e);
+            LOG.warn(error);
         }
     }
 
