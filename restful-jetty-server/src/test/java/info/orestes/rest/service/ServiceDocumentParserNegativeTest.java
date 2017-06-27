@@ -218,6 +218,24 @@ public class ServiceDocumentParserNegativeTest {
                 "203 count");
     }
 
+	@Test(expected = ServiceDocumentParserException.class)
+	public final void testWrongRegex() {
+		parse(
+			"#Test",
+			"##testing : Test method",
+			"GET /regex/$my<)(> info.orestes.rest.Testing1(String)",
+			"200 everything ok");
+	}
+
+	@Test(expected = ServiceDocumentParserException.class)
+	public final void testMissingRegex() {
+		parse(
+			"#Test",
+			"##testing : Test method",
+			"GET /regex/$my info.orestes.rest.Testing1(String)",
+			"200 everything ok");
+	}
+
 	private List<MethodGroup> parse(String... lines) {
 		StringBuilder builder = new StringBuilder();
 		

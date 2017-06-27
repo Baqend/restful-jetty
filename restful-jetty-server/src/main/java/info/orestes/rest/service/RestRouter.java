@@ -261,6 +261,7 @@ public class RestRouter extends HandlerWrapper {
 		
 		@Override
 		public int compareTo(Route o) {
+			final List<Type> compareTypes = Arrays.asList(Type.PATH, Type.REGEX, Type.VARIABLE, Type.WILDCARD);
 			List<PathElement> self = getMethod().getSignature();
 			List<PathElement> other = o.getMethod().getSignature();
 			
@@ -268,25 +269,13 @@ public class RestRouter extends HandlerWrapper {
 			for (int i = 0; i < len; ++i) {
 				Type selfType = self.get(i).getType();
 				Type otherType = other.get(i).getType();
-				
+
 				if (selfType != otherType) {
-					// fixed path wins against variables
-					if (selfType == Type.PATH) {
-						return -1;
-					} else if (otherType == Type.PATH) {
-						return 1;
-					} else if (selfType == Type.VARIABLE) {
-						return -1;
-					} else if (otherType == Type.VARIABLE) {
-						return 1;
-					} else if (selfType == Type.WILDCARD) {
-						return -1;
-					} else if (otherType == Type.WILDCARD) {
-						return 1;
-					} else {
-						// no further path or variables expected
+					// check type order
+					if (compareTypes.contains(selfType) || compareTypes.contains(otherType))
+						return selfType.compareTo(otherType);
+					else
 						break;
-					}
 				}
 			}
 			
@@ -315,39 +304,56 @@ public class RestRouter extends HandlerWrapper {
 			int parts = 0;
 			for (PathElement el : getMethod().getSignature()) {
 				switch (el.getType()) {
-					case PATH:
+					case PATH: {
 						// The matching path is longer or not equal to the
 						// requested path
 						if (pathParts.size() <= parts || !el.getName().equals(pathParts.get(parts++))) {
 							return null;
 						}
 						break;
-					case VARIABLE:
+					}
+					case VARIABLE: {
 						// The matching path is longer than the requested path
 						if (pathParts.size() <= parts) {
 							return null;
 						}
-						
+
 						String value = pathParts.get(parts++);
 						if (value.isEmpty()) {
 							return null;
 						}
-						
+
 						matches.put(el.getName(), value);
 						break;
-					case WILDCARD:
-                        // The matching path is longer than the requested path
-                        if (pathParts.size() <= parts) {
-                            return null;
-                        }
+					}
+					case REGEX: {
+						// The matching path is longer than the requested path
+						if (pathParts.size() <= parts) {
+							return null;
+						}
 
-                        //consume all remaining parts
-                        List<String> remainingParts = pathParts.subList(parts, pathParts.size());
-                        parts = pathParts.size();
-                        value = String.join("/", remainingParts);
-                        matches.put(el.getName(), value);
-                        break;
-                    case MATRIX:
+						String value = pathParts.get(parts++);
+						if (!el.getRegex().matcher(value).find()) {
+							return null;
+						}
+
+						matches.put(el.getName(), value);
+						break;
+					}
+					case WILDCARD: {
+						// The matching path is longer than the requested path
+						if (pathParts.size() <= parts) {
+							return null;
+						}
+
+						//consume all remaining parts
+						List<String> remainingParts = pathParts.subList(parts, pathParts.size());
+						parts = pathParts.size();
+						String value = String.join("/", remainingParts);
+						matches.put(el.getName(), value);
+						break;
+					}
+                    case MATRIX: {
 						if (matrix != null && matrix.containsKey(el.getName())) {
 							matches.put(el.getName(), matrix.get(el.getName()));
 							matrixCounter--;
@@ -357,11 +363,12 @@ public class RestRouter extends HandlerWrapper {
 							return null;
 						}
 						break;
-					case QUERY:
+					}
+					case QUERY: {
 						if (matrixCounter != 0) {
 							return null;
 						}
-						
+
 						if (query != null && query.containsKey(el.getName())) {
 							matches.put(el.getName(), query.get(el.getName()));
 						} else if (el.isOptional()) {
@@ -370,6 +377,7 @@ public class RestRouter extends HandlerWrapper {
 							return null;
 						}
 						break;
+					}
 				}
 			}
 			
