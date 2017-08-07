@@ -2,6 +2,7 @@ package info.orestes.rest;
 
 import info.orestes.rest.error.BadRequest;
 import info.orestes.rest.error.MethodNotAllowed;
+import info.orestes.rest.error.RequestTimeout;
 import info.orestes.rest.error.RestException;
 import info.orestes.rest.service.RestRouter;
 import info.orestes.rest.service.RestServletHandler;
@@ -348,7 +349,7 @@ public abstract class RestServlet extends GenericServlet {
 	 *             if an I/O error occures
 	 */
 	public void service(Request request, Response response) throws RestException, IOException {
-        CompletableFuture<Void> result = null;
+        CompletableFuture<Void> result;
         switch (request.getMethod()) {
             case "DELETE":
                 result = doDeleteAsync(request, response);
@@ -370,6 +371,7 @@ public abstract class RestServlet extends GenericServlet {
                 break;
             default:
                 notSupported(request, response);
+                result = null;
         }
 
         if (result != null) {
@@ -382,9 +384,15 @@ public abstract class RestServlet extends GenericServlet {
                     }
                 }
             } else {
-                AsyncContext context = request.startAsync(request, response);
                 if (request.getDispatcherType() == DispatcherType.REQUEST) {
-                    result.whenComplete((empty, error) -> {
+					AsyncContext context = request.startAsync(request, response);
+
+					context.addListener((AsyncTimeoutListener) event -> {
+						//will invoke result.whenComplete -> context.complete() synchronously
+						result.completeExceptionally(new RequestTimeout("The request has timed out."));
+                    });
+
+					result.whenComplete((empty, error) -> {
                         if (error != null) {
                             if (error instanceof CompletionException)
                                 error = error.getCause();
@@ -435,5 +443,20 @@ public abstract class RestServlet extends GenericServlet {
 		}
 	}
 
+	public static interface AsyncTimeoutListener extends AsyncListener {
+		@Override
+		public default void onComplete(AsyncEvent event) throws IOException {
 
+		}
+
+		@Override
+		public default void onError(AsyncEvent event) throws IOException {
+
+		}
+
+		@Override
+		public default void onStartAsync(AsyncEvent event) throws IOException {
+
+		}
+	}
 }
