@@ -4,10 +4,7 @@ import info.orestes.rest.conversion.WritableContext;
 import info.orestes.rest.service.EntityType;
 import org.apache.tika.mime.MediaType;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -95,9 +92,11 @@ public class EntityContent<E> extends EntityContentProvider<E> {
 
     public class EntityWriter implements WritableContext {
         private Writer writer;
+        private OutputStream outputStream;
 
         public ByteBuffer write(EntityType<?> entityType, MediaType contentType, Object entity) {
             try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+                outputStream = out;
                 writer = new OutputStreamWriter(out, getContentCharset());
                 getRequest().getClient().getConverterService().toRepresentation(this, entityType, contentType, entity);
                 writer.flush();
@@ -108,6 +107,7 @@ public class EntityContent<E> extends EntityContentProvider<E> {
                 return null;
             } finally {
                 writer = null;
+                outputStream = null;
             }
         }
 
@@ -125,6 +125,11 @@ public class EntityContent<E> extends EntityContentProvider<E> {
         @Override
         public Writer getWriter() throws IOException {
             return writer;
+        }
+
+        @Override
+        public OutputStream getOutputStream() throws IOException {
+            return outputStream;
         }
     }
 }

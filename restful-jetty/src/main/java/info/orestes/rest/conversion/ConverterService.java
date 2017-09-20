@@ -13,9 +13,7 @@ import info.orestes.rest.util.Inject;
 import info.orestes.rest.util.Module;
 import org.apache.tika.mime.MediaType;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
+import java.io.*;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.Map.Entry;
@@ -322,7 +320,8 @@ public class ConverterService {
      */
     public <T> T toObject(MediaType sourceType, EntityType<T> target, String source) {
         try {
-            return toObject(ReadableContext.wrap(new StringReader(source)), sourceType, target);
+            final ByteArrayInputStream bais = new ByteArrayInputStream(source.getBytes());
+            return toObject(ReadableContext.wrap(bais), sourceType, target);
         } catch (RestException | IOException e) {
             throw new UnsupportedOperationException(e);
         }
@@ -566,9 +565,9 @@ public class ConverterService {
      */
     public <T> String toString(EntityType<T> source, MediaType targetType, Object entity) {
         try {
-            StringWriter stringWriter = new StringWriter();
-            toRepresentation(WritableContext.wrap(stringWriter), source, targetType, entity);
-            return stringWriter.toString();
+            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            toRepresentation(WritableContext.wrap(baos), source, targetType, entity);
+            return baos.toString();
         } catch (RestException | IOException e) {
             throw new UnsupportedOperationException(e);
         }

@@ -6,6 +6,7 @@ import info.orestes.rest.error.RestException;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 /*
  * {@inheritDoc}
@@ -36,4 +37,9 @@ public interface Response extends WritableContext, HttpServletResponse {
      * @throws IOException If an io exception occurs
      */
     public void sendRedirect(int sc, String location) throws IOException;
+
+    @Override
+    default PrintWriter getWriter() throws IOException {
+        return new PrintWriter(getOutputStream());
+    }
 }

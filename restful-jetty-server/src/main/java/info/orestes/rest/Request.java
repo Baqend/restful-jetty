@@ -7,6 +7,9 @@ import info.orestes.rest.service.RestRouter;
 import info.orestes.rest.service.RestRouter.Route;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Map;
 
 public interface Request extends ReadableContext, HttpServletRequest {
@@ -46,4 +49,9 @@ public interface Request extends ReadableContext, HttpServletRequest {
      * @throws RestException if a exception occurred while parsing the request body
      */
     public <E> E readEntity() throws RestException;
+
+    @Override
+    default BufferedReader getReader() throws IOException {
+        return new BufferedReader(new InputStreamReader(getInputStream()));
+    }
 }

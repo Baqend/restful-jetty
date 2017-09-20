@@ -7,10 +7,7 @@ import info.orestes.rest.service.EntityType;
 import org.apache.tika.mime.MediaType;
 import org.eclipse.jetty.io.RuntimeIOException;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.NotActiveException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
@@ -137,6 +134,11 @@ public class EntityStreamContent<E> extends EntityContentProvider<E> {
         @Override
         public PrintWriter getWriter() throws IOException {
             return writer;
+        }
+
+        @Override
+        public OutputStream getOutputStream() throws IOException {
+            return null;
         }
 
         @Override

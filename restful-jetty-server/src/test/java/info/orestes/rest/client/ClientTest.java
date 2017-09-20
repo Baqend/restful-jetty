@@ -19,6 +19,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.*;
 import java.util.concurrent.*;
@@ -348,10 +349,10 @@ public class ClientTest {
                             return null;
                         }
 
-                        @Override
-                        public PrintWriter getWriter() throws IOException {
-                            return response.getWriter();
-                        }
+						@Override
+						public OutputStream getOutputStream() throws IOException {
+							return response.getOutputStream();
+						}
                     }, RestException.class, MediaType.parse("text/plain"), exception);
 				} catch (RestException e) {
 					throw new RuntimeException(e);

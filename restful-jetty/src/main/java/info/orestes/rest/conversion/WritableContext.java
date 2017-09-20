@@ -1,6 +1,8 @@
 package info.orestes.rest.conversion;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
 
 /**
@@ -12,11 +14,11 @@ import java.io.Writer;
  */
 public interface WritableContext extends Context {
 
-	public static WritableContext wrap(Writer writer) {
+	public static WritableContext wrap(OutputStream outputStream) {
 		return new Abstract() {
 			@Override
-			public Writer getWriter() throws IOException {
-				return writer;
+			public OutputStream getOutputStream() throws IOException {
+				return outputStream;
 			}
 		};
 	}
@@ -28,7 +30,18 @@ public interface WritableContext extends Context {
 	 * @throws IOException
 	 *             if an I/O error occurred
 	 */
-	public Writer getWriter() throws IOException;
+	public default Writer getWriter() throws IOException {
+		return new OutputStreamWriter(getOutputStream());
+	}
+
+	/**
+	 * Returns an output stream where the content can be written to
+	 *
+	 * @return An output stream which writes the content
+	 * @throws IOException
+	 *             if an I/O error occurred
+	 */
+	public OutputStream getOutputStream() throws IOException;
 
 	abstract class Abstract extends SimpleContext implements WritableContext {}
 }

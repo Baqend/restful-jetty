@@ -68,11 +68,13 @@ public abstract class ResponseListener<E> extends Adapter {
     public static class EntityContext implements ReadableContext {
         private final RestRequest request;
         private final ConverterService converterService;
+        private final InputStream stream;
         private final Reader reader;
         private final MediaType contentType;
 
         public EntityContext(RestRequest request, MediaType contentType, InputStream stream) {
             String charset = contentType.getParameters().get("charset");
+            this.stream = stream;
             this.reader = new InputStreamReader(stream, charset == null? StandardCharsets.UTF_8: Charset.forName(charset));
             this.request = request;
             this.contentType = contentType;
@@ -93,6 +95,11 @@ public abstract class ResponseListener<E> extends Adapter {
         @Override
         public Reader getReader() throws IOException {
             return reader;
+        }
+
+        @Override
+        public InputStream getInputStream() throws IOException {
+            return stream;
         }
 
         public <T> EntityReader<T> getEntityReader(EntityType<T> entityType) throws UnsupportedMediaType {

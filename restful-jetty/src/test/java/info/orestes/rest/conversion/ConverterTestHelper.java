@@ -16,8 +16,8 @@ public class ConverterTestHelper {
 	protected static final Module module = new Module();
 	protected static final ConverterService cs = new ConverterService(module, false);
 	
-	private final PipedWriter writer = new PipedWriter();
-	private final PipedReader reader = new PipedReader(50000);
+	private final PipedOutputStream writer = new PipedOutputStream();
+	private final PipedInputStream reader = new PipedInputStream(50000);
 	
 	protected final Map<String, Object> outArguments = new HashMap<>();
 	protected final Map<String, Object> inArguments = new HashMap<>();
@@ -43,7 +43,7 @@ public class ConverterTestHelper {
 		}
 		
 		@Override
-		public Writer getWriter() throws IOException {
+		public OutputStream getOutputStream() throws IOException {
 			return writer;
 		}
 	};
@@ -61,7 +61,7 @@ public class ConverterTestHelper {
 		}
 		
 		@Override
-		public Reader getReader() throws IOException {
+		public InputStream getInputStream() throws IOException {
 			return reader;
 		}
 	};
