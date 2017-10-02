@@ -1,9 +1,6 @@
 package info.orestes.rest;
 
-import info.orestes.rest.error.BadRequest;
-import info.orestes.rest.error.MethodNotAllowed;
-import info.orestes.rest.error.RequestTimeout;
-import info.orestes.rest.error.RestException;
+import info.orestes.rest.error.*;
 import info.orestes.rest.service.RestRouter;
 import info.orestes.rest.service.RestServletHandler;
 import org.eclipse.jetty.http.HttpStatus;
@@ -389,7 +386,7 @@ public abstract class RestServlet extends GenericServlet {
 
 					context.addListener((AsyncTimeoutListener) event -> {
 						//will invoke result.whenComplete -> context.complete() synchronously
-						result.completeExceptionally(new RequestTimeout("The request has timed out."));
+						result.completeExceptionally(new GatewayTimeOut("The request has timed out."));
                     });
 
 					result.whenComplete((empty, error) -> {
