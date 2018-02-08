@@ -20,7 +20,9 @@ subprojects {
 
     repositories {
         mavenCentral()
+        mavenLocal()
     }
+
     dependencies {
         testCompile(
                 'junit:junit:4.11',
@@ -28,7 +30,7 @@ subprojects {
         )
     }
 
-    project.ext.JETTY_VERSION = "9.4.8.v20171121" // "9.4.8.v20171121"
+    project.ext.JETTY_VERSION = "9.4.9-SNAPSHOT" // "9.4.8.v20171121"
 
     group = "com.baqend"
 
