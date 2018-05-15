@@ -2,6 +2,7 @@ package info.orestes.rest.service;
 
 import info.orestes.rest.RestServlet;
 import info.orestes.rest.conversion.ConverterService;
+import info.orestes.rest.error.BadRequest;
 import info.orestes.rest.error.RestException;
 import info.orestes.rest.service.PathElement.Type;
 import info.orestes.rest.util.Inject;
@@ -12,6 +13,7 @@ import org.eclipse.jetty.server.handler.HandlerWrapper;
 import org.eclipse.jetty.util.MultiMap;
 import org.eclipse.jetty.util.URIUtil;
 import org.eclipse.jetty.util.UrlEncoded;
+import org.eclipse.jetty.util.Utf8Appendable;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -55,51 +57,63 @@ public class RestRouter extends HandlerWrapper {
 				path = path.substring(contextPath.length());
 			}
 
-			Map<String, String> matrix = null;
-			int paramsIndex = path.indexOf(";");
-			if (paramsIndex != -1) {
-				matrix = createMap(path.substring(paramsIndex + 1).split(";"));
-				path = path.substring(0, paramsIndex);
-			}
+			try {
+				Map<String, String> matrix = null;
+				int paramsIndex = path.indexOf(";");
+				if (paramsIndex != -1) {
+					matrix = createMap(path.substring(paramsIndex + 1).split(";"));
+					path = path.substring(0, paramsIndex);
+				}
 
-			Map<String, String> query = uri.getQuery() == null ? null : createMap(uri.getQuery().split("&"));
-			
-			List<String> pathParts = new ArrayList<>();
-			int next;
-			int offset = 1;
-			while ((next = path.indexOf('/', offset)) != -1) {
-				pathParts.add(URIUtil.decodePath(path, offset, next - offset));
-				offset = next + 1;
-			}
-			pathParts.add(URIUtil.decodePath(path, offset, path.length() - offset));
+				Map<String, String> query = uri.getQuery() == null ? null : createMap(uri.getQuery().split("&"));
 
-			for (Route route : getRoutes(pathParts.size())) {
-				String method = request.getMethod();
-				
-				Map<String, String> matches = route.match(method, pathParts, matrix, query);
-				if (matches != null) {
-					if (!matches.isEmpty()) {
-						//jetty use a constant Map in some cases therefore lets create always a new map
-                        MultiMap<String> params = request.getQueryParameters();
-                        params = params == null? new MultiMap<>(): new MultiMap<>(params);
-						params.putAllValues(matches);
-						request.setQueryParameters(params);
-					}
 
-					restRequest = creatRequest(request, req, route);
-					restResponse = createResponse(request, restRequest, res);
+				List<String> pathParts = new ArrayList<>();
+				int next;
+				int offset = 1;
+				while ((next = path.indexOf('/', offset)) != -1) {
+					pathParts.add(URIUtil.decodePath(path, offset, next - offset));
+					offset = next + 1;
+				}
+				pathParts.add(URIUtil.decodePath(path, offset, path.length() - offset));
 
-					request.setAttribute(REST_REQUEST, restRequest);
-					request.setAttribute(REST_RESPONSE, restResponse);
-					try {
-						restRequest.setMatches(matches);
-						break;
-					} catch (RestException e) {
-						restResponse.sendError(e);
-						request.setHandled(true);
-						return;
+
+				for (Route route : getRoutes(pathParts.size())) {
+					String method = request.getMethod();
+
+					Map<String, String> matches = route.match(method, pathParts, matrix, query);
+					if (matches != null) {
+						if (!matches.isEmpty()) {
+							//jetty use a constant Map in some cases therefore lets create always a new map
+							MultiMap<String> params = request.getQueryParameters();
+							params = params == null ? new MultiMap<>() : new MultiMap<>(params);
+							params.putAllValues(matches);
+							request.setQueryParameters(params);
+						}
+
+						restRequest = creatRequest(request, req, route);
+						restResponse = createResponse(request, restRequest, res);
+
+						request.setAttribute(REST_REQUEST, restRequest);
+						request.setAttribute(REST_RESPONSE, restResponse);
+						try {
+							restRequest.setMatches(matches);
+							break;
+						} catch (RestException e) {
+							restResponse.sendError(e);
+							request.setHandled(true);
+							return;
+						}
 					}
 				}
+
+			} catch (Utf8Appendable.NotUtf8Exception | IndexOutOfBoundsException e) {
+				if (restResponse == null) {
+					restResponse = createResponse(request, restRequest, res);
+				}
+				restResponse.sendError(new BadRequest("Unsupported URI encoding"));
+				request.setHandled(true);
+				return;
 			}
 		}
 		

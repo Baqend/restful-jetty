@@ -2,6 +2,7 @@ package info.orestes.rest.service;
 
 import info.orestes.rest.SendError;
 import info.orestes.rest.conversion.ConverterService;
+import info.orestes.rest.error.BadRequest;
 import info.orestes.rest.error.RestException;
 import info.orestes.rest.service.PathElement.Type;
 import info.orestes.rest.util.Module;
@@ -11,10 +12,14 @@ import org.eclipse.jetty.util.MultiMap;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -175,7 +180,30 @@ public class RestRouterTest {
 		
 		assertMethod(method, method.getAction(), uri, params);
 	}
-	
+
+	@Test
+	public void testShouldFailIllegalURIEncoding() throws Exception {
+        //A2: GET /test
+        RestMethod method = groups.get(0).get(2);
+        String uri = method.createURI(Collections.emptyMap());
+        uri = uri.concat("/loginR%06%92%7F'");
+        HttpURI httpURI = new HttpURI("http://example.com" + uri);
+        org.eclipse.jetty.server.Request req = mock(org.eclipse.jetty.server.Request.class);
+        when(req.getHttpURI()).thenReturn(httpURI);
+        when(req.getMethod()).thenReturn("GET");
+        when(req.getQueryParameters()).thenReturn(null);
+        when(req.getContextPath()).thenReturn("/");
+        HttpServletResponse res = mock(HttpServletResponse.class);
+
+        try {
+            router.start();
+            router.handle(httpURI.getPath(), req, req, res);
+            router.stop();
+        } catch (SendError e) {
+            assertEquals(BadRequest.class, e.getCause().getClass());
+        }
+    }
+
 	@Test
 	public void testGetMethods() {
 		int i = 0;
