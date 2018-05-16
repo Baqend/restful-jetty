@@ -13,7 +13,6 @@ import org.eclipse.jetty.server.handler.HandlerWrapper;
 import org.eclipse.jetty.util.MultiMap;
 import org.eclipse.jetty.util.URIUtil;
 import org.eclipse.jetty.util.UrlEncoded;
-import org.eclipse.jetty.util.Utf8Appendable;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -31,18 +30,19 @@ public class RestRouter extends HandlerWrapper {
 	private final List<RestMethod> methods = new ArrayList<>();
 	private final ArrayList<ArrayList<Route>> routeLists = new ArrayList<>(10);
     private final List<Route> dynamicRoutes = new ArrayList<>(0);
-	
+
 	@Inject
 	public RestRouter(Module module) {
 		this.module = module;
 		this.converterService = module.moduleInstance(ConverterService.class);
     }
-	
+
 	@Override
 	public void handle(String path, Request request, HttpServletRequest req, HttpServletResponse res)
 			throws IOException, ServletException {
         RestRequest restRequest = (RestRequest) request.getAttribute(REST_REQUEST);
         RestResponse restResponse = (RestResponse) request.getAttribute(REST_RESPONSE);
+
         if (restRequest == null) {
 			HttpURI uri = request.getHttpURI();
 
@@ -57,69 +57,72 @@ public class RestRouter extends HandlerWrapper {
 				path = path.substring(contextPath.length());
 			}
 
+			Map<String, String> matrix = null;
+			int paramsIndex = path.indexOf(";");
+			if (paramsIndex != -1) {
+				matrix = createMap(path.substring(paramsIndex + 1).split(";"));
+				path = path.substring(0, paramsIndex);
+			}
+
+			Map<String, String> query = uri.getQuery() == null ? null : createMap(uri.getQuery().split("&"));
+			List<String> pathParts = null;
 			try {
-				Map<String, String> matrix = null;
-				int paramsIndex = path.indexOf(";");
-				if (paramsIndex != -1) {
-					matrix = createMap(path.substring(paramsIndex + 1).split(";"));
-					path = path.substring(0, paramsIndex);
-				}
-
-				Map<String, String> query = uri.getQuery() == null ? null : createMap(uri.getQuery().split("&"));
-
-
-				List<String> pathParts = new ArrayList<>();
-				int next;
-				int offset = 1;
-				while ((next = path.indexOf('/', offset)) != -1) {
-					pathParts.add(URIUtil.decodePath(path, offset, next - offset));
-					offset = next + 1;
-				}
-				pathParts.add(URIUtil.decodePath(path, offset, path.length() - offset));
-
-
-				for (Route route : getRoutes(pathParts.size())) {
-					String method = request.getMethod();
-
-					Map<String, String> matches = route.match(method, pathParts, matrix, query);
-					if (matches != null) {
-						if (!matches.isEmpty()) {
-							//jetty use a constant Map in some cases therefore lets create always a new map
-							MultiMap<String> params = request.getQueryParameters();
-							params = params == null ? new MultiMap<>() : new MultiMap<>(params);
-							params.putAllValues(matches);
-							request.setQueryParameters(params);
-						}
-
-						restRequest = creatRequest(request, req, route);
-						restResponse = createResponse(request, restRequest, res);
-
-						request.setAttribute(REST_REQUEST, restRequest);
-						request.setAttribute(REST_RESPONSE, restResponse);
-						try {
-							restRequest.setMatches(matches);
-							break;
-						} catch (RestException e) {
-							restResponse.sendError(e);
-							request.setHandled(true);
-							return;
-						}
-					}
-				}
-
-			} catch (Utf8Appendable.NotUtf8Exception | IndexOutOfBoundsException e) {
-				if (restResponse == null) {
-					restResponse = createResponse(request, restRequest, res);
-				}
-				restResponse.sendError(new BadRequest("Unsupported URI encoding"));
+				pathParts = decodePath(path);
+			} catch (BadRequest e) {
+				res.sendError(400);
 				request.setHandled(true);
 				return;
 			}
+
+			for (Route route : getRoutes(pathParts.size())) {
+				String method = request.getMethod();
+
+				Map<String, String> matches = route.match(method, pathParts, matrix, query);
+				if (matches != null) {
+					if (!matches.isEmpty()) {
+						//jetty use a constant Map in some cases therefore lets create always a new map
+						MultiMap<String> params = request.getQueryParameters();
+						params = params == null ? new MultiMap<>() : new MultiMap<>(params);
+						params.putAllValues(matches);
+						request.setQueryParameters(params);
+					}
+
+					restRequest = creatRequest(request, req, route);
+					restResponse = createResponse(request, restRequest, res);
+
+					request.setAttribute(REST_REQUEST, restRequest);
+					request.setAttribute(REST_RESPONSE, restResponse);
+					try {
+						restRequest.setMatches(matches);
+						break;
+					} catch (RestException e) {
+						restResponse.sendError(e);
+						request.setHandled(true);
+						return;
+					}
+				}
+			}
 		}
-		
+
 		if (restRequest != null) {
 			super.handle(path, request, restRequest, restResponse);
 			request.setHandled(true);
+		}
+	}
+
+	protected List<String> decodePath(String path) throws BadRequest {
+		try {
+			List<String> pathParts = new ArrayList<>();
+			int next;
+			int offset = 1;
+			while ((next = path.indexOf('/', offset)) != -1) {
+				pathParts.add(URIUtil.decodePath(path, offset, next - offset));
+				offset = next + 1;
+			}
+			pathParts.add(URIUtil.decodePath(path, offset, path.length() - offset));
+			return pathParts;
+		} catch (Exception e) {
+			throw new BadRequest("Unsupported URI encoding", e);
 		}
 	}
 
@@ -146,11 +149,11 @@ public class RestRouter extends HandlerWrapper {
 
 		return map;
 	}
-	
+
 	public List<RestMethod> getMethods() {
 		return Collections.unmodifiableList(methods);
 	}
-	
+
 	// modified
 	public void add(RestMethod method) {
 		if (isStarted()) {
@@ -182,16 +185,16 @@ public class RestRouter extends HandlerWrapper {
                 Collections.sort(largerRoutes);
             }
         }
-		
+
 		methods.add(method);
 	}
-	
+
 	public void addAll(Collection<RestMethod> methods) {
 		for (RestMethod method : methods) {
 			add(method);
 		}
 	}
-	
+
 	public void remove(RestMethod method) {
 		if (isStarted()) {
 			throw new IllegalStateException("The router can not be modified while it is running");
@@ -220,18 +223,18 @@ public class RestRouter extends HandlerWrapper {
             }
 		}
 	}
-	
+
 	public void removeAll(Collection<RestMethod> methods) {
 		for (RestMethod method : methods) {
 			remove(method);
 		}
 	}
-	
+
 	public void clear() {
 		if (isStarted()) {
 			throw new IllegalStateException("The router can not be modified while it is running");
 		}
-		
+
 		routeLists.clear();
         dynamicRoutes.clear();
 		methods.clear();
@@ -272,13 +275,13 @@ public class RestRouter extends HandlerWrapper {
         public RestRouter getRouter() {
 			return RestRouter.this;
 		}
-		
+
 		@Override
 		public int compareTo(Route o) {
 			final List<Type> compareTypes = Arrays.asList(Type.PATH, Type.REGEX, Type.VARIABLE, Type.WILDCARD);
 			List<PathElement> self = getMethod().getSignature();
 			List<PathElement> other = o.getMethod().getSignature();
-			
+
 			int len = Math.min(self.size(), other.size());
 			for (int i = 0; i < len; ++i) {
 				Type selfType = self.get(i).getType();
@@ -292,12 +295,12 @@ public class RestRouter extends HandlerWrapper {
 						break;
 				}
 			}
-			
+
 			// if the path structure is identical the route with more required
 			// parameters wins e.g. will be matched first
 			return o.getMethod().getRequiredParamaters() - getMethod().getRequiredParamaters();
 		}
-		
+
 		public Map<String, String> match(String action, List<String> pathParts, Map<String, String> matrix,
 				Map<String, String> query) {
 			switch (action) {
@@ -310,11 +313,11 @@ public class RestRouter extends HandlerWrapper {
 						return null;
 					}
 			}
-			
+
 			Map<String, String> matches = new HashMap<>();
-			
+
 			int matrixCounter = matrix == null ? 0 : matrix.size();
-			
+
 			int parts = 0;
 			for (PathElement el : getMethod().getSignature()) {
 				switch (el.getType()) {
@@ -394,7 +397,7 @@ public class RestRouter extends HandlerWrapper {
 					}
 				}
 			}
-			
+
 			return matches;
 		}
 

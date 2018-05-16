@@ -2,7 +2,6 @@ package info.orestes.rest.service;
 
 import info.orestes.rest.SendError;
 import info.orestes.rest.conversion.ConverterService;
-import info.orestes.rest.error.BadRequest;
 import info.orestes.rest.error.RestException;
 import info.orestes.rest.service.PathElement.Type;
 import info.orestes.rest.util.Module;
@@ -12,33 +11,29 @@ import org.eclipse.jetty.util.MultiMap;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.Map.Entry;
 
-import static java.util.Collections.*;
+import static java.util.Collections.singletonMap;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class RestRouterTest {
-	
+
 	private static List<MethodGroup> groups;
 	private RestRouter router;
-	
+
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		ServiceDocumentParser parser = new ServiceDocumentParser(new ServiceDocumentTestTypes());
-		
+
 		groups = parser.parse("/service.test");
 	}
-	
+
 	@Before
 	public void setUp() {
 		Module module = new Module();
@@ -59,12 +54,12 @@ public class RestRouterTest {
 			router.addAll(group);
 		}
 	}
-	
+
 	@Test
 	public void testAllMethods() {
 		for (RestMethod method : router.getMethods()) {
 			Map<String, String[]> params = new HashMap<>();
-			
+
 			int value = 1;
 			for (PathElement el : method.getSignature()) {
 				if (el.getType() == Type.REGEX) {
@@ -79,22 +74,22 @@ public class RestRouterTest {
 					}
 				}
 			}
-			
+
 			assertMethod(method, method.getAction(), method.createURI(params), params);
 		}
 	}
-	
+
 	@Test
 	public void testHeadRoutedAsGet() {
 		RestMethod method = router.getMethods().get(0);
-		
+
 		assertMethod(method, "HEAD", "/", new HashMap<String, String[]>());
 	}
-	
+
 	@Test
 	public void testOptionsRoutedAsGet() {
 		RestMethod method = router.getMethods().get(0);
-		
+
 		assertMethod(method, "OPTIONS", "/", new HashMap<String, String[]>());
 	}
 
@@ -134,7 +129,7 @@ public class RestRouterTest {
 	public void testAllMethodsWithoutOptionalParams() {
 		for (RestMethod method : router.getMethods()) {
 			Map<String, String[]> params = new HashMap<>();
-			
+
 			int value = 1;
 			for (PathElement el : method.getSignature()) {
 				if (el.getType() == Type.REGEX) {
@@ -149,20 +144,20 @@ public class RestRouterTest {
 					}
 				}
 			}
-			
+
 			assertMethod(method, method.getAction(), method.createURI(params), params);
 		}
 	}
-	
+
 	@Test
 	public void testURIEncoding() {
 		//E1 : GET  /db/:ns/db_all;from=0;limit=?name=Franz+Kafka
         RestMethod method = groups.get(4).get(0);
-		
+
 		Map<String, String[]> params = new HashMap<>();
 		params.put("ns", new String[] { "käse+=&br%20ot ;g=" });
 		params.put("name", new String[] { "käse+=&br%20ot /;g=" });
-		
+
 		String uri = method.createURI(params);
 		String ns = uri.substring(4, uri.indexOf("/db_all"));
 		String name = uri.substring(uri.indexOf("?name=") + 6);
@@ -177,7 +172,7 @@ public class RestRouterTest {
 			assertNotEquals("assert path containing " + seq, -1, ns.indexOf(seq));
 			assertEquals("assert query not containing " + seq, -1, name.indexOf(seq));
 		}
-		
+
 		assertMethod(method, method.getAction(), uri, params);
 	}
 
@@ -195,13 +190,11 @@ public class RestRouterTest {
         when(req.getContextPath()).thenReturn("/");
         HttpServletResponse res = mock(HttpServletResponse.class);
 
-        try {
-            router.start();
-            router.handle(httpURI.getPath(), req, req, res);
-            router.stop();
-        } catch (SendError e) {
-            assertEquals(BadRequest.class, e.getCause().getClass());
-        }
+		router.start();
+		router.handle(httpURI.getPath(), req, req, res);
+		router.stop();
+
+		verify(res).sendError(400);
     }
 
 	@Test
@@ -213,42 +206,42 @@ public class RestRouterTest {
 				i++;
 			}
 		}
-		
+
 		assertEquals(i, router.getMethods().size());
 	}
-	
+
 	@Test
 	public void testRemove() {
 		int size = router.getMethods().size();
-		
+
 		RestMethod method = groups.get(0).get(0);
-		
+
 		assertMethod(method, "GET", "/", Collections.<String, String[]> emptyMap());
-		
+
 		router.remove(method);
-		
+
 		assertEquals(size - 1, router.getMethods().size());
 		assertMethod(null, "GET", "/", null);
 	}
-	
+
 	@Test
 	public void testRemoveAll() {
 		RestMethod method = groups.get(0).get(0);
-		
+
 		assertMethod(method, "GET", "/", Collections.<String, String[]> emptyMap());
-		
+
 		router.removeAll(new ArrayList<>(router.getMethods()));
-		
+
 		assertEquals(0, router.getMethods().size());
 		assertMethod(null, "GET", "/", null);
 	}
-	
+
 	@Test
 	public void testClear() {
 		router.clear();
-		
+
 		assertEquals(0, router.getMethods().size());
-		
+
 		assertMethod(null, "GET", "/", null);
 	}
 
@@ -264,28 +257,28 @@ public class RestRouterTest {
 
     protected void assertMethod(final RestMethod expected, final String action, final String path,
                                 final Map<String, String[]> params) {
-		
+
 		router.setHandler(new RestHandler() {
 			@Override
 			public void handle(RestRequest request, RestResponse response) throws IOException, ServletException {
 				assertSame(path + " was mismatched", expected, request.getRestMethod());
-				
+
 				for (Entry<String, String[]> entry : params.entrySet()) {
 					assertEquals(entry.getValue()[0], request.getArgument(entry.getKey()).toString());
 				}
 			}
 		});
-		
+
 		org.eclipse.jetty.server.Request req = mock(org.eclipse.jetty.server.Request.class);
 		HttpServletResponse res = mock(HttpServletResponse.class);
-		
+
 		HttpURI uri = new HttpURI("http://example.com" + path);
 		MultiMap<String> p = new MultiMap<>();
 		when(req.getHttpURI()).thenReturn(uri);
 		when(req.getMethod()).thenReturn(action);
 		when(req.getQueryParameters()).thenReturn(p);
 		when(req.getContextPath()).thenReturn("/");
-		
+
 		try {
 			router.start();
 			router.handle(uri.getPath(), req, req, res);

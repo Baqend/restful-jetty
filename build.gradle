@@ -24,10 +24,6 @@ subprojects {
 
     distTar.compression "GZIP"
 
-    task wrapper(type: Wrapper) {
-        gradleVersion = '2.5'
-    }
-
     task javadocJar(type: Jar) {
         classifier = 'javadoc'
         from javadoc
@@ -62,6 +58,14 @@ subprojects {
             publicDownloadNumbers = true
         }
     }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '4.7'
+}
+
+task assemble {
+    dependsOn 'restful-jetty:assemble', 'restful-jetty-server:assemble'
 }
 
 release {
