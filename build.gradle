@@ -1,5 +1,14 @@
+// Plugins are currently not compatible to subprojects
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
+    }
+}
+
 plugins {
-    id 'com.jfrog.bintray' version "1.1"
     id 'net.researchgate.release' version '2.6.0'
 }
 
@@ -7,6 +16,7 @@ subprojects {
     apply plugin: 'java'
     apply plugin: 'maven'
     apply plugin: 'java-library-distribution'
+    apply plugin: 'com.jfrog.bintray'
 
     repositories {
         mavenCentral()
