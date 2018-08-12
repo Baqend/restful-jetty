@@ -30,7 +30,7 @@ subprojects {
         )
     }
 
-    project.ext.JETTY_VERSION = "9.4.9-SNAPSHOT" // "9.4.8.v20171121"
+    project.ext.JETTY_VERSION = "9.4.11.v20180605"
 
     group = "com.baqend"
 
@@ -48,6 +48,10 @@ subprojects {
 
     artifacts {
         archives javadocJar, sourcesJar
+    }
+
+    javadoc {
+        options.addBooleanOption('html5', true)
     }
 
     bintray {
@@ -72,8 +76,8 @@ subprojects {
     }
 }
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '4.7'
+wrapper {
+    gradleVersion = '4.8.1'
 }
 
 task assemble {

@@ -108,7 +108,7 @@ public class ConverterService {
         for (Class<?> cls : ClassUtil.getPackageClasses(FORMAT_PACKAGE_NAME)) {
             try {
                 if (!Modifier.isAbstract(cls.getModifiers()) && ConverterFormat.class.isAssignableFrom(cls)) {
-                    addFormat(cls.asSubclass(ConverterFormat.class).newInstance());
+                    addFormat(cls.asSubclass(ConverterFormat.class).getDeclaredConstructor().newInstance());
                 }
             } catch (Exception e) {
                 throw new RuntimeException("The format handler " + cls.getName() + " can not be loaded.", e);
