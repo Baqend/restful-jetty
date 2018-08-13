@@ -20,7 +20,9 @@ subprojects {
 
     repositories {
         mavenCentral()
+        mavenLocal()
     }
+
     dependencies {
         testCompile(
                 'junit:junit:4.11',
@@ -28,7 +30,7 @@ subprojects {
         )
     }
 
-    project.ext.JETTY_VERSION = "9.3.14.v20161028" // "9.3.13.v20161014"
+    project.ext.JETTY_VERSION = "9.4.11.v20180605"
 
     group = "com.baqend"
 
@@ -46,6 +48,10 @@ subprojects {
 
     artifacts {
         archives javadocJar, sourcesJar
+    }
+
+    javadoc {
+        options.addBooleanOption('html5', true)
     }
 
     bintray {
@@ -70,8 +76,8 @@ subprojects {
     }
 }
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '4.7'
+wrapper {
+    gradleVersion = '4.9'
 }
 
 task assemble {
