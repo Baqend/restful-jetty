@@ -118,7 +118,7 @@ public class ConverterServiceTest {
 
     @Test(expected = UnsupportedMediaType.class)
     public void testToObjectFromContextUnknownFormat() throws IOException, RestException {
-        cs.toObject(null, TEST_MEDIA_TYPE, Long.class);
+        cs.toObject(ReadableContext.wrap(null, TEST_MEDIA_TYPE), Long.class);
     }
 
     @Test(expected = UnsupportedMediaType.class)
@@ -130,7 +130,7 @@ public class ConverterServiceTest {
             }
         });
 
-        cs.toObject(null, TEST_MEDIA_TYPE, Long.class);
+        cs.toObject(ReadableContext.wrap(null, TEST_MEDIA_TYPE), Long.class);
     }
 
     @Test
@@ -160,7 +160,7 @@ public class ConverterServiceTest {
 
         cs.add(new LongConverter());
 
-        assertEquals(123l, (long) cs.toObject(null, TEST_MEDIA_TYPE, Long.class));
+        assertEquals(123l, (long) cs.toObject(ReadableContext.wrap(null, TEST_MEDIA_TYPE), Long.class));
     }
 
     @Test
@@ -195,7 +195,7 @@ public class ConverterServiceTest {
         EntityType<GenericEntity<Long, Long, Object>> type = new EntityType<>(GenericEntity.class, Long.class,
             Long.class, Object.class);
 
-        GenericEntity<Long, Long, Object> entity = cs.toObject(null, TEST_MEDIA_TYPE, type);
+        GenericEntity<Long, Long, Object> entity = cs.toObject(ReadableContext.wrap(null, TEST_MEDIA_TYPE), type);
         assertEquals(34l, (long) entity.getA());
         assertEquals(16l, (long) entity.getB());
         Assert.assertEquals("ljkshdf", entity.getC());
@@ -231,7 +231,7 @@ public class ConverterServiceTest {
         cs.addFormat(format);
         cs.add(new LongConverter());
 
-        cs.toRepresentation(null, Long.class, TEST_MEDIA_TYPE, 123l);
+        cs.toRepresentation(WritableContext.wrap(null, TEST_MEDIA_TYPE), Long.class, 123l);
         assertTrue(called);
     }
 
@@ -272,13 +272,13 @@ public class ConverterServiceTest {
 
         GenericEntity<Long, Object, Long> entity = genericEntity;
 
-        cs.toRepresentation(null, type, TEST_MEDIA_TYPE, entity);
+        cs.toRepresentation(WritableContext.wrap(null, TEST_MEDIA_TYPE), type, entity);
         assertTrue(called);
     }
 
     @Test(expected = UnsupportedMediaType.class)
     public void testToListOfUnsupportedGenericParamater() throws IOException, RestException {
-        cs.toRepresentation(null, new EntityType<>(List.class, Integer.class), TEST_MEDIA_TYPE, "[123]");
+        cs.toRepresentation(WritableContext.wrap(null, TEST_MEDIA_TYPE), new EntityType<>(List.class, Integer.class), "[123]");
     }
 
     @Test(expected = UnsupportedOperationException.class)

@@ -260,16 +260,20 @@ public class ConversionTest {
 		RestMethod method = group.get(2);
 		HashMap<String, Object> args = new HashMap<>();
 
-		request.setContentType("test/html");
+		String testContentType = "test/html";
+		request.setMediaType(MediaType.parse(testContentType));
+		assertEquals(testContentType, request.getContentType());
 
 		String content = handle(method, args, null, new RestHandler() {
 			@Override
 			public void handle(RestRequest request, RestResponse response) throws IOException, RestException {
+				assertEquals(testContentType, request.getContentType());
 				request.readEntity();
                 fail("Request type not supported");
 			}
 		});
 
+		assertNotNull(content);
 		assertTrue(content.contains("415 Unsupported Media Type"));
 	}
 
@@ -372,13 +376,16 @@ public class ConversionTest {
 		assertTrue(content.contains("500 Internal Server Error"));
 	}
 
+	/**
+	 * Handles an exampleray request with given parameters.
+	 */
 	@SuppressWarnings("unchecked")
 	private <I, O> O handle(RestMethod method, Map<String, Object> arguments, I requestEntity, RestHandler callback)
 			throws Exception {
 		if (requestEntity != null) {
 			Class<I> cls = (Class<I>) requestEntity.getClass();
-			request.setContentType(MediaType.TEXT_PLAIN.toString());
-			converterService.toRepresentation(request, cls, MediaType.TEXT_PLAIN, requestEntity);
+			request.setMediaType(MediaType.TEXT_PLAIN);
+			converterService.toRepresentation(request, cls, requestEntity);
 		}
 
 		request.getWriter().close();
@@ -409,6 +416,7 @@ public class ConversionTest {
 		try {
 			handler.handle(uri.getPath(), req, request, response);
 		} catch (SendError e) {
+			// Throw non-HTTP errors
 			throw (RestException) e.getCause();
 		}
 
@@ -418,7 +426,8 @@ public class ConversionTest {
 			throw RestException.create(res.getStatus(), null, null);
 		} else if (response.getStatus() >= 400) {
 			assertNotNull(response.getContentType());
-			return (O) converterService.toObject(response, MediaType.TEXT_PLAIN, String.class);
+			assertNotNull(response.getMediaType());
+			return (O) converterService.toObject(response, String.class);
         } else if (response.getReader().ready()) {
 			assertEquals("text/plain; charset=UTF-8", response.getContentType());
             assertEquals(HttpStatus.OK_200, response.getStatus());
@@ -427,7 +436,7 @@ public class ConversionTest {
             if (cls == null)
                 cls = (Class<O>) String.class;
 
-			return (O) converterService.toObject(response, MediaType.TEXT_PLAIN, cls);
+			return (O) converterService.toObject(response, cls);
 		} else {
 			assertNull(response.getContentType());
             assertEquals(HttpStatus.NO_CONTENT_204, response.getStatus());
@@ -439,7 +448,7 @@ public class ConversionTest {
 		// do not init here will never called
 		private PipedReader out;
 		private PipedWriter in;
-		private String contentType;
+		private MediaType mediaType;
 
         @Override
         public String getMethod() {
@@ -448,11 +457,16 @@ public class ConversionTest {
 
         @Override
 		public String getContentType() {
-			return contentType;
+			return mediaType.toString();
 		}
 
-		public void setContentType(String contentType) {
-			this.contentType = contentType;
+		@Override
+		public MediaType getMediaType() {
+			return mediaType;
+		}
+
+		public void setMediaType(MediaType contentType) {
+			this.mediaType = contentType;
 		}
 
         @Override
@@ -488,7 +502,7 @@ public class ConversionTest {
 		// do not init here will never called
 		private PipedReader out;
 		private PipedWriter in;
-		private String contentType;
+		private MediaType mediaType;
 		private String characterEncoding;
         private int status;
         private String reason;
@@ -521,12 +535,21 @@ public class ConversionTest {
 
         @Override
 		public String getContentType() {
-			return contentType;
+        	if (mediaType == null) {
+        		return null;
+			}
+
+			return mediaType.toString();
+		}
+
+		@Override
+		public MediaType getMediaType() {
+			return mediaType;
 		}
 
 		@Override
 		public void setContentType(String contentType) {
-			this.contentType = contentType;
+			this.mediaType = MediaType.parse(contentType);
 		}
 
 		@Override

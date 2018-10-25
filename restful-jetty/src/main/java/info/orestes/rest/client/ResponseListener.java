@@ -69,13 +69,13 @@ public abstract class ResponseListener<E> extends Adapter {
         private final RestRequest request;
         private final ConverterService converterService;
         private final Reader reader;
-        private final MediaType contentType;
+        private final MediaType mediaType;
 
-        public EntityContext(RestRequest request, MediaType contentType, InputStream stream) {
-            String charset = contentType.getParameters().get("charset");
+        public EntityContext(RestRequest request, MediaType mediaType, InputStream stream) {
+            String charset = mediaType.getParameters().get("charset");
             this.reader = new InputStreamReader(stream, charset == null? StandardCharsets.UTF_8: Charset.forName(charset));
             this.request = request;
-            this.contentType = contentType;
+            this.mediaType = mediaType;
             this.converterService = request.getClient().getConverterService();
         }
 
@@ -91,12 +91,17 @@ public abstract class ResponseListener<E> extends Adapter {
         }
 
         @Override
+        public MediaType getMediaType() {
+            return mediaType;
+        }
+
+        @Override
         public Reader getReader() throws IOException {
             return reader;
         }
 
         public <T> EntityReader<T> getEntityReader(EntityType<T> entityType) throws UnsupportedMediaType {
-            return converterService.newEntityReader(this, entityType, contentType);
+            return converterService.newEntityReader(this, entityType);
         }
     }
 

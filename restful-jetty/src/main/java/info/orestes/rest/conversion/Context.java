@@ -1,5 +1,7 @@
 package info.orestes.rest.conversion;
 
+import org.apache.tika.mime.MediaType;
+
 public interface Context {
 	
 	/**
@@ -40,4 +42,11 @@ public interface Context {
 	 *            The new value for the argument
 	 */
 	public void setArgument(String name, Object value);
+
+	/**
+	 * Returns the media type used in the current conversion process.
+	 *
+	 * @return The media type used in the current conversion.
+	 */
+	public MediaType getMediaType();
 }
