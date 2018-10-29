@@ -2,6 +2,7 @@ package info.orestes.rest.forms;
 
 import org.junit.Test;
 
+import java.io.StringReader;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -19,7 +20,7 @@ import static org.junit.Assert.*;
 public class FormDataTest {
     @Test
     public void iterator() {
-        FormData formData = new FormData();
+        var formData = new FormData();
         assertTrue(formData.isEmpty());
         assertEquals(0, formData.size());
 
@@ -40,7 +41,7 @@ public class FormDataTest {
 
     @Test
     public void set() {
-        FormData formData = new FormData();
+        var formData = new FormData();
         assertFalse(formData.has("foo"));
         assertTrue(formData.isEmpty());
         assertEquals(0, formData.size());
@@ -62,7 +63,7 @@ public class FormDataTest {
         assertEquals(asList(formData("foo", "12"), formData("foo", "42")), formData.getAll("foo"));
 
         // Only append should add new entries
-        Collection<Part> foo = formData.getAll("foo");
+        var foo = formData.getAll("foo");
         foo.add(formData("foo", "false entry"));
         assertEquals(asList(
             Part.formData("foo", "12"),
@@ -72,7 +73,7 @@ public class FormDataTest {
 
     @Test
     public void delete() {
-        FormData formData = new FormData();
+        var formData = new FormData();
         assertFalse(formData.has("foo"));
         assertTrue(formData.isEmpty());
         assertEquals(0, formData.size());
@@ -95,7 +96,7 @@ public class FormDataTest {
 
     @Test
     public void deleteAll() {
-        FormData formData = new FormData();
+        var formData = new FormData();
         assertFalse(formData.has("foo"));
         assertTrue(formData.isEmpty());
         assertEquals(0, formData.size());
@@ -118,7 +119,7 @@ public class FormDataTest {
 
     @Test
     public void append() {
-        FormData formData = new FormData();
+        var formData = new FormData();
         assertFalse(formData.has("foo"));
         assertTrue(formData.isEmpty());
         assertEquals(0, formData.size());
@@ -141,14 +142,14 @@ public class FormDataTest {
         assertEquals(asList(formData("foo", "12"), formData("foo", "42")), formData.getAll("foo"));
 
         // Only append should add new entries
-        Collection<Part> foo = formData.getAll("foo");
+        var foo = formData.getAll("foo");
         foo.add(formData("foo", "false entry"));
         assertEquals(asList(formData("foo", "12"), formData("foo", "42")), formData.getAll("foo"));
     }
 
     @Test
     public void fromString() throws Exception {
-        String str1 = "------boundary\n" +
+        var str1 = new StringReader("------boundary\n" +
             "Content-Disposition: form-data; name=\"pageLoadTime\"\n" +
             "\n" +
             "395\n" +
@@ -180,8 +181,8 @@ public class FormDataTest {
             "Content-Disposition: form-data; name=\"contentLoaded\"\n" +
             "\n" +
             "326\n" +
-            "------boundary--";
-        FormData formData1 = FormData.fromString(str1, "----boundary");
+            "------boundary--");
+        var formData1 = FormData.fromReader(str1, "----boundary");
 
         assertNotNull(formData1);
         assertEquals(8, formData1.size());
@@ -194,7 +195,7 @@ public class FormDataTest {
         assertEquals(formData("domInteractive", "326"), formData1.get("domInteractive"));
         assertEquals(formData("contentLoaded", "326"), formData1.get("contentLoaded"));
 
-        String str2 = "------WebKitFormBoundaryxLLEzKa7Nb1eI2Mr\n" +
+        var str2 = new StringReader("------WebKitFormBoundaryxLLEzKa7Nb1eI2Mr\n" +
             "Content-Disposition: form-data; name=\"foo\"\n" +
             "\n" +
             "bar\n" +
@@ -202,8 +203,8 @@ public class FormDataTest {
             "Content-Disposition: form-data; name=\"foo\"\n" +
             "\n" +
             "baz\n" +
-            "------WebKitFormBoundaryxLLEzKa7Nb1eI2Mr--";
-        FormData formData2 = FormData.fromString(str2, "----WebKitFormBoundaryxLLEzKa7Nb1eI2Mr");
+            "------WebKitFormBoundaryxLLEzKa7Nb1eI2Mr--");
+        var formData2 = FormData.fromReader(str2, "----WebKitFormBoundaryxLLEzKa7Nb1eI2Mr");
 
         assertNotNull(formData2);
         assertEquals(1, formData2.size());
@@ -213,7 +214,7 @@ public class FormDataTest {
 
     @Test
     public void stringify() {
-        FormData formData = new FormData();
+        var formData = new FormData();
         formData.append("foo", "bar");
         formData.append("baz", "bar");
 

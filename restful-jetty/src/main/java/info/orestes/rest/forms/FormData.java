@@ -2,6 +2,7 @@ package info.orestes.rest.forms;
 
 import org.eclipse.jetty.util.MultiMap;
 
+import java.io.Reader;
 import java.util.*;
 
 /**
@@ -17,16 +18,16 @@ public class FormData implements Iterable<Part> {
     }
 
     /**
-     * Deserializes a "multipart/form-data" string to a {@link FormData} object.
+     * Deserializes a "multipart/form-data" reader to a {@link FormData} object.
      *
-     * @param data The "multipart/form-data" string to parse.
+     * @param data The "multipart/form-data" reader to parse.
      * @param boundary The boundary used by the "multipart/form-data" string.
      * @return The deserialized form data object.
      * @throws FormDataSyntaxException If the data was invalid form data.
      */
-    public static FormData fromString(String data, String boundary) throws FormDataSyntaxException {
-        FormData formData = new FormData();
-        FormDataParser parser = new FormDataParser(data, boundary);
+    public static FormData fromReader(Reader data, String boundary) throws FormDataSyntaxException {
+        var formData = new FormData();
+        var parser = new FormDataParser(data, boundary);
         parser.parse(formData);
 
         return formData;
@@ -105,7 +106,7 @@ public class FormData implements Iterable<Part> {
      * @return The part deleted from this form data.
      */
     public Part delete(String name) {
-        List<Part> remove = this.parts.remove(name);
+        var remove = this.parts.remove(name);
         if (remove == null) {
             return null;
         }
@@ -120,7 +121,7 @@ public class FormData implements Iterable<Part> {
      * @return All parts deleted from this form data.
      */
     public Collection<Part> deleteAll(String name) {
-        List<Part> remove = this.parts.remove(name);
+        var remove = this.parts.remove(name);
         if (remove == null) {
             return Collections.emptyList();
         }
@@ -148,7 +149,7 @@ public class FormData implements Iterable<Part> {
      * @return The entry's value or {@code null}, if the entry misses.
      */
     public Collection<Part> getAll(String name) {
-        List<Part> values = this.parts.getValues(name);
+        var values = this.parts.getValues(name);
         if (values == null) {
             return Collections.emptyList();
         }
@@ -162,12 +163,12 @@ public class FormData implements Iterable<Part> {
     }
 
     public String toString(String boundary) {
-        String b = "--" + boundary;
-        StringBuilder builder = new StringBuilder(b);
+        var b = "--" + boundary;
+        var builder = new StringBuilder(b);
 
-        for (Map.Entry<String, List<Part>> entry : parts.entrySet()) {
+        for (var entry : parts.entrySet()) {
             // Add each value to the string
-            for (Part part : entry.getValue()) {
+            for (var part : entry.getValue()) {
                 builder.append('\n');
                 builder.append(part);
                 builder.append('\n');

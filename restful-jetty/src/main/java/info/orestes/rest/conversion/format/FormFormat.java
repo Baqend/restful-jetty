@@ -24,7 +24,7 @@ public class FormFormat extends ConverterFormat<FormData> {
         return new EntityWriter<T>() {
             @Override
             public void write(T entity) throws IOException, RestException {
-                FormData formData = converter.toFormat(context, entity, entityType.getActualTypeArguments());
+                var formData = converter.toFormat(context, entity, entityType.getActualTypeArguments());
                 context.getWriter().append(formData.toString());
             }
 
@@ -44,22 +44,14 @@ public class FormFormat extends ConverterFormat<FormData> {
         return new EntityReader<T>() {
             @Override
             public T read() throws IOException, RestException {
-                StringBuilder builder = new StringBuilder();
-
-                int read;
-                char[] buff = new char[128];
-                while ((read = context.getReader().read(buff)) != -1) {
-                    builder.append(buff, 0, read);
-                }
-
                 try {
                     // Deserialize form data from string
-                    String boundary = context.getMediaType().getParameters().get("boundary");
+                    var boundary = context.getMediaType().getParameters().get("boundary");
                     if (boundary == null) {
                         throw RestException.of(new FormDataSyntaxException("boundary to be not null", "null"));
                     }
 
-                    FormData formData = FormData.fromString(builder.toString(), boundary);
+                    var formData = FormData.fromReader(context.getReader(), boundary);
 
                     return converter.toObject(context, formData, entityType.getActualTypeArguments());
                 } catch (FormDataSyntaxException e) {

@@ -1,11 +1,8 @@
 package info.orestes.rest.forms;
 
-import info.orestes.rest.util.StringUtil;
-
-import java.util.HashMap;
+import java.io.BufferedReader;
+import java.io.Reader;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.regex.Pattern;
 
 /**
  * Created on 2018-10-23.
@@ -17,8 +14,9 @@ public class FormDataParser {
     private final Iterator<String> lines;
     private String line;
 
-    public FormDataParser(String data, String boundary) {
-        this.lines = Pattern.compile("\\r\\n|[\\r\\n]").splitAsStream(data).iterator();
+    public FormDataParser(Reader reader, String boundary) {
+        var bufferedReader = new BufferedReader(reader);
+        this.lines = bufferedReader.lines().iterator();
         this.boundary = "--" + boundary;
         // Get first item
         next();
@@ -41,10 +39,10 @@ public class FormDataParser {
         expectBoundary();
 
         // Check content disposition header
-        Part part = new Part();
+        var part = new Part();
         expectHeaders(part);
 
-        String contentDisposition = part.getContentDisposition();
+        var contentDisposition = part.getContentDisposition();
         if (contentDisposition == null) {
             throw new FormDataSyntaxException("Content-Disposition header", "other");
         }
@@ -55,7 +53,7 @@ public class FormDataParser {
         }
 
         // Retrieve the name
-        String name = part.getName();
+        var name = part.getName();
         if (name == null) {
             throw new FormDataSyntaxException("form-data with name", "no name");
         }
@@ -74,9 +72,9 @@ public class FormDataParser {
     private void expectHeaders(Part part) throws FormDataSyntaxException {
         String line;
         while (!(line = current()).trim().isEmpty()) {
-            String[] split = line.split(":\\s*", 2);
-            String headerName = split[0];
-            String headerValue = split[1];
+            var split = line.split(":\\s*", 2);
+            var headerName = split[0];
+            var headerValue = split[1];
 
             part.addHeader(headerName, Part.Header.fromString(headerValue));
             next();
