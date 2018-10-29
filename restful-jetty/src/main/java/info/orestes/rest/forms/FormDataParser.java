@@ -23,21 +23,21 @@ public class FormDataParser {
     }
 
     public void parse(FormData target) throws FormDataSyntaxException {
-        try {
-            // Expect a new entry in the form data
-            expectPart(target);
-            // Try to find the next entry
-            parse(target);
-        } catch (FormDataSyntaxException e) {
-            // Current is not an entry? Expect the form data's end
+        // Ensure entry begins with boundary
+        var isDone = expectBoundary();
+        // Current is not an entry? Expect the form data's end
+        if (isDone) {
             expectEof();
+            return;
         }
+
+        // Expect a new entry in the form data
+        expectPart(target);
+        // Try to find the next entry
+        parse(target);
     }
 
     private void expectPart(FormData formData) throws FormDataSyntaxException {
-        // Ensure entry begins with boundary
-        expectBoundary();
-
         // Check content disposition header
         var part = new Part();
         expectHeaders(part);
@@ -59,53 +59,51 @@ public class FormDataParser {
         }
 
         // Read entry's body
-        String line;
-        while (!(line = current()).startsWith(boundary)) {
+        var line = current();
+        while (!line.startsWith(boundary)) {
             part.appendBodyLine(line);
-            next();
+            line = next();
         }
 
         // Add new entry in form data
         formData.append(part);
     }
 
-    private void expectHeaders(Part part) throws FormDataSyntaxException {
-        String line;
-        while (!(line = current()).trim().isEmpty()) {
+    private void expectHeaders(Part part) {
+        var line = current();
+        while (!line.trim().isEmpty()) {
             var split = line.split(":\\s*", 2);
             var headerName = split[0];
             var headerValue = split[1];
 
             part.addHeader(headerName, Part.Header.fromString(headerValue));
-            next();
+            line = next();
         }
     }
 
     private void expectEof() throws FormDataSyntaxException {
-        if (eof()) {
-            throw new FormDataSyntaxException("last boundary", "EOF");
-        }
-
-        if (!current().equals(boundary + "--")) {
-            throw new FormDataSyntaxException("last boundary", line);
-        }
-
-        next();
         if (!eof()) {
-            throw new FormDataSyntaxException("EOF", next());
+            throw new FormDataSyntaxException("EOF", current());
         }
     }
 
-    private void expectBoundary() throws FormDataSyntaxException {
+    private boolean expectBoundary() throws FormDataSyntaxException {
         if (eof()) {
             throw new FormDataSyntaxException("boundary", "EOF");
         }
 
-        if (!current().equals(boundary)) {
-            throw new FormDataSyntaxException("boundary", current());
+        var line = current();
+        if (line.equals(boundary)) {
+            next();
+            return false;
         }
 
-        next();
+        if (line.equals(boundary + "--")) {
+            next();
+            return true;
+        }
+
+        throw new FormDataSyntaxException("boundary", line);
     }
 
     private String next() {
