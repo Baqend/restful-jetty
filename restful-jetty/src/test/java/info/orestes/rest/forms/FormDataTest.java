@@ -148,7 +148,7 @@ public class FormDataTest {
     }
 
     @Test
-    public void fromString() throws Exception {
+    public void fromReader() throws Exception {
         var str1 = new StringReader("------boundary\n" +
             "Content-Disposition: form-data; name=\"pageLoadTime\"\n" +
             "\n" +
