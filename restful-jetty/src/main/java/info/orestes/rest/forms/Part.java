@@ -33,7 +33,7 @@ public class Part {
      * @return A form data part with given name and value.
      */
     public static Part formData(String name, String value) {
-        Part part = new Part();
+        var part = new Part();
         part.addHeader(CONTENT_DISPOSITION, Header.formData(name));
         part.appendBodyLine(value);
 
@@ -41,7 +41,7 @@ public class Part {
     }
 
     public MediaType getContentType() {
-        Header ct = getHeader(CONTENT_TYPE);
+        var ct = getHeader(CONTENT_TYPE);
         if (ct == null) {
             return null;
         }
@@ -55,7 +55,7 @@ public class Part {
      * @return The {@code Content-Disposition} header value.
      */
     public String getContentDisposition() {
-        Header cd = getHeader(CONTENT_DISPOSITION);
+        var cd = getHeader(CONTENT_DISPOSITION);
         if (cd == null) {
             return null;
         }
@@ -69,7 +69,7 @@ public class Part {
      * @return The {@code Content-Disposition} header's {@code name} parameter.
      */
     public String getName() {
-        Header cd = getHeader(CONTENT_DISPOSITION);
+        var cd = getHeader(CONTENT_DISPOSITION);
         if (cd == null) {
             return null;
         }
@@ -82,7 +82,7 @@ public class Part {
     }
 
     public void addHeader(String name, Header value) {
-        String lowerCaseName = name.toLowerCase();
+        var lowerCaseName = name.toLowerCase();
 
         headers.add(lowerCaseName, value);
     }
@@ -113,9 +113,9 @@ public class Part {
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder();
-        for (Map.Entry<String, List<Header>> entry : headers.entrySet()) {
-            for (Header header : entry.getValue()) {
+        var builder = new StringBuilder();
+        for (var entry : headers.entrySet()) {
+            for (var header : entry.getValue()) {
                 builder.append(entry.getKey());
                 builder.append(": ");
                 builder.append(header.toString());
@@ -133,14 +133,18 @@ public class Part {
         if (this == obj) {
             return true;
         }
-
-        if (!(obj instanceof Part)) {
+        if (obj == null || getClass() != obj.getClass()) {
             return false;
         }
 
-        Part other = (Part) obj;
-        return this.headers.equals(other.headers)
-            && this.body.toString().equals(other.body.toString());
+        var part = (Part) obj;
+        return Objects.equals(body.toString(), part.body.toString())
+            && Objects.equals(headers, part.headers);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(body.toString(), headers);
     }
 
     public static class Header {
@@ -158,19 +162,19 @@ public class Part {
 
         public static Header fromString(String headerValue) {
             // Retrieve header value
-            String[] parameters = headerValue.split(";\\s*");
+            var parameters = headerValue.split(";\\s*");
             if (parameters.length < 2) {
                 return new Header(headerValue, Collections.emptyMap());
             }
 
-            String value = parameters[0];
+            var value = parameters[0];
             HashMap<String, String> params = new HashMap<>(parameters.length - 1);
 
             // Retrieve header parameters
-            for (int i = 1; i < parameters.length; i++) {
-                String[] paramKeyValue = parameters[i].split("=", 2);
-                String paramKey = paramKeyValue[0];
-                String paramValue = paramKeyValue[1];
+            for (var i = 1; i < parameters.length; i++) {
+                var paramKeyValue = parameters[i].split("=", 2);
+                var paramKey = paramKeyValue[0];
+                var paramValue = paramKeyValue[1];
                 params.put(paramKey, paramValue);
             }
 
@@ -187,8 +191,8 @@ public class Part {
 
         @Override
         public String toString() {
-            StringBuilder builder = new StringBuilder(value);
-            for (Map.Entry<String, String> entry : parameters.entrySet()) {
+            var builder = new StringBuilder(value);
+            for (var entry : parameters.entrySet()) {
                 builder.append("; ");
                 builder.append(entry.getKey());
                 builder.append("=");
@@ -202,14 +206,18 @@ public class Part {
             if (this == obj) {
                 return true;
             }
-
-            if (!(obj instanceof Header)) {
+            if (obj == null || getClass() != obj.getClass()) {
                 return false;
             }
 
-            Header other = (Header) obj;
-            return this.value.equals(other.value)
-                && this.parameters.equals(other.parameters);
+            var header = (Header) obj;
+            return Objects.equals(value, header.value)
+                && Objects.equals(parameters, header.parameters);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(value, parameters);
         }
     }
 }
