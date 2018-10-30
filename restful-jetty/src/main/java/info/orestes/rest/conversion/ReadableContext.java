@@ -1,5 +1,7 @@
 package info.orestes.rest.conversion;
 
+import org.apache.tika.mime.MediaType;
+
 import java.io.IOException;
 import java.io.Reader;
 
@@ -12,13 +14,8 @@ import java.io.Reader;
  */
 public interface ReadableContext extends Context {
 
-	public static ReadableContext wrap(Reader reader) {
-		return new Abstract() {
-			@Override
-			public Reader getReader() throws IOException {
-				return reader;
-			}
-		};
+	public static ReadableContext wrap(Reader reader, MediaType sourceType) {
+		return new SimpleReadableContext(reader, sourceType);
 	}
 
 	/**
@@ -30,5 +27,17 @@ public interface ReadableContext extends Context {
 	 */
 	public Reader getReader() throws IOException;
 
-	abstract class Abstract extends SimpleContext implements ReadableContext {}
+	class SimpleReadableContext extends SimpleContext implements ReadableContext {
+		private final Reader reader;
+
+		private SimpleReadableContext(Reader reader, MediaType mediaType) {
+			super(mediaType);
+			this.reader = reader;
+		}
+
+		@Override
+		public Reader getReader() throws IOException {
+			return reader;
+		}
+	}
 }

@@ -336,14 +336,20 @@ public class ClientTest {
 			@Override
 			public void handle(String path, HttpServletRequest request, final HttpServletResponse response)
 					throws IOException, ServletException {
-				response.setContentType("text/plain");
+				MediaType textPlain = MediaType.parse("text/plain");
+				response.setContentType(textPlain.toString());
 
 				try {
 					converterService.toRepresentation(new WritableContext() {
                         @Override
                         public void setArgument(String name, Object value) {}
 
-                        @Override
+						@Override
+						public MediaType getMediaType() {
+							return textPlain;
+						}
+
+						@Override
                         public <T> T getArgument(String name) {
                             return null;
                         }
@@ -352,7 +358,7 @@ public class ClientTest {
                         public PrintWriter getWriter() throws IOException {
                             return response.getWriter();
                         }
-                    }, RestException.class, MediaType.parse("text/plain"), exception);
+                    }, RestException.class, exception);
 				} catch (RestException e) {
 					throw new RuntimeException(e);
 				}
