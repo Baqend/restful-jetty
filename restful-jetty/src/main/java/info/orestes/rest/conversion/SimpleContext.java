@@ -23,6 +23,7 @@ public class SimpleContext implements Context {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T getArgument(String name) {
         return (T) arguments.get(name);
     }
