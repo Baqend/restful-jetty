@@ -36,6 +36,7 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
     private final Logger LOG = Log.getLogger(RestResponse.class);
     private static final List<MediaType> ANY = Arrays.asList(MediaTypeNegotiation.ALL);
     private final RestRequest request;
+    private MediaType mediaType;
 
     /**
      * Parse the Accept header and extract the contained list of media types
@@ -63,6 +64,11 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
         super(response);
 
         this.request = request;
+    }
+
+    public void setMediaType(MediaType mediaType) {
+        this.mediaType = mediaType;
+        setContentType(mediaType.toString());
     }
 
     @Override
@@ -186,6 +192,11 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
         }
     }
 
+    @Override
+    public MediaType getMediaType() {
+        return mediaType;
+    }
+
     /**
      * Sends the given stream using the underlying outputstream.
      *
@@ -197,7 +208,7 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
      */
     public <T> void sendStream(Stream<T> objectStream, EntityType<T> entityType) throws RestException, IOException {
         MediaType contentType = getPreferredContentType(entityType);
-        setContentType(contentType.toString());
+        setMediaType(contentType);
 
         Iterator<T> iterator = objectStream.iterator();
 
@@ -251,8 +262,8 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
     }
 
     private void sendBody(Object entity, EntityType<?> type, MediaType contentType) throws IOException, RestException {
-        setContentType(contentType.toString());
-        request.getConverterService().toRepresentation(this, type, contentType, entity);
+        setMediaType(contentType);
+        request.getConverterService().toRepresentation(this, type, entity);
     }
 
     @Override
@@ -300,6 +311,11 @@ public class RestResponse extends HttpServletResponseWrapper implements Response
         @Override
         public <T> T getArgument(String name) {
             return RestResponse.this.getArgument(name);
+        }
+
+        @Override
+        public MediaType getMediaType() {
+            return RestResponse.this.mediaType;
         }
     }
 }

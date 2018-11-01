@@ -2,10 +2,7 @@ package info.orestes.rest.conversion;
 
 import info.orestes.rest.conversion.ConverterFormat.EntityReader;
 import info.orestes.rest.conversion.ConverterFormat.EntityWriter;
-import info.orestes.rest.error.BadRequest;
-import info.orestes.rest.error.InternalServerError;
-import info.orestes.rest.error.RestException;
-import info.orestes.rest.error.UnsupportedMediaType;
+import info.orestes.rest.error.*;
 import info.orestes.rest.service.EntityType;
 import info.orestes.rest.service.ServiceDocumentTypes;
 import info.orestes.rest.util.ClassUtil;
@@ -268,7 +265,6 @@ public class ConverterService {
      * Reads the given java type form the {@link ReadableContext} and return the decoded value
      *
      * @param context The {@link ReadableContext} to read from
-     * @param source  The media type of the encoded value
      * @param target  The java type of the decoded value
      * @param <T>     The class of the type to convert
      * @return The read and decoded value
@@ -276,24 +272,23 @@ public class ConverterService {
      * @throws RestException                 if an exception occurred while decoding the value
      * @throws IOException                   if an unexpected exception occurred while reading or decoding the value
      */
-    public <T> T toObject(ReadableContext context, MediaType source, Class<T> target) throws IOException, RestException {
-        return toObject(context, source, target, EntityType.EMPTY_GENERIC_ARRAY);
+    public <T> T toObject(ReadableContext context, Class<T> target) throws IOException, RestException {
+        return toObject(context, target, EntityType.EMPTY_GENERIC_ARRAY);
     }
 
     /**
      * Reads the given java type form the {@link ReadableContext} and return the decoded value
      *
-     * @param context The {@link ReadableContext} to read from
-     * @param source  The media type of the encoded value
-     * @param target  The java type with generic parameters of the decoded value
      * @param <T>     The class of the type to convert
+     * @param context The {@link ReadableContext} to read from
+     * @param target  The java type with generic parameters of the decoded value
      * @return The read and decoded value
      * @throws UnsupportedOperationException if no converter is available to handle the conversion
      * @throws RestException                 if an exception occurred while decoding the value
      * @throws IOException                   if an unexpected exception occurred while reading or decoding the value
      */
-    public <T> T toObject(ReadableContext context, MediaType source, EntityType<T> target) throws IOException, RestException {
-        return toObject(context, source, target.getRawType(), target.getActualTypeArguments());
+    public <T> T toObject(ReadableContext context, EntityType<T> target) throws IOException, RestException {
+        return toObject(context, target.getRawType(), target.getActualTypeArguments());
     }
 
     /**
@@ -322,7 +317,7 @@ public class ConverterService {
      */
     public <T> T toObject(MediaType sourceType, EntityType<T> target, String source) {
         try {
-            return toObject(ReadableContext.wrap(new StringReader(source)), sourceType, target);
+            return toObject(ReadableContext.wrap(new StringReader(source), sourceType), target);
         } catch (RestException | IOException e) {
             throw new UnsupportedOperationException(e);
         }
@@ -331,22 +326,22 @@ public class ConverterService {
     /**
      * Reads the given java type form the {@link ReadableContext} and return the decoded value
      *
+     * @param <T>           The class of the type to convert
+     * @param <F>           The base class of the format
      * @param context       The {@link ReadableContext} to read from
-     * @param source        The media type of the encoded value
      * @param target        The java type of the decoded value
      * @param genericParams The used java types of the generic parameters if the java type is generic otherwise the
      *                      array must be empty
-     * @param <T>           The class of the type to convert
-     * @param <F>           The base class of the format
      * @return The read and decoded value
      * @throws UnsupportedOperationException if no converter is available to handle the conversion
      * @throws RestException                 if an exception occurred while decoding the value
      * @throws IOException                   if an unexpected exception occurred while reading or decoding the value
      */
-    private <T, F> T toObject(ReadableContext context, MediaType source, Class<T> target, Class<?>[] genericParams) throws IOException, RestException {
+    private <T, F> T toObject(ReadableContext context, Class<T> target, Class<?>[] genericParams) throws IOException, RestException {
+        Objects.requireNonNull(context, "The ReadableContext must be set.");
         try {
             EntityType<T> entityType = new EntityType<>(target, genericParams);
-            Converter<T, F> converter = getConverter(source, target, genericParams);
+            Converter<T, F> converter = getConverter(context.getMediaType(), target, genericParams);
 
             return converter.getFormat().newEntityReader(context, entityType, converter).read();
         } catch (RuntimeException e) {
@@ -357,35 +352,33 @@ public class ConverterService {
     /**
      * Writes the given encoded value to the {@link WritableContext}
      *
+     * @param <T>     The class of the type to convert
      * @param context The {@link WritableContext} to write to
      * @param source  The java type of the decoded value
-     * @param target  The media type of the encoded value
      * @param entity  The value which will be encoded and written
-     * @param <T>     The class of the type to convert
      * @throws UnsupportedOperationException if no converter is available to handle the conversion
      * @throws RestException                 if an exception occurred while encoding the value
      * @throws IOException                   if an unexpected exception occurred while writing or encoding the value
      */
-    public <T> void toRepresentation(WritableContext context, Class<T> source, MediaType target, Object entity) throws
+    public <T> void toRepresentation(WritableContext context, Class<T> source, Object entity) throws
         IOException, RestException {
-        toRepresentation(context, entity, source, EntityType.EMPTY_GENERIC_ARRAY, target);
+        toRepresentation(context, entity, source, EntityType.EMPTY_GENERIC_ARRAY);
     }
 
     /**
      * Writes the given encoded value to the {@link WritableContext}
      *
-     * @param context The {@link WritableContext} to write to
-     * @param entity  The value which will be encoded and written
-     * @param source  The java type with generic parameters of the decoded value
-     * @param target  The media type of the encoded value
      * @param <T>     The class of the type to convert
+     * @param context The {@link WritableContext} to write to
+     * @param source  The java type with generic parameters of the decoded value
+     * @param entity  The value which will be encoded and written
      * @throws UnsupportedOperationException if no converter is available to handle the conversion
      * @throws RestException                 if an exception occurred while encoding the value
      * @throws IOException                   if an unexpected exception occurred while writing or encoding the value
      */
-    public <T> void toRepresentation(WritableContext context, EntityType<T> source, MediaType target, Object entity) throws
+    public <T> void toRepresentation(WritableContext context, EntityType<T> source, Object entity) throws
         IOException, RestException {
-        toRepresentation(context, entity, source.getRawType(), source.getActualTypeArguments(), target);
+        toRepresentation(context, entity, source.getRawType(), source.getActualTypeArguments());
     }
 
     /**
@@ -409,14 +402,13 @@ public class ConverterService {
      *
      * @param context    The context to read the entities from.
      * @param entityType The type of the entities.
-     * @param source     The source type.
      * @param <T>        The type argument of the entities.
      * @return An entity reader that can read multiple entities.
      * @throws UnsupportedMediaType if no converter is available to handle the conversion
      */
-    public <T> EntityReader<T> newEntityReader(ReadableContext context, EntityType<T> entityType, MediaType source) throws
+    public <T> EntityReader<T> newEntityReader(ReadableContext context, EntityType<T> entityType) throws
         UnsupportedMediaType {
-        Converter<T, Object> converter = getConverter(source, entityType.getRawType(),
+        Converter<T, Object> converter = getConverter(context.getMediaType(), entityType.getRawType(),
             entityType.getActualTypeArguments());
         return converter.getFormat().newEntityReader(context, entityType, converter);
     }
@@ -424,23 +416,23 @@ public class ConverterService {
     /**
      * Writes the given encoded value to the {@link WritableContext}
      *
+     * @param <T>           The class of the type to convert
+     * @param <F>           The base class of the format
      * @param context       The {@link WritableContext} to write to
      * @param entity        The value which will be encoded and written
      * @param source        The java type of the decoded value
-     * @param target        The media type of the encoded value
      * @param genericParams The used java types of the generic parameters if the java type is generic otherwise the
      *                      array must be empty
-     * @param <T>           The class of the type to convert
-     * @param <F>           The base class of the format
      * @throws UnsupportedOperationException if no converter is available to handle the conversion
      * @throws RestException                 if an exception occurred while encoding the value
      * @throws IOException                   if an unexpected exception occurred while writing or encoding the value
      */
-    private <T, F> void toRepresentation(WritableContext context, Object entity, Class<T> source, Class<?>[]
-        genericParams, MediaType target) throws IOException, RestException {
+    private <T, F> void toRepresentation(WritableContext context, Object entity, Class<T> source, Class<?>[] genericParams)
+        throws IOException, RestException {
+        Objects.requireNonNull(context, "The WritableContext must be set.");
         try {
             EntityType<T> entityType = new EntityType<>(source, genericParams);
-            Converter<T, F> converter = getConverter(target, source, genericParams);
+            Converter<T, F> converter = getConverter(context.getMediaType(), source, genericParams);
 
             converter.getFormat().newEntityWriter(context, entityType, converter).write(source.cast(entity));
         } catch (RuntimeException e) {
@@ -567,7 +559,7 @@ public class ConverterService {
     public <T> String toString(EntityType<T> source, MediaType targetType, Object entity) {
         try {
             StringWriter stringWriter = new StringWriter();
-            toRepresentation(WritableContext.wrap(stringWriter), source, targetType, entity);
+            toRepresentation(WritableContext.wrap(stringWriter, targetType), source, entity);
             return stringWriter.toString();
         } catch (RestException | IOException e) {
             throw new UnsupportedOperationException(e);

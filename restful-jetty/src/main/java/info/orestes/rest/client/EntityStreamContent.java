@@ -151,6 +151,11 @@ public class EntityStreamContent<E> extends EntityContentProvider<E> {
         }
 
         @Override
+        public MediaType getMediaType() {
+            return EntityStreamContent.this.getMediaType();
+        }
+
+        @Override
         public void close() throws IOException {
             if (channel != null)
                 channel.close();

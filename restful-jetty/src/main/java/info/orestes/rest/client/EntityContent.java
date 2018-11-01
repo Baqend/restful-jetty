@@ -99,7 +99,7 @@ public class EntityContent<E> extends EntityContentProvider<E> {
         public ByteBuffer write(EntityType<?> entityType, MediaType contentType, Object entity) {
             try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
                 writer = new OutputStreamWriter(out, getContentCharset());
-                getRequest().getClient().getConverterService().toRepresentation(this, entityType, contentType, entity);
+                getRequest().getClient().getConverterService().toRepresentation(this, entityType, entity);
                 writer.flush();
 
                 return ByteBuffer.wrap(out.toByteArray());
@@ -125,6 +125,11 @@ public class EntityContent<E> extends EntityContentProvider<E> {
         @Override
         public Writer getWriter() throws IOException {
             return writer;
+        }
+
+        @Override
+        public MediaType getMediaType() {
+            return EntityContent.this.getMediaType();
         }
     }
 }

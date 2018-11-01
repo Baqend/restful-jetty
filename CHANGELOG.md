@@ -1,3 +1,8 @@
+## 1.9.0
+
+* Support new Form Data format
+* Add the requested media type to the converter context, this change some behavior how the converter formats work
+
 ## 1.8.0
 
 * Update to Jetty 9.4

@@ -1,14 +1,26 @@
 package info.orestes.rest.conversion;
 
+import org.apache.tika.mime.MediaType;
+
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by Malte on 04.08.2014.
+ * Created on 04.08.2014.
+ *
+ * @author Malte Lauenroth
  */
 public class SimpleContext implements Context {
+    private final MediaType mediaType;
+    private final Map<String, Object> arguments = new HashMap<>();
 
-    private Map<String, Object> arguments = new HashMap<>();
+    public SimpleContext() {
+        this(null);
+    }
+
+    protected SimpleContext(MediaType mediaType) {
+        this.mediaType = mediaType;
+    }
 
     @Override
     @SuppressWarnings("unchecked")
@@ -19,5 +31,14 @@ public class SimpleContext implements Context {
     @Override
     public void setArgument(String name, Object value) {
         arguments.put(name, value);
+    }
+
+    @Override
+    public MediaType getMediaType() {
+        return mediaType;
+    }
+
+    public Map<String, Object> getArguments() {
+        return arguments;
     }
 }
