@@ -6,6 +6,7 @@ import org.apache.tika.mime.MediaTypeRegistry;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map.Entry;
 
 /**
  * Created by fbuec on 27.04.2016.
@@ -60,12 +61,25 @@ public class MediaTypeNegotiation {
         }
     };
 
-    public static Comparator<org.apache.tika.mime.MediaType> qualityComparator() {
+    private static final Comparator<Entry<MediaType, Converter<?,?>>> ACCEPT_COMPARATOR =
+        Comparator.<Entry<MediaType, Converter<?,?>>, Double>comparing(
+            entry -> entry.getValue().getClass().getAnnotation(Accept.class).q(),
+            Comparator.reverseOrder()
+        ).thenComparing(
+            Entry::getKey,
+            inheritanceComparator()
+        );
+
+    public static Comparator<MediaType> qualityComparator() {
         return QUALITY_COMPARATOR;
     }
 
-    public static Comparator<org.apache.tika.mime.MediaType> inheritanceComparator() {
+    public static Comparator<MediaType> inheritanceComparator() {
         return INHERITANCE_COMPARATOR;
+    }
+
+    public static Comparator<Entry<MediaType, Converter<?,?>>> acceptableComparator() {
+        return ACCEPT_COMPARATOR;
     }
 
     public static float getQuality(MediaType mediaType) {
@@ -79,7 +93,7 @@ public class MediaTypeNegotiation {
                 if (q < 0.0)
                     return 0f;
                 return q;
-            } catch (NumberFormatException e) { }
+            } catch (NumberFormatException ignored) { }
         }
 
         return 1f;

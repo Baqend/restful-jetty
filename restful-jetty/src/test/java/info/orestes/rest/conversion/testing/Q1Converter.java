@@ -5,8 +5,8 @@ import info.orestes.rest.conversion.Context;
 import info.orestes.rest.conversion.Converter;
 import info.orestes.rest.conversion.ConverterServiceTest;
 
-@Accept(value = ConverterServiceTest.TEST_TYPE, q = 0.8)
-public class LongConverter extends Converter<Long, Object> {
+@Accept(value = ConverterServiceTest.TEST_TYPE + "+1", q = 1)
+public class Q1Converter extends Converter<Long, Object> {
 	
 	@Override
 	public Object toFormat(Context context, Long source, Class<?>[] genericParams) {

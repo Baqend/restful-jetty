@@ -13,7 +13,8 @@ import java.io.IOException;
 
 public class FormFormat extends ConverterFormat<FormData> {
 
-    public static final String MEDIA_TYPE = "multipart/form-data";
+    public static final String MEDIA_TYPE = "multipart/form-data; boundary=----BaqendFormBoundary";
+    public static final double Q = 0.8;
 
     public FormFormat() {
         super("info.orestes.rest.conversion.form");
@@ -25,7 +26,8 @@ public class FormFormat extends ConverterFormat<FormData> {
             @Override
             public void write(T entity) throws IOException, RestException {
                 var formData = converter.toFormat(context, entity, entityType.getActualTypeArguments());
-                context.getWriter().append(formData.toString());
+                var boundary = context.getMediaType().getParameters().get("boundary");
+                context.getWriter().append(formData.toString(boundary));
             }
 
             @Override

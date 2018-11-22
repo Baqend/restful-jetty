@@ -3,8 +3,9 @@ package info.orestes.rest.conversion.string;
 import info.orestes.rest.conversion.Accept;
 import info.orestes.rest.conversion.Context;
 import info.orestes.rest.conversion.Converter;
+import info.orestes.rest.conversion.format.StringFormat;
 
-@Accept("text/plain")
+@Accept(value = StringFormat.MEDIA_TYPE, q = StringFormat.Q)
 public class StringFloatConverter extends Converter<Float, String> {
 	
 	@Override

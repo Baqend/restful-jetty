@@ -5,7 +5,7 @@ import info.orestes.rest.conversion.Accept;
 import info.orestes.rest.conversion.Context;
 import info.orestes.rest.conversion.Converter;
 
-@Accept(StringFormat.MEDIA_TYPE)
+@Accept(value = StringFormat.MEDIA_TYPE, q = StringFormat.Q)
 public class StringByteConverter extends Converter<Byte, String> {
 	
 	@Override
