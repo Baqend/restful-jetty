@@ -1,3 +1,8 @@
+## 1.9.1
+
+* Support format prioritisation if the client does not provide any format preference
+
+
 ## 1.9.0
 
 * Support new Form Data format
