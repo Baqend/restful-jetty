@@ -7,7 +7,7 @@ import info.orestes.rest.conversion.format.StringFormat;
 
 import java.util.Objects;
 
-@Accept(StringFormat.MEDIA_TYPE)
+@Accept(value = StringFormat.MEDIA_TYPE, q = StringFormat.Q)
 public class StringStringConverter extends Converter<String, String> {
 	
 	@Override

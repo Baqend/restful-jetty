@@ -16,9 +16,10 @@ import org.junit.Test;
 import org.mockito.MockitoAnnotations;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
+import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
 
 public class ConverterServiceTest {
@@ -63,13 +64,13 @@ public class ConverterServiceTest {
     @Test
     public void testAdd() {
         assertEquals(0, cs.createServiceDocumentTypes().getEntityTypes().size());
-        assertNull(cs.getPreferredMediaType(Arrays.asList(MediaType.parse("*/*")), longType));
+        assertNull(cs.getPreferredMediaType(asList(MediaType.parse("*/*")), longType));
 
         cs.addFormat(new TestFormat());
         cs.add(new LongConverter());
 
-        assertNull(cs.getPreferredMediaType(Arrays.asList(MediaType.parse("text/*")), longType));
-        assertEquals(TEST_MEDIA_TYPE, cs.getPreferredMediaType(Arrays.asList(TEST_MEDIA_TYPE), longType));
+        assertNull(cs.getPreferredMediaType(asList(MediaType.parse("text/*")), longType));
+        assertEquals(TEST_MEDIA_TYPE, cs.getPreferredMediaType(asList(TEST_MEDIA_TYPE), longType));
     }
 
     @Test
@@ -77,8 +78,8 @@ public class ConverterServiceTest {
         cs.addFormat(new TestFormat());
         cs.add(new LongConverter() {});
 
-        assertNull(cs.getPreferredMediaType(Arrays.asList(MediaType.parse("text/*")), longType));
-        assertEquals(TEST_MEDIA_TYPE, cs.getPreferredMediaType(Arrays.asList(TEST_MEDIA_TYPE), longType));
+        assertNull(cs.getPreferredMediaType(asList(MediaType.parse("text/*")), longType));
+        assertEquals(TEST_MEDIA_TYPE, cs.getPreferredMediaType(asList(TEST_MEDIA_TYPE), longType));
     }
 
     @Test
@@ -86,34 +87,54 @@ public class ConverterServiceTest {
         cs.addFormat(new TestFormat());
         cs.add(new GenericLongConverter<Long>() {});
 
-        assertNull(cs.getPreferredMediaType(Arrays.asList(MediaType.parse("text/*")), longType));
-        assertEquals(TEST_MEDIA_TYPE, cs.getPreferredMediaType(Arrays.asList(TEST_MEDIA_TYPE), longType));
+        assertNull(cs.getPreferredMediaType(asList(MediaType.parse("text/*")), longType));
+        assertEquals(TEST_MEDIA_TYPE, cs.getPreferredMediaType(asList(TEST_MEDIA_TYPE), longType));
     }
+
     @Test
     public void testAddGenericConverter() {
         assertEquals(0, cs.createServiceDocumentTypes().getEntityTypes().size());
-        assertNull(cs.getPreferredMediaType(Arrays.asList(MediaType.parse("*/*")), longType));
+        assertNull(cs.getPreferredMediaType(asList(MediaType.parse("*/*")), longType));
 
         cs.addFormat(new TestFormat());
         cs.add(new LongConverter());
         cs.add(new ListConverter());
 
-        assertNull(cs.getPreferredMediaType(Arrays.asList(MediaType.parse("text/*")), EntityType.of(Long.class)));
-        assertEquals(TEST_MEDIA_TYPE, cs.getPreferredMediaType(Arrays.asList(TEST_MEDIA_TYPE), EntityType.of(List.class, Long.class)));
-        assertEquals(null, cs.getPreferredMediaType(Arrays.asList(TEST_MEDIA_TYPE), EntityType.of(List.class, Integer.class)));
+        assertNull(cs.getPreferredMediaType(asList(MediaType.parse("text/*")), EntityType.of(Long.class)));
+        assertEquals(TEST_MEDIA_TYPE, cs.getPreferredMediaType(asList(TEST_MEDIA_TYPE), EntityType.of(List.class, Long.class)));
+        assertEquals(null, cs.getPreferredMediaType(asList(TEST_MEDIA_TYPE), EntityType.of(List.class, Integer.class)));
+    }
+
+    @Test
+    public void testAddPriorityConverters() {
+        assertEquals(0, cs.createServiceDocumentTypes().getEntityTypes().size());
+        assertNull(cs.getPreferredMediaType(asList(MediaType.parse("*/*")), longType));
+
+        cs.addFormat(new TestFormat());
+        cs.add(new Q3Converter());
+        cs.add(new Q1Converter());
+
+        MediaType mediaType1 = MediaType.parse(TEST_TYPE + "+1");
+        MediaType mediaType3 = MediaType.parse(TEST_TYPE + "+3");
+        assertEquals(mediaType3, cs.getPreferredMediaType(asList(mediaType3), EntityType.of(Long.class)));
+        assertEquals(mediaType3, cs.getPreferredMediaType(asList(mediaType3, new MediaType(mediaType1, Collections
+            .singletonMap("q", "0.7"))), EntityType.of(Long.class)));
+        assertEquals(mediaType1, cs.getPreferredMediaType(asList(MediaType.parse("*/*")), EntityType.of(Long.class)));
+        assertEquals(mediaType3, cs.getPreferredMediaType(asList(mediaType3, MediaType.parse("*/*; q=0.8")), EntityType.of(Long.class)));
+        assertEquals(mediaType1, cs.getPreferredMediaType(asList(MediaType.parse(TEST_TYPE + "+4"), MediaType.parse("*/*; q=0.8")), EntityType.of(Long.class)));
     }
 
     @Test
     public void testLoadConverters() {
         assertEquals(0, cs.createServiceDocumentTypes().getEntityTypes().size());
-        assertNull(cs.getPreferredMediaType(Arrays.asList(MediaType.parse("*/*")), longType));
+        assertNull(cs.getPreferredMediaType(asList(MediaType.parse("*/*")), longType));
 
         cs.loadConverters();
 
         assertEquals(MediaType.text("plain"),
-            cs.getPreferredMediaType(Arrays.asList(MediaType.parse("text/*")), longType));
-        assertEquals(TEST_MEDIA_TYPE,
-            cs.getPreferredMediaType(Arrays.asList(MediaType.parse("application/*")), longType));
+            cs.getPreferredMediaType(asList(MediaType.parse("text/*")), longType));
+        assertEquals(MediaType.parse(TEST_TYPE + "+1"),
+            cs.getPreferredMediaType(asList(MediaType.parse("application/*")), longType));
     }
 
     @Test(expected = UnsupportedMediaType.class)

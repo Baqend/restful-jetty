@@ -191,7 +191,7 @@ public class ConverterService {
         if (converter.getClass().isAnnotationPresent(Accept.class)) {
             Accept accepted = converter.getClass().getAnnotation(Accept.class);
             for (String mediaTypeString : accepted.value()) {
-                MediaType mediaType = MediaType.parse(mediaTypeString).getBaseType();
+                MediaType mediaType = MediaType.parse(mediaTypeString);
 
                 Map<MediaType, Converter<?, ?>> acceptTypes = accept.get(converter.getTargetClass());
                 if (acceptTypes == null) {
@@ -201,12 +201,12 @@ public class ConverterService {
                 acceptTypes.put(mediaType, converter);
 
                 if (acceptTypes.size() > 1) {
-                    List<MediaType> mediaTypes = new ArrayList<>(acceptTypes.keySet());
-                    Collections.sort(mediaTypes, MediaTypeNegotiation.inheritanceComparator());
+                    List<Entry<MediaType, Converter<?,?>>> entries = new ArrayList<>(acceptTypes.entrySet());
+                    entries.sort(MediaTypeNegotiation.acceptableComparator());
 
-                    Map<MediaType, Converter<?, ?>> sortedAcceptTypes = new LinkedHashMap<>(mediaTypes.size());
-                    for (MediaType mType : mediaTypes) {
-                        sortedAcceptTypes.put(mType, acceptTypes.get(mType));
+                    Map<MediaType, Converter<?, ?>> sortedAcceptTypes = new LinkedHashMap<>(entries.size());
+                    for (Entry<MediaType, Converter<?,?>> entry : entries) {
+                        sortedAcceptTypes.put(entry.getKey(), entry.getValue());
                     }
 
                     acceptTypes = sortedAcceptTypes;

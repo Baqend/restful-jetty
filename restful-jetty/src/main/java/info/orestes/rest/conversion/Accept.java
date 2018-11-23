@@ -22,4 +22,5 @@ import java.lang.annotation.Target;
 @Inherited
 public @interface Accept {
 	String[] value();
+	double q() default 1;
 }

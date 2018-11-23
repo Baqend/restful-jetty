@@ -5,7 +5,7 @@ import info.orestes.rest.conversion.Context;
 import info.orestes.rest.conversion.Converter;
 import info.orestes.rest.conversion.format.StringFormat;
 
-@Accept(StringFormat.MEDIA_TYPE)
+@Accept(value = StringFormat.MEDIA_TYPE, q = StringFormat.Q)
 public class StringShortConverter extends Converter<Short, String> {
 	
 	@Override

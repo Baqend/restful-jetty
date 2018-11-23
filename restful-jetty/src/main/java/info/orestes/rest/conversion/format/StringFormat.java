@@ -12,6 +12,7 @@ import java.io.IOException;
 public class StringFormat extends ConverterFormat<String> {
 
     public static final String MEDIA_TYPE = "text/plain";
+    public static final double Q = 0.5;
 
     public StringFormat() {
         super("info.orestes.rest.conversion.string");
