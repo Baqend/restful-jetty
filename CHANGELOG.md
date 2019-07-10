@@ -1,3 +1,7 @@
+## 1.9.2
+
+* Update jetty to 9.4.19
+
 ## 1.9.1
 
 * Support format prioritisation if the client does not provide any format preference
