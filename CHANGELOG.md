@@ -1,3 +1,7 @@
+## 1.9.4
+
+* Update jetty to 9.4.22
+
 ## 1.9.3
 
 * FormDataParser: Allow eof in last boundary
