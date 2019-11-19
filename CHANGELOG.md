@@ -1,3 +1,7 @@
+## 1.9.5
+
+* Downgrade to jetty 9.4.20
+
 ## 1.9.4
 
 * Update jetty to 9.4.22
