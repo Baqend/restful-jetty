@@ -1,3 +1,7 @@
+## 1.9.6
+
+* Use java11 to build the project
+
 ## 1.9.5
 
 * Downgrade to jetty 9.4.20
