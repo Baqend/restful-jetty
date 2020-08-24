@@ -1,3 +1,7 @@
+## 1.9.7
+
+* Update Jetty to 9.4.31.v20200723
+
 ## 1.9.6
 
 * Use java11 to build the project
