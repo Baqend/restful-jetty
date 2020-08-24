@@ -4,7 +4,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5'
     }
 }
 
@@ -25,12 +25,12 @@ subprojects {
 
     dependencies {
         testCompile(
-                'junit:junit:4.11',
-                'org.mockito:mockito-all:1.9.5'
+                'junit:junit:4.13',
+                'org.mockito:mockito-all:1.10.19'
         )
     }
 
-    project.ext.JETTY_VERSION = "9.4.23.v20191118"
+    project.ext.JETTY_VERSION = "9.4.31.v20200723"
 
     group = "com.baqend"
 
