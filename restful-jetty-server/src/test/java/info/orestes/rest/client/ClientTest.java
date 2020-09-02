@@ -27,7 +27,7 @@ import static org.junit.Assert.*;
 
 public class ClientTest {
 
-    public static final int TEST_PORT = 1234;
+    public static final int TEST_PORT = 1235;
 
 	private static Server server = new Server(TEST_PORT);
 	private static Module module = new Module();

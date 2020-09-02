@@ -89,7 +89,7 @@ public class FormDataParser {
 
     private boolean expectBoundary() throws FormDataSyntaxException {
         if (eof()) {
-            throw new FormDataSyntaxException("boundary", "EOF");
+            return true;
         }
 
         var line = current();
