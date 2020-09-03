@@ -1,3 +1,7 @@
+## 1.9.8
+
+* Revert Jetty back to 9.4.24.v20191120
+
 ## 1.9.7
 
 * Update Jetty to 9.4.31.v20200723
