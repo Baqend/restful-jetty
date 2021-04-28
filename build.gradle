@@ -15,9 +15,8 @@ plugins {
 subprojects {
     apply plugin: 'java'
     apply plugin: 'maven'
+    apply plugin: 'maven-publish'
     apply plugin: 'java-library-distribution'
-    apply plugin: 'com.jfrog.bintray'
-
     repositories {
         mavenCentral()
         mavenLocal()
@@ -54,24 +53,21 @@ subprojects {
         //options.addBooleanOption('html5', true)
     }
 
-    bintray {
-        user = project.properties.get('bintray_user')
-        key = project.properties.get('bintray_api_key')
-
-        configurations = ['archives'] //When uploading configuration files
-        dryRun = false //Whether to run this as dry-run, without deploying
-        publish = true //If version should be auto published after an upload
-        pkg {
-            repo = 'maven'
-            userOrg = 'baqend' //An optional organization name when the repo belongs to one of the user's orgs
-            name = project.name
-            desc = 'A restfull layer ontop of jetty server'
-            websiteUrl = 'https://github.com/Baqend/restful-jetty'
-            issueTrackerUrl = 'https://github.com/Baqend/restful-jetty/issues'
-            vcsUrl = 'git@github.com:Baqend/restful-jetty.git'
-            licenses = ['MIT']
-            labels = ['REST', 'jetty', 'server']
-            publicDownloadNumbers = true
+    publishing {
+        repositories {
+            maven {
+                name = "GitHubPackages"
+                url = uri("https://maven.pkg.github.com/baqend/restful-jetty")
+                credentials {
+                    username = project.properties.get('github_user')
+                    password = project.properties.get('github_password')
+                }
+            }
+        }
+        publications {
+            gpr(MavenPublication) {
+                from(components.java)
+            }
         }
     }
 }
@@ -95,7 +91,7 @@ release {
     }
 }
 
-afterReleaseBuild.dependsOn 'restful-jetty:bintrayUpload', 'restful-jetty-server:bintrayUpload'
+afterReleaseBuild.dependsOn 'restful-jetty:publish', 'restful-jetty-server:publish'
 
 
 
