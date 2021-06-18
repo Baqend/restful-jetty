@@ -1,3 +1,7 @@
+## 1.9.9
+
+* publich to maven central
+
 ## 1.9.8
 
 * Revert Jetty back to 9.4.24.v20191120
