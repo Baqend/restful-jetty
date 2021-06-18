@@ -2,6 +2,10 @@
 
 * fix maven publish
 
+## 1.9.10
+
+* fix maven publish
+
 ## 1.9.9
 
 * publich to maven central
