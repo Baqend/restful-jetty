@@ -106,6 +106,7 @@ subprojects {
 }
 
 nexusStaging {
+    packageGroup = "com.baqend.restful-jetty"
     serverUrl = "https://s01.oss.sonatype.org/service/local/"
     username = findProperty('sonatype_user')
     password = findProperty('sonatype_password')
