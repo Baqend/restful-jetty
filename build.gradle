@@ -74,7 +74,7 @@ subprojects {
                 }
 
                 pom.project {
-                    name 'Bloom Filter'
+                    name 'Restful Jetty'
                     packaging 'jar'
                     description 'A powerful REST Layer for Jetty'
                     url 'https://github.com/Baqend/restful-jetty'
