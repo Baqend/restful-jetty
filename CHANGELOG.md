@@ -1,3 +1,7 @@
+## 1.9.11
+
+* fix maven publish
+
 ## 1.9.10
 
 * fix maven publish
