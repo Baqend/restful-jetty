@@ -3,7 +3,7 @@ package info.orestes.rest.util;
 /**
  * Created on 2018-10-25.
  *
- * @author Konstantin Simon Maria Möllers
+ * @author Konstantin Simon Maria Moellers
  */
 public class StringUtil {
     /**

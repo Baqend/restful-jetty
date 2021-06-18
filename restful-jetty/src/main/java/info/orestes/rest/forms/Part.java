@@ -11,7 +11,7 @@ import static info.orestes.rest.util.StringUtil.unquote;
 /**
  * Created on 2018-10-25.
  *
- * @author Konstantin Simon Maria Möllers
+ * @author Konstantin Simon Maria Moellers
  */
 public class Part {
     private static final String CONTENT_DISPOSITION = "content-disposition";

@@ -8,7 +8,7 @@ import java.util.*;
 /**
  * Created on 2018-10-23.
  *
- * @author Konstantin Simon Maria Möllers
+ * @author Konstantin Simon Maria Moellers
  */
 public class FormData implements Iterable<Part> {
     private final MultiMap<Part> parts;

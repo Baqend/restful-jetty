@@ -3,7 +3,7 @@ package info.orestes.rest.forms;
 /**
  * Created on 2018-10-23.
  *
- * @author Konstantin Simon Maria Möllers
+ * @author Konstantin Simon Maria Moellers
  */
 public class FormDataSyntaxException extends Exception {
     public FormDataSyntaxException(String expected, String actual) {

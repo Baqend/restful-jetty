@@ -8,8 +8,8 @@ import java.io.Writer;
 /**
  * A writable {@link Context} that can be used by a {@link ConverterFormat} to
  * writes a processed format
- * 
- * @author Florian Bücklers
+ *
+ * @author Florian Buecklers
  */
 public interface WritableContext extends Context {
 
@@ -19,7 +19,7 @@ public interface WritableContext extends Context {
 
 	/**
 	 * Returns a writer where the content can be written to
-	 * 
+	 *
 	 * @return A writer which writes the content
 	 * @throws IOException
 	 *             if an I/O error occurred

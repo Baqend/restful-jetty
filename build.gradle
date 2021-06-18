@@ -10,6 +10,7 @@ buildscript {
 
 plugins {
     id 'net.researchgate.release' version '2.6.0'
+    id 'io.codearte.nexus-staging' version '0.30.0'
 }
 
 subprojects {
@@ -17,6 +18,8 @@ subprojects {
     apply plugin: 'maven'
     apply plugin: 'maven-publish'
     apply plugin: 'java-library-distribution'
+    apply plugin: 'signing'
+
     repositories {
         mavenCentral()
         mavenLocal()
@@ -53,23 +56,59 @@ subprojects {
         //options.addBooleanOption('html5', true)
     }
 
-    publishing {
+    signing {
+        sign configurations.archives
+    }
+
+    uploadArchives {
         repositories {
-            maven {
-                name = "GitHubPackages"
-                url = uri("https://maven.pkg.github.com/baqend/restful-jetty")
-                credentials {
-                    username = project.properties.get('github_user')
-                    password = project.properties.get('github_password')
+            mavenDeployer {
+                beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+                repository(url: "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                    authentication(userName: findProperty('sonatype_user'), password: findProperty('sonatype_password'))
+                }
+
+                snapshotRepository(url: "https://s01.oss.sonatype.org/content/repositories/snapshots/") {
+                    authentication(userName: findProperty('sonatype_user'), password: findProperty('sonatype_password'))
+                }
+
+                pom.project {
+                    name 'Bloom Filter'
+                    packaging 'jar'
+                    description 'A powerful REST Layer for Jetty'
+                    url 'https://github.com/Baqend/restful-jetty'
+
+                    scm {
+                        connection 'scm:git:https://github.com/Baqend/restful-jetty'
+                        developerConnection 'scm:git:https://github.com/Baqend/restful-jetty'
+                        url 'https://github.com/Baqend/restful-jetty'
+                    }
+
+                    licenses {
+                        license {
+                            name 'MIT'
+                            url 'https://github.com/Baqend/restful-jetty/blob/master/LICENSE'
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id 'com.baqend'
+                            name 'Baqend GmbH'
+                            email 'info@baqend.com'
+                        }
+                    }
                 }
             }
         }
-        publications {
-            gpr(MavenPublication) {
-                from(components.java)
-            }
-        }
     }
+}
+
+nexusStaging {
+    serverUrl = "https://s01.oss.sonatype.org/service/local/"
+    username = findProperty('sonatype_user')
+    password = findProperty('sonatype_password')
 }
 
 wrapper {
@@ -91,7 +130,7 @@ release {
     }
 }
 
-afterReleaseBuild.dependsOn 'restful-jetty:publish', 'restful-jetty-server:publish'
+afterReleaseBuild.dependsOn 'restful-jetty:uploadArchives', 'restful-jetty-server:uploadArchives'
 
 
 

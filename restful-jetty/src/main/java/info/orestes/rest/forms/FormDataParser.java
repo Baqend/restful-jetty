@@ -7,7 +7,7 @@ import java.util.Iterator;
 /**
  * Created on 2018-10-23.
  *
- * @author Konstantin Simon Maria Möllers
+ * @author Konstantin Simon Maria Moellers
  */
 public class FormDataParser {
     private final String boundary;
