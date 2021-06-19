@@ -32,7 +32,7 @@ subprojects {
         )
     }
 
-    project.ext.JETTY_VERSION = "9.4.24.v20191120"
+    project.ext.JETTY_VERSION = "9.4.42.v20210604"
 
     group = "com.baqend"
 
