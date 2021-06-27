@@ -1,3 +1,7 @@
+## 1.9.12
+
+* Update jetty to 9.4.42.v20210604
+
 ## 1.9.11
 
 * fix maven publish
