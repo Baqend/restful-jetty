@@ -94,6 +94,10 @@ public class RestRequest extends HttpServletRequestWrapper implements Request {
         try {
             MediaType contentType = MediaType.parse(getContentType());
 
+            if (contentType == null) {
+                throw new BadRequest("Illegal ContentType " + getContentType());
+            }
+
             if (Stream.class.equals(type.getRawType())) {
                 EntityType<?> entityType = new EntityType<>(type.getActualTypeArguments()[0]);
                 return (E) readStream(entityType);
