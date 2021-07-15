@@ -1,3 +1,7 @@
+## 1.9.13
+
+* Throw BadRequest if we can't parse the ContentType header
+
 ## 1.9.12
 
 * Update jetty to 9.4.42.v20210604
