@@ -32,6 +32,7 @@ public interface Request extends ReadableContext, HttpServletRequest {
      */
     public Map<String, ?> getArguments();
 
+    @Nullable
     @Override
     public <T> T getArgument(String name);
 
