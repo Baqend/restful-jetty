@@ -1,3 +1,8 @@
+## 1.9.14
+
+* Bump dependency and Gradle versions
+* Mark info.orestes.rest.Request#getArgument as Nullable for Kotlin
+
 ## 1.9.13
 
 * Throw BadRequest if we can't parse the ContentType header
