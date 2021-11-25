@@ -9,8 +9,9 @@ buildscript {
 }
 
 plugins {
-    id 'net.researchgate.release' version '2.6.0'
+    id 'net.researchgate.release' version '2.8.1'
     id 'io.codearte.nexus-staging' version '0.30.0'
+    id "com.github.ben-manes.versions" version "0.39.0"
 }
 
 subprojects {
@@ -27,12 +28,12 @@ subprojects {
 
     dependencies {
         testCompile(
-                'junit:junit:4.13',
-                'org.mockito:mockito-all:1.10.19'
+                'junit:junit:4.13.2',
+                'org.mockito:mockito-all:2.0.2-beta'
         )
     }
 
-    project.ext.JETTY_VERSION = "9.4.42.v20210604"
+    project.ext.JETTY_VERSION = "9.4.44.v20210927"
 
     group = "com.baqend"
 
@@ -110,10 +111,6 @@ nexusStaging {
     serverUrl = "https://s01.oss.sonatype.org/service/local/"
     username = findProperty('sonatype_user')
     password = findProperty('sonatype_password')
-}
-
-wrapper {
-    gradleVersion = '4.10.2'
 }
 
 task assemble {

@@ -2,7 +2,7 @@ dependencies {
     compile(
             "org.eclipse.jetty:jetty-client:$JETTY_VERSION",
             "org.eclipse.jetty.websocket:javax-websocket-client-impl:$JETTY_VERSION",
-            'org.apache.tika:tika-core:1.26'
+            'org.apache.tika:tika-core:2.1.0'
     )
 }
 
