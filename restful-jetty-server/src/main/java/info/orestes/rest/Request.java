@@ -5,6 +5,7 @@ import info.orestes.rest.error.RestException;
 import info.orestes.rest.service.RestMethod;
 import info.orestes.rest.service.RestRouter;
 import info.orestes.rest.service.RestRouter.Route;
+import org.jetbrains.annotations.Nullable;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;

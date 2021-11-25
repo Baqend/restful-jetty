@@ -5,7 +5,8 @@ dependencies {
             "org.eclipse.jetty.websocket:javax-websocket-server-impl:$JETTY_VERSION",
             "org.eclipse.jetty:jetty-servlets:$JETTY_VERSION",
             "org.eclipse.jetty.http2:http2-server:$JETTY_VERSION",
-            "org.eclipse.jetty:jetty-alpn-server:$JETTY_VERSION"
+            "org.eclipse.jetty:jetty-alpn-server:$JETTY_VERSION",
+            "org.jetbrains:annotations:23.0.0"
     )
 }
 
