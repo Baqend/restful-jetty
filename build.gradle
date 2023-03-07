@@ -29,14 +29,20 @@ subprojects {
 
     distTar.compression "GZIP"
 
-    task javadocJar(type: Jar) {
+    tasks.register('javadocJar', Jar) {
         classifier = 'javadoc'
         from javadoc
     }
 
-    task sourcesJar(type: Jar) {
+    tasks.register('sourcesJar', Jar) {
         classifier = 'sources'
         from sourceSets.main.allSource
+    }
+
+    java {
+        toolchain {
+            languageVersion.set(JavaLanguageVersion.of(8))
+        }
     }
 
     artifacts {
@@ -48,7 +54,7 @@ subprojects {
     }
 
     signing {
-        sign configurations.archives
+        //sign configurations.archives
     }
 
     uploadArchives {
@@ -103,7 +109,7 @@ nexusStaging {
     password = findProperty('sonatype_password')
 }
 
-task assemble {
+tasks.register('assemble') {
     dependsOn 'restful-jetty:assemble', 'restful-jetty-server:assemble'
 }
 

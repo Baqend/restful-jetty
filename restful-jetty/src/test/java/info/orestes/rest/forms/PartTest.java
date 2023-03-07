@@ -14,10 +14,10 @@ import static org.junit.Assert.*;
 public class PartTest {
     @Test
     public void doesEqual() {
-        var fd1 = Part.formData("foo", "bar");
-        var fd2 = Part.formData("foo", "bar");
-        var fd3 = Part.formData("foo", "baz");
-        var fd4 = Part.formData("baz", "bar");
+        Part fd1 = Part.formData("foo", "bar");
+        Part fd2 = Part.formData("foo", "bar");
+        Part fd3 = Part.formData("foo", "baz");
+        Part fd4 = Part.formData("baz", "bar");
 
         // Assert equal name and value equal
         assertEquals(fd1, fd2);
@@ -48,7 +48,7 @@ public class PartTest {
 
     @Test
     public void hasContentType() {
-        var part = new Part();
+        Part part = new Part();
         assertNull(part.getContentType());
 
         part.addHeader("Content-Type", Part.Header.fromString("Text/Html"));
@@ -61,11 +61,11 @@ public class PartTest {
 
     @Test
     public void hasName() {
-        var part = new Part();
+        Part part = new Part();
         assertNull(part.getContentDisposition());
         assertNull(part.getName());
 
-        var cd = "Form-Data; name=\"Möllers’ %22great%22 Test-String\"";
+        String cd = "Form-Data; name=\"Möllers’ %22great%22 Test-String\"";
         part.addHeader("Content-Disposition", Part.Header.fromString(cd));
         assertEquals(singleton("content-disposition"), part.getHeaderNames());
 
@@ -76,7 +76,7 @@ public class PartTest {
 
     @Test
     public void hasBody() {
-        var part = new Part();
+        Part part = new Part();
         assertTrue(part.isEmpty());
         assertEquals("", part.getBody());
 

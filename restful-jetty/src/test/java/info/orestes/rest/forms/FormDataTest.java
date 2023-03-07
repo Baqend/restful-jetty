@@ -20,7 +20,7 @@ import static org.junit.Assert.*;
 public class FormDataTest {
     @Test
     public void iterator() {
-        var formData = new FormData();
+        FormData formData = new FormData();
         assertTrue(formData.isEmpty());
         assertEquals(0, formData.size());
 
@@ -41,7 +41,7 @@ public class FormDataTest {
 
     @Test
     public void set() {
-        var formData = new FormData();
+        FormData formData = new FormData();
         assertFalse(formData.has("foo"));
         assertTrue(formData.isEmpty());
         assertEquals(0, formData.size());
@@ -63,7 +63,7 @@ public class FormDataTest {
         assertEquals(asList(formData("foo", "12"), formData("foo", "42")), formData.getAll("foo"));
 
         // Only append should add new entries
-        var foo = formData.getAll("foo");
+        Collection<Part> foo = formData.getAll("foo");
         foo.add(formData("foo", "false entry"));
         assertEquals(asList(
             Part.formData("foo", "12"),
@@ -73,7 +73,7 @@ public class FormDataTest {
 
     @Test
     public void delete() {
-        var formData = new FormData();
+        FormData formData = new FormData();
         assertFalse(formData.has("foo"));
         assertTrue(formData.isEmpty());
         assertEquals(0, formData.size());
@@ -96,7 +96,7 @@ public class FormDataTest {
 
     @Test
     public void deleteAll() {
-        var formData = new FormData();
+        FormData formData = new FormData();
         assertFalse(formData.has("foo"));
         assertTrue(formData.isEmpty());
         assertEquals(0, formData.size());
@@ -119,7 +119,7 @@ public class FormDataTest {
 
     @Test
     public void append() {
-        var formData = new FormData();
+        FormData formData = new FormData();
         assertFalse(formData.has("foo"));
         assertTrue(formData.isEmpty());
         assertEquals(0, formData.size());
@@ -142,14 +142,14 @@ public class FormDataTest {
         assertEquals(asList(formData("foo", "12"), formData("foo", "42")), formData.getAll("foo"));
 
         // Only append should add new entries
-        var foo = formData.getAll("foo");
+        Collection<Part> foo = formData.getAll("foo");
         foo.add(formData("foo", "false entry"));
         assertEquals(asList(formData("foo", "12"), formData("foo", "42")), formData.getAll("foo"));
     }
 
     @Test
     public void fromReader() throws Exception {
-        var str1 = new StringReader("------boundary\n" +
+        StringReader str1 = new StringReader("------boundary\n" +
             "Content-Disposition: form-data; name=\"pageLoadTime\"\n" +
             "\n" +
             "395\n" +
@@ -182,7 +182,7 @@ public class FormDataTest {
             "\n" +
             "326\n" +
             "------boundary--");
-        var formData1 = FormData.fromReader(str1, "----boundary");
+        FormData formData1 = FormData.fromReader(str1, "----boundary");
 
         assertNotNull(formData1);
         assertEquals(8, formData1.size());
@@ -195,7 +195,7 @@ public class FormDataTest {
         assertEquals(formData("domInteractive", "326"), formData1.get("domInteractive"));
         assertEquals(formData("contentLoaded", "326"), formData1.get("contentLoaded"));
 
-        var str2 = new StringReader("------WebKitFormBoundaryxLLEzKa7Nb1eI2Mr\n" +
+        StringReader str2 = new StringReader("------WebKitFormBoundaryxLLEzKa7Nb1eI2Mr\n" +
             "Content-Disposition: form-data; name=\"foo\"\n" +
             "\n" +
             "bar\n" +
@@ -204,7 +204,7 @@ public class FormDataTest {
             "\n" +
             "baz\n" +
             "------WebKitFormBoundaryxLLEzKa7Nb1eI2Mr--");
-        var formData2 = FormData.fromReader(str2, "----WebKitFormBoundaryxLLEzKa7Nb1eI2Mr");
+        FormData formData2 = FormData.fromReader(str2, "----WebKitFormBoundaryxLLEzKa7Nb1eI2Mr");
 
         assertNotNull(formData2);
         assertEquals(1, formData2.size());
@@ -214,7 +214,7 @@ public class FormDataTest {
 
     @Test
     public void stringify() {
-        var formData = new FormData();
+        FormData formData = new FormData();
         formData.append("foo", "bar");
         formData.append("baz", "bar");
 

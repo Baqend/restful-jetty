@@ -15,7 +15,7 @@ public class FormDataParser {
     private String line;
 
     public FormDataParser(Reader reader, String boundary) {
-        var bufferedReader = new BufferedReader(reader);
+        BufferedReader bufferedReader = new BufferedReader(reader);
         this.lines = bufferedReader.lines().iterator();
         this.boundary = "--" + boundary;
         // Get first item
@@ -24,7 +24,7 @@ public class FormDataParser {
 
     public void parse(FormData target) throws FormDataSyntaxException {
         // Ensure entry begins with boundary
-        var isDone = expectBoundary();
+        boolean isDone = expectBoundary();
         // Current is not an entry? Expect the form data's end
         if (isDone) {
             expectEof();
@@ -39,10 +39,10 @@ public class FormDataParser {
 
     private void expectPart(FormData formData) throws FormDataSyntaxException {
         // Check content disposition header
-        var part = new Part();
+        Part part = new Part();
         expectHeaders(part);
 
-        var contentDisposition = part.getContentDisposition();
+        String contentDisposition = part.getContentDisposition();
         if (contentDisposition == null) {
             throw new FormDataSyntaxException("Content-Disposition header", "other");
         }
@@ -53,13 +53,13 @@ public class FormDataParser {
         }
 
         // Retrieve the name
-        var name = part.getName();
+        String name = part.getName();
         if (name == null) {
             throw new FormDataSyntaxException("form-data with name", "no name");
         }
 
         // Read entry's body
-        var line = current();
+        String line = current();
         while (!line.startsWith(boundary)) {
             part.appendBodyLine(line);
             line = next();
@@ -70,11 +70,11 @@ public class FormDataParser {
     }
 
     private void expectHeaders(Part part) {
-        var line = current();
+        String line = current();
         while (!line.trim().isEmpty()) {
-            var split = line.split(":\\s*", 2);
-            var headerName = split[0];
-            var headerValue = split[1];
+            String[] split = line.split(":\\s*", 2);
+            String headerName = split[0];
+            String headerValue = split[1];
 
             part.addHeader(headerName, Part.Header.fromString(headerValue));
             line = next();
@@ -92,7 +92,7 @@ public class FormDataParser {
             return true;
         }
 
-        var line = current();
+        String line = current();
         if (line.equals(boundary)) {
             next();
             return false;

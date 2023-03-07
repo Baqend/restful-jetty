@@ -26,8 +26,8 @@ public class FormData implements Iterable<Part> {
      * @throws FormDataSyntaxException If the data was invalid form data.
      */
     public static FormData fromReader(Reader data, String boundary) throws FormDataSyntaxException {
-        var formData = new FormData();
-        var parser = new FormDataParser(data, boundary);
+        FormData formData = new FormData();
+        FormDataParser parser = new FormDataParser(data, boundary);
         parser.parse(formData);
 
         return formData;
@@ -106,7 +106,7 @@ public class FormData implements Iterable<Part> {
      * @return The part deleted from this form data.
      */
     public Part delete(String name) {
-        var remove = this.parts.remove(name);
+        List<Part> remove = this.parts.remove(name);
         if (remove == null) {
             return null;
         }
@@ -121,7 +121,7 @@ public class FormData implements Iterable<Part> {
      * @return All parts deleted from this form data.
      */
     public Collection<Part> deleteAll(String name) {
-        var remove = this.parts.remove(name);
+        List<Part> remove = this.parts.remove(name);
         if (remove == null) {
             return Collections.emptyList();
         }
@@ -149,7 +149,7 @@ public class FormData implements Iterable<Part> {
      * @return The entry's value or {@code null}, if the entry misses.
      */
     public Collection<Part> getAll(String name) {
-        var values = this.parts.getValues(name);
+        List<Part> values = this.parts.getValues(name);
         if (values == null) {
             return Collections.emptyList();
         }
@@ -163,12 +163,12 @@ public class FormData implements Iterable<Part> {
     }
 
     public String toString(String boundary) {
-        var b = "--" + boundary;
-        var builder = new StringBuilder(b);
+        String b = "--" + boundary;
+        StringBuilder builder = new StringBuilder(b);
 
-        for (var entry : parts.entrySet()) {
+        for (Map.Entry<String, List<Part>> entry : parts.entrySet()) {
             // Add each value to the string
-            for (var part : entry.getValue()) {
+            for (Part part : entry.getValue()) {
                 builder.append('\n');
                 builder.append(part);
                 builder.append('\n');
