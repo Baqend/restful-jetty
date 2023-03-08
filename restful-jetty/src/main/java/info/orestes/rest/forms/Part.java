@@ -33,7 +33,7 @@ public class Part {
      * @return A form data part with given name and value.
      */
     public static Part formData(String name, String value) {
-        var part = new Part();
+        Part part = new Part();
         part.addHeader(CONTENT_DISPOSITION, Header.formData(name));
         part.appendBodyLine(value);
 
@@ -41,7 +41,7 @@ public class Part {
     }
 
     public MediaType getContentType() {
-        var ct = getHeader(CONTENT_TYPE);
+        Header ct = getHeader(CONTENT_TYPE);
         if (ct == null) {
             return null;
         }
@@ -55,7 +55,7 @@ public class Part {
      * @return The {@code Content-Disposition} header value.
      */
     public String getContentDisposition() {
-        var cd = getHeader(CONTENT_DISPOSITION);
+        Header cd = getHeader(CONTENT_DISPOSITION);
         if (cd == null) {
             return null;
         }
@@ -69,7 +69,7 @@ public class Part {
      * @return The {@code Content-Disposition} header's {@code name} parameter.
      */
     public String getName() {
-        var cd = getHeader(CONTENT_DISPOSITION);
+        Header cd = getHeader(CONTENT_DISPOSITION);
         if (cd == null) {
             return null;
         }
@@ -82,7 +82,7 @@ public class Part {
     }
 
     public void addHeader(String name, Header value) {
-        var lowerCaseName = name.toLowerCase();
+        String lowerCaseName = name.toLowerCase();
 
         headers.add(lowerCaseName, value);
     }
@@ -113,9 +113,9 @@ public class Part {
 
     @Override
     public String toString() {
-        var builder = new StringBuilder();
-        for (var entry : headers.entrySet()) {
-            for (var header : entry.getValue()) {
+        StringBuilder builder = new StringBuilder();
+        for (Map.Entry<String, List<Header>> entry : headers.entrySet()) {
+            for (Header header : entry.getValue()) {
                 builder.append(entry.getKey());
                 builder.append(": ");
                 builder.append(header.toString());
@@ -137,7 +137,7 @@ public class Part {
             return false;
         }
 
-        var part = (Part) obj;
+        Part part = (Part) obj;
         return Objects.equals(body.toString(), part.body.toString())
             && Objects.equals(headers, part.headers);
     }
@@ -162,19 +162,19 @@ public class Part {
 
         public static Header fromString(String headerValue) {
             // Retrieve header value
-            var parameters = headerValue.split(";\\s*");
+            String[] parameters = headerValue.split(";\\s*");
             if (parameters.length < 2) {
                 return new Header(headerValue, Collections.emptyMap());
             }
 
-            var value = parameters[0];
+            String value = parameters[0];
             HashMap<String, String> params = new HashMap<>(parameters.length - 1);
 
             // Retrieve header parameters
-            for (var i = 1; i < parameters.length; i++) {
-                var paramKeyValue = parameters[i].split("=", 2);
-                var paramKey = paramKeyValue[0];
-                var paramValue = paramKeyValue[1];
+            for (int i = 1; i < parameters.length; i++) {
+                String[] paramKeyValue = parameters[i].split("=", 2);
+                String paramKey = paramKeyValue[0];
+                String paramValue = paramKeyValue[1];
                 params.put(paramKey, paramValue);
             }
 
@@ -191,8 +191,8 @@ public class Part {
 
         @Override
         public String toString() {
-            var builder = new StringBuilder(value);
-            for (var entry : parameters.entrySet()) {
+            StringBuilder builder = new StringBuilder(value);
+            for (Map.Entry<String, String> entry : parameters.entrySet()) {
                 builder.append("; ");
                 builder.append(entry.getKey());
                 builder.append("=");
@@ -210,7 +210,7 @@ public class Part {
                 return false;
             }
 
-            var header = (Header) obj;
+            Header header = (Header) obj;
             return Objects.equals(value, header.value)
                 && Objects.equals(parameters, header.parameters);
         }
