@@ -50,11 +50,11 @@ subprojects {
     }
 
     javadoc {
-        //options.addBooleanOption('html5', true)
+        options.addBooleanOption('html5', true)
     }
 
     signing {
-        //sign configurations.archives
+        sign configurations.archives
     }
 
     uploadArchives {
