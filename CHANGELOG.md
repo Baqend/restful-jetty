@@ -2,6 +2,10 @@
 
 * Make library Java 8 compatible  
 
+## 1.10.0
+
+* Make library Java 8 compatible  
+
 ## 1.9.14
 
 * Bump dependency and Gradle versions
