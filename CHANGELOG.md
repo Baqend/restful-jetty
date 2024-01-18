@@ -1,3 +1,7 @@
+## 1.11.0
+
+* Update Jetty dependency to 9.4.53.v20231009
+
 ## 1.10.0
 
 * Make library Java 8 compatible  
