@@ -1,3 +1,7 @@
+## 1.11.1
+
+* Fix release process
+
 ## 1.11.0
 
 * Update Jetty dependency to 9.4.53.v20231009
