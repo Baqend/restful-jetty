@@ -1,3 +1,7 @@
+## 1.11.2
+
+* Fix release process
+
 ## 1.11.1
 
 * Fix release process
